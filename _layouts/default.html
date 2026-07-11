@@ -9,18 +9,33 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <link rel="preload" href="/assets/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/fonts/inter-500.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/fonts/inter-700.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M%S' }}">
+    <script>
+      (function(){
+        try {
+          var t = localStorage.getItem('toolsvault_theme');
+          if (!t) t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', t);
+        } catch(e){}
+      })();
+    </script>
     {% seo %}
 </head>
 <body>
     <header class="site-header">
         <div class="container">
-                <a href="/" class="logo">
-                    <span>ToolsVault</span>
-                </a>
+            <a href="/" class="logo">
+                <span>ToolsVault</span>
+            </a>
             <nav class="main-nav">
-                <a href="/" class="nav-link{% if page.url == '/' %} active{% endif %}">Tools</a>
-                <a href="/about/" class="nav-link{% if page.url == '/about/' %} active{% endif %}">About</a>
+                <a href="/" class="nav-link active">Tools</a>
+                <a href="/about/" class="nav-link">About</a>
+                <a href="/#favorites" id="nav-favorites" class="nav-link nav-favorites" title="Your favorites" aria-label="Favorites">&#9829;<span class="fav-count" id="fav-count-header">0</span></a>
+                <button type="button" id="theme-toggle" class="icon-btn" aria-label="Toggle light/dark theme" title="Toggle theme">&#9789;</button>
             </nav>
         </div>
     </header>
@@ -35,6 +50,42 @@
         </div>
     </footer>
 
+    <button type="button" id="back-to-top" class="back-to-top" aria-label="Back to top" title="Back to top">&#8593;</button>
+
+    <script>
+    // Universal UI (all pages): theme toggle, back-to-top, header favorites count
+    document.addEventListener('DOMContentLoaded', function() {
+        var btt = document.getElementById('back-to-top');
+        if (btt) {
+            window.addEventListener('scroll', function() {
+                btt.classList.toggle('show', window.scrollY > 400);
+            }, { passive: true });
+            btt.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+        }
+
+        var themeToggle = document.getElementById('theme-toggle');
+        function updateThemeIcon() {
+            if (!themeToggle) return;
+            themeToggle.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? '☀' : '☾';
+        }
+        if (themeToggle) {
+            updateThemeIcon();
+            themeToggle.addEventListener('click', function() {
+                var cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+                var next = cur === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', next);
+                try { localStorage.setItem('toolsvault_theme', next); } catch(e){}
+                updateThemeIcon();
+            });
+        }
+
+        try {
+            var fc = document.getElementById('fav-count-header');
+            if (fc) fc.textContent = (JSON.parse(localStorage.getItem('toolsvault_favorites')) || []).length;
+        } catch(e){}
+    });
+    </script>
+
     {% if page.url == '/' %}
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -44,6 +95,7 @@
         const categorySections = document.querySelectorAll('.category-section:not(#favorites-view)');
         const noResults = document.getElementById('no-results');
         const favCountEl = document.getElementById('fav-count');
+        const favCountHeader = document.getElementById('fav-count-header');
         const favoritesView = document.getElementById('favorites-view');
         const favoritesGrid = document.getElementById('favorites-grid');
         const favTotalEl = document.getElementById('fav-total');
@@ -78,6 +130,7 @@
             const n = getFavorites().length;
             if (favCountEl) favCountEl.textContent = n;
             if (favTotalEl) favTotalEl.textContent = n;
+            if (favCountHeader) favCountHeader.textContent = n;
         }
         function renderFavorites() {
             favoritesGrid.innerHTML = '';
@@ -98,6 +151,16 @@
             e.stopPropagation();
             setFavorite(btn.dataset.fav, !isFavorite(btn.dataset.fav));
         });
+
+        const clearBtn = document.getElementById('clear-favorites');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                try { localStorage.removeItem(FAV_KEY); } catch (e) {}
+                updateFavButtons();
+                updateFavCount();
+                if (activeCategory === 'favorites') renderFavorites();
+            });
+        }
 
         function filterTools() {
             const query = searchInput.value.toLowerCase().trim();
@@ -146,10 +209,40 @@
             filterTools();
         });
 
+        const randomBtn = document.getElementById('random-tool');
+        if (randomBtn) {
+            randomBtn.addEventListener('click', function() {
+                const hrefs = toolCards.map(c => c.getAttribute('href')).filter(Boolean);
+                if (hrefs.length) window.location.href = hrefs[Math.floor(Math.random() * hrefs.length)];
+            });
+        }
+
+        document.addEventListener('keydown', function(e) {
+            const tag = (e.target.tagName || '').toLowerCase();
+            const typing = tag === 'input' || tag === 'textarea' || e.target.isContentEditable;
+            if (e.key === '/' && !typing) {
+                e.preventDefault();
+                searchInput.focus();
+            } else if (e.key === 'Escape' && document.activeElement === searchInput) {
+                searchInput.value = '';
+                filterTools();
+                searchInput.blur();
+            }
+        });
+
+        if (location.hash === '#favorites') {
+            const fb = document.querySelector('.filter-btn[data-category="favorites"]');
+            if (fb) fb.click();
+            window.scrollTo({ top: 0 });
+        }
+
         updateFavButtons();
         updateFavCount();
     });
     </script>
+    {% endif %}
+    {% if site.analytics_id %}
+    <script data-goatcounter="https://{{ site.analytics_id }}.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
     {% endif %}
 </body>
 </html>

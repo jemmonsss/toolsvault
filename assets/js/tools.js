@@ -19,7 +19,10 @@ function showMsg(id,text,type){
 }
 function ok(id,t){showMsg(id,t,'ok');}
 function err(id,t){showMsg(id,t,'err');}
+var _tuiInitialized=false;
 function initTabs(){
+  if(_tuiInitialized)return;
+  _tuiInitialized=true;
   document.querySelectorAll('.tui .tab').forEach(function(b){
     b.addEventListener('click',function(){
       var t=b.dataset.tab;var root=b.closest('.tui');if(!root)return;

@@ -14,6 +14,9 @@
             </svg>
             <input type="text" id="tool-search" placeholder="Search tools...">
         </div>
+        <div class="search-extra">
+            <button type="button" id="random-tool" class="text-btn">&#127922; Random tool</button>
+        </div>
     </section>
 
     <section class="filter-section" id="filter-section">
@@ -33,6 +36,9 @@
         <div class="category-header">
             <h2>Favorites</h2>
             <span class="category-count" id="fav-total">0</span>
+        </div>
+        <div class="favorites-controls">
+            <button type="button" id="clear-favorites" class="text-btn">Clear all favorites</button>
         </div>
         <div class="tools-grid" id="favorites-grid"></div>
     </section>

@@ -28,7 +28,7 @@ category: "Converters"
     <div id="yj-msg" class="msg"></div>
   </div>
 </div>
-<script src="{{ '/assets/js/js-yaml.min.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/js-yaml.min.js' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M%S' }}" defer></script>
 <script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
 <script>
 function jy(){try{var o=JSON.parse(byId('jy-in').value);byId('jy-out').textContent=jsyaml.dump(o,{indent:2,lineWidth:120,noRefs:true});ok('jy-msg','Converted to YAML');}catch(e){err('jy-msg',e.message);}}

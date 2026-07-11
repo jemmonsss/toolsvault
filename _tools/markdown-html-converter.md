@@ -28,7 +28,7 @@ category: "Converters"
     <div id="hm-msg" class="msg"></div>
   </div>
 </div>
-<script src="{{ '/assets/js/marked.min.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/marked.min.js' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M%S' }}" defer></script>
 <script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
 <script>
 function mh(){try{byId('mh-out').textContent=marked.parse(byId('mh-in').value);ok('mh-msg','Converted to HTML');}catch(e){err('mh-msg',e.message);}}

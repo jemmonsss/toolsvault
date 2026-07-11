@@ -3,6 +3,10 @@ description: "A curated vault of developer tools and resources"
 baseurl: ""
 url: "https://toolsvault.org"
 
+# Privacy-friendly analytics (GoatCounter). Leave empty to disable.
+# Set to your GoatCounter site code, e.g. "toolsvault".
+analytics_id: ""
+
 social:
   name: "ToolsVault"
   links:
@@ -12,6 +16,7 @@ theme: null
 
 plugins:
   - jekyll-seo-tag
+  - jekyll-sitemap
 
 markdown: kramdown
 

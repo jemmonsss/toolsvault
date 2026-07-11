@@ -9,18 +9,33 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <link rel="preload" href="/assets/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/fonts/inter-500.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/fonts/inter-700.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M%S' }}">
+    <script>
+      (function(){
+        try {
+          var t = localStorage.getItem('toolsvault_theme');
+          if (!t) t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', t);
+        } catch(e){}
+      })();
+    </script>
     {% seo %}
 </head>
 <body>
     <header class="site-header">
         <div class="container">
-                <a href="/" class="logo">
-                    <span>ToolsVault</span>
-                </a>
+            <a href="/" class="logo">
+                <span>ToolsVault</span>
+            </a>
             <nav class="main-nav">
                 <a href="/" class="nav-link">Tools</a>
                 <a href="/about/" class="nav-link">About</a>
+                <a href="/#favorites" id="nav-favorites" class="nav-link nav-favorites" title="Your favorites" aria-label="Favorites">&#9829;<span class="fav-count" id="fav-count-header">0</span></a>
+                <button type="button" id="theme-toggle" class="icon-btn" aria-label="Toggle light/dark theme" title="Toggle theme">&#9789;</button>
             </nav>
         </div>
     </header>
@@ -42,6 +57,7 @@
                         </div>
                         <div class="tool-actions">
                             <a href="{{ page.link }}" target="_blank" rel="noopener" class="btn btn-primary">Visit Tool</a>
+                            <button type="button" id="share-tool" class="btn btn-secondary">Copy link</button>
                         </div>
                     </div>
                     <aside class="tool-sidebar">
@@ -64,5 +80,69 @@
             <p>Built for developers. <a href="https://github.com/yourusername/toolsvault">Star on GitHub</a></p>
         </div>
     </footer>
+
+    <button type="button" id="back-to-top" class="back-to-top" aria-label="Back to top" title="Back to top">&#8593;</button>
+
+    <script src="{{ '/assets/js/tools.js' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M%S' }}" defer></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var shareBtn = document.getElementById('share-tool');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', function() {
+                var url = window.location.href;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(url)
+                        .then(function(){ flash(shareBtn, 'Copied!'); })
+                        .catch(function(){ fallbackCopy(url, shareBtn); });
+                } else { fallbackCopy(url, shareBtn); }
+            });
+        }
+        function flash(btn, msg) {
+            if (!btn) return;
+            var prev = btn.textContent;
+            btn.textContent = msg;
+            setTimeout(function(){ btn.textContent = prev; }, 1500);
+        }
+        function fallbackCopy(text, btn) {
+            var ta = document.createElement('textarea');
+            ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); flash(btn, 'Copied!'); } catch(e){}
+            document.body.removeChild(ta);
+        }
+
+        var btt = document.getElementById('back-to-top');
+        if (btt) {
+            window.addEventListener('scroll', function() {
+                btt.classList.toggle('show', window.scrollY > 400);
+            }, { passive: true });
+            btt.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+        }
+
+        var themeToggle = document.getElementById('theme-toggle');
+        function updateThemeIcon() {
+            if (!themeToggle) return;
+            themeToggle.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? '☀' : '☾';
+        }
+        if (themeToggle) {
+            updateThemeIcon();
+            themeToggle.addEventListener('click', function() {
+                var cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+                var next = cur === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', next);
+                try { localStorage.setItem('toolsvault_theme', next); } catch(e){}
+                updateThemeIcon();
+            });
+        }
+
+        try {
+            var fc = document.getElementById('fav-count-header');
+            if (fc) fc.textContent = (JSON.parse(localStorage.getItem('toolsvault_favorites')) || []).length;
+        } catch(e){}
+    });
+    </script>
+    {% if site.analytics_id %}
+    <script data-goatcounter="https://{{ site.analytics_id }}.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+    {% endif %}
 </body>
 </html>
