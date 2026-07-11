@@ -50,7 +50,10 @@ def check_links
 
   errors = []
   Dir.glob(site.join('**', '*.html')).each do |html|
-    content = File.read(html)
+    raw = File.read(html)
+    # Strip script/style blocks so JS string concatenations
+    # (e.g. img.src = 'data:image/png;base64,' + img) aren't parsed as attributes.
+    content = raw.gsub(%r{<script\b[^>]*>.*?</script>}mi, '').gsub(%r{<style\b[^>]*>.*?</style>}mi, '')
     content.scan(/(?:href|src)="([^"]+)"/) do |match|
       url = match[0]
       next if url.start_with?('#', 'mailto:', 'http://', 'https://', '//', 'data:')
