@@ -40,11 +40,51 @@
         const toolCards = document.querySelectorAll('.tool-card');
         const categorySections = document.querySelectorAll('.category-section');
         const noResults = document.getElementById('no-results');
+        const favCountEl = document.getElementById('fav-count');
         let activeCategory = 'all';
+
+        const FAV_KEY = 'toolsvault_favorites';
+        function getFavorites() {
+            try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; }
+            catch (e) { return []; }
+        }
+        function isFavorite(id) {
+            return getFavorites().includes(id);
+        }
+        function setFavorite(id, fav) {
+            let favs = getFavorites();
+            if (fav && !favs.includes(id)) favs.push(id);
+            if (!fav) favs = favs.filter(x => x !== id);
+            try { localStorage.setItem(FAV_KEY, JSON.stringify(favs)); } catch (e) {}
+            updateFavButtons();
+            updateFavCount();
+        }
+        function updateFavButtons() {
+            document.querySelectorAll('.fav-btn').forEach(btn => {
+                const fav = isFavorite(btn.dataset.fav);
+                btn.classList.toggle('active', fav);
+                btn.innerHTML = fav ? '&#9829;' : '&#9825;';
+                btn.setAttribute('aria-label', fav ? 'Remove favorite' : 'Add favorite');
+            });
+        }
+        function updateFavCount() {
+            if (favCountEl) favCountEl.textContent = getFavorites().length;
+        }
+
+        document.querySelectorAll('.fav-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const id = btn.dataset.fav;
+                setFavorite(id, !isFavorite(id));
+                if (activeCategory === 'favorites') filterTools();
+            });
+        });
 
         function filterTools() {
             const query = searchInput.value.toLowerCase().trim();
             let visible = 0;
+            const showFavoritesOnly = activeCategory === 'favorites';
             toolCards.forEach(card => {
                 const title = (card.dataset.title || '').toLowerCase();
                 const description = (card.dataset.description || '').toLowerCase();
@@ -52,7 +92,8 @@
                 const cardCategory = (card.dataset.category || '').toLowerCase();
                 const matchesSearch = title.includes(query) || description.includes(query) || tags.includes(query);
                 const matchesCategory = activeCategory === 'all' || cardCategory.includes(activeCategory);
-                if (matchesSearch && matchesCategory) {
+                const matchesFavorites = !showFavoritesOnly || isFavorite(card.dataset.fav);
+                if (matchesSearch && matchesCategory && matchesFavorites) {
                     card.style.display = 'flex';
                     visible++;
                 } else {
@@ -63,8 +104,14 @@
                 const sectionCategory = (section.dataset.category || '').toLowerCase();
                 const hasVisible = !!section.querySelector('.tool-card:not([style*="display: none"])');
                 const matchesCategory = activeCategory === 'all' || sectionCategory.includes(activeCategory);
-                section.style.display = (matchesCategory && hasVisible) ? 'block' : 'none';
+                const matchesFavorites = !showFavoritesOnly || hasVisible;
+                section.style.display = (matchesCategory && hasVisible && matchesFavorites) ? 'block' : 'none';
             });
+            if (showFavoritesOnly && visible === 0) {
+                noResults.querySelector('p').textContent = 'No favorites yet. Tap the heart on a tool to save it.';
+            } else {
+                noResults.querySelector('p').textContent = 'No tools match your search.';
+            }
             noResults.style.display = visible === 0 ? 'block' : 'none';
         }
 
@@ -78,6 +125,9 @@
         });
 
         searchInput.addEventListener('input', filterTools);
+
+        updateFavButtons();
+        updateFavCount();
     });
     </script>
     {% endif %}
