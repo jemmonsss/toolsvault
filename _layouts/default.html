@@ -32,7 +32,7 @@
             </a>
             <nav class="main-nav">
                 <a href="/" class="nav-link{% if page.url == '/' %} active{% endif %}">Tools</a>
-                <a href="/about" class="nav-link{% if page.url == '/about' %} active{% endif %}">About</a>
+                <a href="/about/" class="nav-link{% if page.url == '/about/' %} active{% endif %}">About</a>
             </nav>
         </div>
     </header>
@@ -53,6 +53,7 @@
         const searchInput = document.getElementById('tool-search');
         const filterButtons = document.querySelectorAll('.filter-btn');
         const toolCards = document.querySelectorAll('.tool-card');
+        const categorySections = document.querySelectorAll('.category-section');
         const noResults = document.getElementById('no-results');
         let activeTag = 'all';
 
@@ -60,17 +61,21 @@
             const query = searchInput.value.toLowerCase().trim();
             let visible = 0;
             toolCards.forEach(card => {
-                const title = card.dataset.title.toLowerCase();
-                const description = card.dataset.description.toLowerCase();
-                const tags = card.dataset.tags.toLowerCase();
+                const title = (card.dataset.title || '').toLowerCase();
+                const description = (card.dataset.description || '').toLowerCase();
+                const tags = (card.dataset.tags || '').toLowerCase();
                 const matchesSearch = title.includes(query) || description.includes(query) || tags.includes(query);
-                const matchesTag = activeTag === 'all' || card.dataset.tags.toLowerCase().includes(activeTag);
+                const matchesTag = activeTag === 'all' || tags.includes(activeTag);
                 if (matchesSearch && matchesTag) {
-                    card.style.display = 'block';
+                    card.style.display = 'flex';
                     visible++;
                 } else {
                     card.style.display = 'none';
                 }
+            });
+            categorySections.forEach(section => {
+                const hasVisible = section.querySelectorAll('.tool-card:not([style*="display: none"])').length > 0;
+                section.style.display = hasVisible ? 'block' : 'none';
             });
             noResults.style.display = visible === 0 ? 'block' : 'none';
         }

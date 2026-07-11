@@ -1,6 +1,8 @@
 ---
 title: "About"
 description: "About ToolsVault"
+permalink: /about/
+layout: default
 ---
 <div class="about-page">
     <h1>About ToolsVault</h1>
