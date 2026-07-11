@@ -59,7 +59,7 @@ def check_links
       next if path.empty? || path.end_with?('/')
 
       target = site.join(path.sub(%r{^/}, ''))
-      errors << "#{html.relative_path}: broken link -> #{url}" unless File.exist?(target)
+      errors << "#{html}: broken link -> #{url}" unless File.exist?(target)
     end
   end
 
