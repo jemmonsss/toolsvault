@@ -60,6 +60,6 @@ document.addEventListener('DOMContentLoaded', function() {
     {% endfor %}
 </section>
 
-<div id="no-results">
+<div id="no-results" style="display:none;">
     <p>No tools match your search.</p>
 </div>
