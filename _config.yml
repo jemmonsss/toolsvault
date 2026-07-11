@@ -1,7 +1,12 @@
 title: "ToolsVault"
-description: "A modular tool vault for developers"
+description: "A curated vault of developer tools and resources"
 baseurl: ""
 url: "https://toolsvault.org"
+
+social:
+  name: "ToolsVault"
+  links:
+    - "https://github.com/yourusername/toolsvault"
 
 theme: null
 

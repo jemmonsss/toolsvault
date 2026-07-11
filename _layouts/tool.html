@@ -5,30 +5,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ page.title }} | ToolsVault</title>
-    <meta name="description" content="{{ page.description }}">
-    <meta property="og:title" content="{{ page.title }} | ToolsVault">
-    <meta property="og:description" content="{{ page.description }}">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ page.url | absolute_url }}">
-    <link rel="canonical" href="{{ page.url | absolute_url }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="theme-color" content="#8b5cf6">
     <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
     {% seo %}
 </head>
 <body>
     <header class="site-header">
         <div class="container">
-            <a href="/" class="logo">
-                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                </svg>
-                <span>ToolsVault</span>
-            </a>
+                <a href="/" class="logo">
+                    <span>ToolsVault</span>
+                </a>
             <nav class="main-nav">
                 <a href="/" class="nav-link">Tools</a>
                 <a href="/about/" class="nav-link">About</a>
