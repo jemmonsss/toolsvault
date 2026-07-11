@@ -6,7 +6,7 @@ tags:
   - json
   - formatter
   - developer-tools
-category: "Developer Tools"
+category: "Web & Dev"
 ---
 <div class="tool-container">
     <h1>JSON Formatter</h1>

@@ -7,7 +7,7 @@ tags:
   - unix
   - date
   - converter
-category: "Utilities"
+category: "Converters"
 ---
 <div class="tool-container">
     <h1>Timestamp Converter</h1>

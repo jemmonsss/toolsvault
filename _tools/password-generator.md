@@ -7,7 +7,7 @@ tags:
   - generator
   - security
   - utilities
-category: "Utilities"
+category: "Security"
 ---
 <div class="tool-container">
     <h1>Password Generator</h1>

@@ -7,7 +7,7 @@ tags:
   - converter
   - design
   - utilities
-category: "Utilities"
+category: "Color & Design"
 ---
 <div class="tool-container">
     <h1>Color Converter</h1>

@@ -7,7 +7,7 @@ tags:
   - ipsum
   - placeholder
   - text
-category: "Utilities"
+category: "Generators"
 ---
 <div class="tool-container">
     <h1>Lorem Ipsum Generator</h1>
