@@ -16,10 +16,10 @@
 </section>
 
 <section class="filter-section" id="filter-section">
-    <button class="filter-btn active" data-tag="all">All</button>
-    {% assign all_tags = site.tools | map: 'tags' | flatten | uniq | sort %}
-    {% for tag in all_tags %}
-    <button class="filter-btn" data-tag="{{ tag | escape }}">{{ tag }}</button>
+    <button class="filter-btn active" data-category="all">All</button>
+    {% assign categories = site.tools | map: 'category' | uniq | sort %}
+    {% for category in categories %}
+    <button class="filter-btn" data-category="{{ category | downcase | escape }}">{{ category }}</button>
     {% endfor %}
 </section>
 

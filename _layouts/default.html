@@ -55,7 +55,7 @@
         const toolCards = document.querySelectorAll('.tool-card');
         const categorySections = document.querySelectorAll('.category-section');
         const noResults = document.getElementById('no-results');
-        let activeTag = 'all';
+        let activeCategory = 'all';
 
         function filterTools() {
             const query = searchInput.value.toLowerCase().trim();
@@ -64,9 +64,10 @@
                 const title = (card.dataset.title || '').toLowerCase();
                 const description = (card.dataset.description || '').toLowerCase();
                 const tags = (card.dataset.tags || '').toLowerCase();
+                const cardCategory = (card.dataset.category || '').toLowerCase();
                 const matchesSearch = title.includes(query) || description.includes(query) || tags.includes(query);
-                const matchesTag = activeTag === 'all' || tags.includes(activeTag);
-                if (matchesSearch && matchesTag) {
+                const matchesCategory = activeCategory === 'all' || cardCategory.includes(activeCategory);
+                if (matchesSearch && matchesCategory) {
                     card.style.display = 'flex';
                     visible++;
                 } else {
@@ -74,8 +75,10 @@
                 }
             });
             categorySections.forEach(section => {
-                const hasVisible = section.querySelectorAll('.tool-card:not([style*="display: none"])').length > 0;
-                section.style.display = hasVisible ? 'block' : 'none';
+                const sectionCategory = (section.dataset.category || '').toLowerCase();
+                const hasVisible = !!section.querySelector('.tool-card:not([style*="display: none"])');
+                const matchesCategory = activeCategory === 'all' || sectionCategory.includes(activeCategory);
+                section.style.display = (matchesCategory && hasVisible) ? 'block' : 'none';
             });
             noResults.style.display = visible === 0 ? 'block' : 'none';
         }
@@ -84,7 +87,7 @@
             btn.addEventListener('click', () => {
                 filterButtons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                activeTag = btn.dataset.tag;
+                activeCategory = btn.dataset.category;
                 filterTools();
             });
         });
