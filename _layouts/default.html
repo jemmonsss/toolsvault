@@ -189,8 +189,10 @@
                     categorySections.forEach(s => s.style.display = 'none');
                     noResults.style.display = 'none';
                     renderFavorites();
+                    if (location.hash !== '#favorites') location.hash = '#favorites';
                 } else {
                     filterTools();
+                    if (location.hash) location.hash = '';
                 }
             });
         });
@@ -221,11 +223,19 @@
             }
         });
 
-        if (location.hash === '#favorites') {
-            const fb = document.querySelector('.filter-btn[data-category="favorites"]');
-            if (fb) fb.click();
-            window.scrollTo({ top: 0 });
+        function handleFavoritesHash() {
+            if (location.hash === '#favorites') {
+                const fb = document.querySelector('.filter-btn[data-category="favorites"]');
+                if (fb && activeCategory !== 'favorites') fb.click();
+                window.scrollTo({ top: 0 });
+            }
         }
+
+        if (location.hash === '#favorites') {
+            handleFavoritesHash();
+        }
+
+        window.addEventListener('hashchange', handleFavoritesHash);
 
         updateFavButtons();
         updateFavCount();
