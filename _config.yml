@@ -24,6 +24,9 @@ collections:
   tools:
     output: true
     permalink: /tools/:name/
+  blog:
+    output: true
+    permalink: /blog/:name/
 
 defaults:
   - scope:
@@ -31,6 +34,10 @@ defaults:
       type: "tools"
     values:
       layout: "tool"
+  - scope:
+      type: "blog"
+    values:
+      layout: "post"
   - scope:
       path: ""
       type: "pages"
