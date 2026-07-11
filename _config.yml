@@ -1,0 +1,37 @@
+title: "ToolsVault"
+description: "A modular tool vault for developers"
+baseurl: ""
+url: "https://toolsvault.org"
+
+theme: null
+
+plugins:
+  - jekyll-seo-tag
+
+markdown: kramdown
+
+collections:
+  tools:
+    output: true
+    permalink: /tools/:name/
+
+defaults:
+  - scope:
+      path: ""
+      type: "tools"
+    values:
+      layout: "tool"
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "default"
+
+sass:
+  style: compressed
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - node_modules

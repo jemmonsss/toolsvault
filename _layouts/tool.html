@@ -1,0 +1,79 @@
+---
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page.title }} | ToolsVault</title>
+    <meta name="description" content="{{ page.description }}">
+    <meta property="og:title" content="{{ page.title }} | ToolsVault">
+    <meta property="og:description" content="{{ page.description }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ page.url | absolute_url }}">
+    <link rel="canonical" href="{{ page.url | absolute_url }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
+    {% seo %}
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+                <span>ToolsVault</span>
+            </a>
+            <nav class="main-nav">
+                <a href="/" class="nav-link">Tools</a>
+                <a href="/about" class="nav-link">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="tool-page">
+            <div class="container">
+                <div class="tool-header">
+                    <h1>{{ page.title }}</h1>
+                    <div class="tool-meta">
+                        {% if page.icon %}<span class="tool-icon">{{ page.icon }}</span>{% endif %}
+                        <span class="tool-category">{{ page.category | default: 'Tool' }}</span>
+                    </div>
+                </div>
+                <div class="tool-content">
+                    <div class="tool-main">
+                        <div class="tool-description">
+                            {{ content }}
+                        </div>
+                        <div class="tool-actions">
+                            <a href="{{ page.link }}" target="_blank" rel="noopener" class="btn btn-primary">Visit Tool</a>
+                        </div>
+                    </div>
+                    <aside class="tool-sidebar">
+                        <div class="tool-tags">
+                            <h3>Tags</h3>
+                            <div class="tag-list">
+                                {% for tag in page.tags %}
+                                <span class="tag">{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>Built for developers. <a href="https://github.com/yourusername/toolsvault">Star on GitHub</a></p>
+        </div>
+    </footer>
+</body>
+</html>

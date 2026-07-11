@@ -1,0 +1,92 @@
+---
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if page.title %}{{ page.title }} | {% endif %}ToolsVault</title>
+    <meta name="description" content="{% if page.description %}{{ page.description }}{% else %}A modular tool vault for developers{% endif %}">
+    <meta property="og:title" content="{% if page.title %}{{ page.title }} | {% endif %}ToolsVault">
+    <meta property="og:description" content="{% if page.description %}{{ page.description }}{% else %}A modular tool vault for developers{% endif %}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ page.url | absolute_url }}">
+    <meta property="og:image" content="{{ '/assets/og-image.png' | absolute_url }}">
+    <link rel="canonical" href="{{ page.url | absolute_url }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
+    {% seo %}
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="/" class="logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+                <span>ToolsVault</span>
+            </a>
+            <nav class="main-nav">
+                <a href="/" class="nav-link{% if page.url == '/' %} active{% endif %}">Tools</a>
+                <a href="/about" class="nav-link{% if page.url == '/about' %} active{% endif %}">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        {{ content }}
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>Built for developers. <a href="https://github.com/yourusername/toolsvault">Star on GitHub</a></p>
+        </div>
+    </footer>
+
+    {% if page.url == '/' %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('tool-search');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const toolCards = document.querySelectorAll('.tool-card');
+        const noResults = document.getElementById('no-results');
+        let activeTag = 'all';
+
+        function filterTools() {
+            const query = searchInput.value.toLowerCase().trim();
+            let visible = 0;
+            toolCards.forEach(card => {
+                const title = card.dataset.title.toLowerCase();
+                const description = card.dataset.description.toLowerCase();
+                const tags = card.dataset.tags.toLowerCase();
+                const matchesSearch = title.includes(query) || description.includes(query) || tags.includes(query);
+                const matchesTag = activeTag === 'all' || card.dataset.tags.toLowerCase().includes(activeTag);
+                if (matchesSearch && matchesTag) {
+                    card.style.display = 'block';
+                    visible++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            noResults.style.display = visible === 0 ? 'block' : 'none';
+        }
+
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeTag = btn.dataset.tag;
+                filterTools();
+            });
+        });
+
+        searchInput.addEventListener('input', filterTools);
+    });
+    </script>
+    {% endif %}
+</body>
+</html>
