@@ -29,6 +29,14 @@
         <p>No tools match your search.</p>
     </div>
 
+    <section id="favorites-view" class="category-section" style="display:none;">
+        <div class="category-header">
+            <h2>Favorites</h2>
+            <span class="category-count" id="fav-total">0</span>
+        </div>
+        <div class="tools-grid" id="favorites-grid"></div>
+    </section>
+
     {% assign categories = site.tools | map: 'category' | uniq | sort %}
     {% for category in categories %}
     <section class="category-section" data-category="{{ category | downcase | escape }}">

@@ -37,10 +37,13 @@
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById('tool-search');
         const filterButtons = document.querySelectorAll('.filter-btn');
-        const toolCards = document.querySelectorAll('.tool-card');
-        const categorySections = document.querySelectorAll('.category-section');
+        const toolCards = Array.from(document.querySelectorAll('.category-section:not(#favorites-view) .tool-card'));
+        const categorySections = document.querySelectorAll('.category-section:not(#favorites-view)');
         const noResults = document.getElementById('no-results');
         const favCountEl = document.getElementById('fav-count');
+        const favoritesView = document.getElementById('favorites-view');
+        const favoritesGrid = document.getElementById('favorites-grid');
+        const favTotalEl = document.getElementById('fav-total');
         let activeCategory = 'all';
 
         const FAV_KEY = 'toolsvault_favorites';
@@ -58,33 +61,44 @@
             try { localStorage.setItem(FAV_KEY, JSON.stringify(favs)); } catch (e) {}
             updateFavButtons();
             updateFavCount();
+            if (activeCategory === 'favorites') renderFavorites();
         }
         function updateFavButtons() {
             document.querySelectorAll('.fav-btn').forEach(btn => {
                 const fav = isFavorite(btn.dataset.fav);
                 btn.classList.toggle('active', fav);
-                btn.innerHTML = fav ? '&#9829;' : '&#9825;';
+                btn.textContent = fav ? '\u2665' : '\u2661';
                 btn.setAttribute('aria-label', fav ? 'Remove favorite' : 'Add favorite');
             });
         }
         function updateFavCount() {
-            if (favCountEl) favCountEl.textContent = getFavorites().length;
+            const n = getFavorites().length;
+            if (favCountEl) favCountEl.textContent = n;
+            if (favTotalEl) favTotalEl.textContent = n;
+        }
+        function renderFavorites() {
+            favoritesGrid.innerHTML = '';
+            const favs = getFavorites();
+            const cards = toolCards.filter(c => favs.includes(c.dataset.fav));
+            if (cards.length === 0) {
+                favoritesGrid.innerHTML = '<p class="fav-empty">No favorites yet. Tap the heart on a tool to save it.</p>';
+            } else {
+                cards.forEach(c => favoritesGrid.appendChild(c.cloneNode(true)));
+            }
+            favoritesView.style.display = 'block';
         }
 
-        document.querySelectorAll('.fav-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                const id = btn.dataset.fav;
-                setFavorite(id, !isFavorite(id));
-                if (activeCategory === 'favorites') filterTools();
-            });
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.fav-btn');
+            if (!btn) return;
+            e.preventDefault();
+            e.stopPropagation();
+            setFavorite(btn.dataset.fav, !isFavorite(btn.dataset.fav));
         });
 
         function filterTools() {
             const query = searchInput.value.toLowerCase().trim();
             let visible = 0;
-            const showFavoritesOnly = activeCategory === 'favorites';
             toolCards.forEach(card => {
                 const title = (card.dataset.title || '').toLowerCase();
                 const description = (card.dataset.description || '').toLowerCase();
@@ -92,8 +106,7 @@
                 const cardCategory = (card.dataset.category || '').toLowerCase();
                 const matchesSearch = title.includes(query) || description.includes(query) || tags.includes(query);
                 const matchesCategory = activeCategory === 'all' || cardCategory.includes(activeCategory);
-                const matchesFavorites = !showFavoritesOnly || isFavorite(card.dataset.fav);
-                if (matchesSearch && matchesCategory && matchesFavorites) {
+                if (matchesSearch && matchesCategory) {
                     card.style.display = 'flex';
                     visible++;
                 } else {
@@ -104,15 +117,10 @@
                 const sectionCategory = (section.dataset.category || '').toLowerCase();
                 const hasVisible = !!section.querySelector('.tool-card:not([style*="display: none"])');
                 const matchesCategory = activeCategory === 'all' || sectionCategory.includes(activeCategory);
-                const matchesFavorites = !showFavoritesOnly || hasVisible;
-                section.style.display = (matchesCategory && hasVisible && matchesFavorites) ? 'block' : 'none';
+                section.style.display = (matchesCategory && hasVisible) ? 'block' : 'none';
             });
-            if (showFavoritesOnly && visible === 0) {
-                noResults.querySelector('p').textContent = 'No favorites yet. Tap the heart on a tool to save it.';
-            } else {
-                noResults.querySelector('p').textContent = 'No tools match your search.';
-            }
-            noResults.style.display = visible === 0 ? 'block' : 'none';
+            favoritesView.style.display = 'none';
+            noResults.style.display = (visible === 0) ? 'block' : 'none';
         }
 
         filterButtons.forEach(btn => {
@@ -120,11 +128,20 @@
                 filterButtons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 activeCategory = btn.dataset.category;
-                filterTools();
+                if (activeCategory === 'favorites') {
+                    categorySections.forEach(s => s.style.display = 'none');
+                    noResults.style.display = 'none';
+                    renderFavorites();
+                } else {
+                    filterTools();
+                }
             });
         });
 
-        searchInput.addEventListener('input', filterTools);
+        searchInput.addEventListener('input', function() {
+            if (activeCategory === 'favorites') return;
+            filterTools();
+        });
 
         updateFavButtons();
         updateFavCount();
