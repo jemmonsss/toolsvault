@@ -21,7 +21,7 @@ category: "Generators"
   <div class="row"><button class="btn btn-primary" onclick="gen()">Generate</button><button class="btn btn-secondary" onclick="copy('g-out')">Copy</button></div>
   <div id="g-out" class="result"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function gen(){var c1=byId('c1').value,c2=byId('c2').value,a=byId('ang').value;var g='linear-gradient('+a+'deg, '+c1+', '+c2+')';byId('g-prev').style.background=g;byId('g-out').textContent='background: '+g+';';}
 gen();

@@ -17,7 +17,7 @@ category: "Math & Data"
   <div id="out" class="result"></div>
   <div id="msg" class="msg"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function parseCsv(t){var rows=[],row=[],f='',q=false,i=0;while(i<t.length){var c=t[i];if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i+=2;continue;}q=false;i++;continue;}f+=c;i++;continue;}if(c==='"'){q=true;i++;continue;}if(c===','){row.push(f);f='';i++;continue;}if(c==='\n'){row.push(f);rows.push(row);row=[];f='';i++;continue;}if(c==='\r'){i++;continue;}f+=c;i++;}if(f.length||row.length){row.push(f);rows.push(row);}return rows;}
 function isNum(s){return s!==''&&!isNaN(Number(s));}

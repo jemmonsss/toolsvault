@@ -15,7 +15,7 @@ category: "Web & Dev"
   <div id="out" class="result" style="margin-top:1rem"></div>
   <div id="msg" class="msg"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function run(){var u=byId('url').value.trim();if(!u){err('msg','Enter a URL');return;}byId('msg').className='msg ok';byId('msg').textContent='Fetching...';
   fetch(u).then(function(res){var h=[];res.headers.forEach(function(v,k){h.push(k+': '+v);});byId('out').textContent='Status: '+res.status+' '+res.statusText+'\n\n'+h.join('\n');showMsg('msg','','');}).catch(function(e){err('msg','Request failed (network error or CORS not allowed): '+e.message);});

@@ -19,7 +19,7 @@ category: "Web & Dev"
   <div id="out" class="result"></div>
   <div id="msg" class="msg"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
 function sample(v){return (Array.isArray(v)&&v.length)?v[0]:v;}

@@ -31,7 +31,7 @@ category: "Generators"
     <div id="jwt-vmsg" class="msg"></div>
   </div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function b64e(s){return btoa(unescape(encodeURIComponent(s))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 function b64d(s){s=s.replace(/-/g,'+').replace(/_/g,'/');return decodeURIComponent(escape(atob(s)));}

@@ -22,7 +22,7 @@ category: "Generators"
   <label>Public key (OpenSSH)</label><textarea id="key-ssh" readonly style="min-height:60px"></textarea>
   <div id="msg" class="msg"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function pem(der,label){var u=new Uint8Array(der),bin='';for(var i=0;i<u.length;i++)bin+=String.fromCharCode(u[i]);return '-----BEGIN '+label+'-----\n'+btoa(bin).match(/.{1,64}/g).join('\n')+'\n-----END '+label+'-----\n';}
 function derRead(der,i){var tag=der[i++];var b=der[i++],L;if(b<0x80){L=b;}else{var n=b&0x7f;L=0;for(var k=0;k<n;k++){L=L*256+der[i++];}}var begin=i,end=i+L;i=end;if(tag===0x30){var arr=[];while(i<end){var r=derRead(der,i);arr.push(r.node);i=r.next;}return {node:{seq:arr},next:end};}if(tag===0x03){return {node:{bits:der.slice(begin+1,end)},next:end};}if(tag===0x02){var v=der.slice(begin,end);while(v.length>1&&v[0]===0)v=v.slice(1);return {node:{int:v},next:end};}return {node:{val:der.slice(begin,end)},next:end};}

@@ -19,8 +19,8 @@ category: "Generators"
   <div id="qr" style="margin-top:1rem;background:#fff;display:inline-block;padding:8px;border-radius:8px"></div>
   <div id="msg" class="msg"></div>
 </div>
-<script src="{{ '/assets/js/qrcode.min.js' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M%S' }}" defer></script>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/qrcode.min.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function make(){try{var text=byId('qr-text').value||' ';var qr=qrcode(0,byId('ec').value);qr.addData(text);qr.make();var sz=parseInt(byId('px').value,10)||6;byId('qr').innerHTML=qr.createSvgTag({cellSize:sz,margin:4});showMsg('msg','','');}catch(e){err('msg','Input too long for this error-correction level');}}
 function copySvg(){var svg=byId('qr').querySelector('svg');if(svg)copyText(svg.outerHTML);}

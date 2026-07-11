@@ -17,7 +17,7 @@ category: "Security"
   <div id="out" class="result"></div>
   <div id="vmsg" class="msg"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function b64d(s){s=s.replace(/-/g,'+').replace(/_/g,'/');return decodeURIComponent(escape(atob(s)));}
 function b64bytes(s){s=s.replace(/-/g,'+').replace(/_/g,'/');var bin=atob(s);var u=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u;}

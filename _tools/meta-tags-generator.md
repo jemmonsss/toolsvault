@@ -20,7 +20,7 @@ category: "Generators"
   <div class="row"><button class="btn btn-primary" onclick="gen()">Generate</button><button class="btn btn-secondary" onclick="copy('out')">Copy</button></div>
   <div id="out" class="result"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function gen(){var t=byId('t').value.trim(),d=byId('d').value.trim(),u=byId('u').value.trim(),i=byId('i').value.trim(),tw=byId('tw').value.trim();
   var m=['<title>'+t+'</title>','<meta name="description" content="'+d+'">','<link rel="canonical" href="'+u+'">','<meta property="og:type" content="website">','<meta property="og:title" content="'+t+'">','<meta property="og:description" content="'+d+'">','<meta property="og:url" content="'+u+'">'];

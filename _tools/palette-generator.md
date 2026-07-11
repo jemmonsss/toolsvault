@@ -20,7 +20,7 @@ category: "Color & Design"
   <div id="swatches" style="display:flex;gap:.5rem;margin-top:1rem;flex-wrap:wrap"></div>
   <div class="row"><button class="btn btn-secondary" onclick="copyPalette()">Copy all hex</button></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function hslToHex(h,s,l){s/=100;l/=100;var k=function(n){return (n+h/30)%12;};var a=s*Math.min(l,1-l);var f=function(n){return l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));};var to=function(x){return Math.round(255*x).toString(16).padStart(2,'0');};return '#'+to(f(0))+to(f(8))+to(f(4));}
 function gen(){var base=byId('base').value;var h=base?hexHue(base):Math.floor(Math.random()*360);var scheme=byId('scheme').value;var hues=[];if(scheme==='random'){for(var i=0;i<5;i++)hues.push(Math.floor(Math.random()*360));}else if(scheme==='analogous'){for(var i=0;i<5;i++)hues.push((h-40+i*20+360)%360);}else if(scheme==='complementary'){hues=[h,(h+180)%360,(h+30)%360,(h+210)%360,h];}else if(scheme==='triadic'){hues=[h,(h+120)%360,(h+240)%360,(h+60)%360,(h+180)%360];}

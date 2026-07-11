@@ -15,7 +15,7 @@ category: "Generators"
   <div class="row"><button class="btn btn-primary" onclick="gen()">Generate</button><button class="btn btn-secondary" onclick="copy('out')">Copy</button></div>
   <div id="out" class="result"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 var K=['PORT','NODE_ENV','HOST','DATABASE_URL','REDIS_URL','API_KEY','SECRET','JWT_SECRET','DEBUG','LOG_LEVEL','CORS_ORIGIN','SMTP_HOST'];
 function gen(){var sel=Array.from(document.querySelectorAll('#opts input:checked')).map(function(b){return b.value;});byId('out').textContent='# .env.example\n'+sel.map(function(k){return k+'=';}).join('\n')+'\n';}

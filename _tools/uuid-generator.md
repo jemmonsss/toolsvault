@@ -17,7 +17,7 @@ category: "Generators"
   <div class="row"><button class="btn btn-primary" onclick="gen()">Generate</button><button class="btn btn-secondary" onclick="copy('out')">Copy</button></div>
   <div id="out" class="result"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function gen(){var n=Math.min(100,Math.max(1,parseInt(byId('n').value,10)||1));var a=[];for(var i=0;i<n;i++){var u=crypto.randomUUID();a.push(byId('case').value==='upper'?u.toUpperCase():u);}byId('out').textContent=a.join('\n');}
 gen();

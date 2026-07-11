@@ -21,7 +21,7 @@ category: "Text & Strings"
   <div class="row"><button class="btn btn-primary" onclick="run()">Clean</button><button class="btn btn-secondary" onclick="copy('out')">Copy</button></div>
   <div id="out" class="result"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function run(){
   var t = byId('in').value;

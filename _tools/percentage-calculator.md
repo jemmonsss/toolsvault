@@ -32,7 +32,7 @@ category: "Math & Data"
     <div id="chg-out" class="big"></div>
   </div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function of(){var x=+byId('of-x').value,y=+byId('of-y').value;byId('of-out').textContent=(x/100*y);}
 function is(){var x=+byId('is-x').value,y=+byId('is-y').value;byId('is-out').textContent=y?(x/y*100).toFixed(2)+'%':'(divide by zero)';}

@@ -20,7 +20,7 @@ category: "Generators"
   <div class="row"><button class="btn btn-primary" onclick="gen()">Generate</button><button class="btn btn-secondary" onclick="copy('out')">Copy</button></div>
   <div id="out" class="result"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function gen(){var ua=byId('ua').value.trim()||'*';var lines=['User-agent: '+ua];byId('dis').value.split('\n').map(function(x){return x.trim();}).filter(Boolean).forEach(function(p){lines.push('Disallow: '+p);});byId('al').value.split('\n').map(function(x){return x.trim();}).filter(Boolean).forEach(function(p){lines.push('Allow: '+p);});var sm=byId('sm').value.trim();if(sm)lines.push('Sitemap: '+sm);byId('out').textContent=lines.join('\n')+'\n';}
 </script>

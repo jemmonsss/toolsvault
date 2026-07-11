@@ -14,7 +14,7 @@ category: "Web & Dev"
   <input type="text" id="q" placeholder="json  or  image/png" oninput="run()">
   <div id="out" class="result" style="margin-top:1rem"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 var M={json:'application/json',html:'text/html',htm:'text/html',css:'text/css',js:'text/javascript',mjs:'text/javascript',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',svg:'image/svg+xml',webp:'image/webp',avif:'image/avif',pdf:'application/pdf',xml:'application/xml',txt:'text/plain',csv:'text/csv',zip:'application/zip',mp3:'audio/mpeg',mp4:'video/mp4',webm:'video/webm',ogg:'audio/ogg',wav:'audio/wav',woff:'font/woff',woff2:'font/woff2',ttf:'font/ttf',eot:'application/vnd.ms-fontobject',ico:'image/x-icon',md:'text/markdown',yaml:'application/yaml',yml:'application/yaml',jsonc:'application/json',form:'application/x-www-form-urlencoded',mul:'multipart/form-data'};
 function run(){var q=byId('q').value.trim().toLowerCase();if(!q){byId('out').textContent='';return;}

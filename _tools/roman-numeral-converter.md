@@ -27,7 +27,7 @@ category: "Converters"
     <div id="rn-msg" class="msg"></div>
   </div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 var M=[['M',1000],['CM',900],['D',500],['CD',400],['C',100],['XC',90],['L',50],['XL',40],['X',10],['IX',9],['V',5],['IV',4],['I',1]];
 function nr(){var n=parseInt(byId('nr-in').value,10);if(!n||n<1||n>3999){byId('nr-out').textContent='';err('rn-msg','Enter a number between 1 and 3999');return;}showMsg('rn-msg','','');var s='';for(var i=0;i<M.length;i++){while(n>=M[i][1]){s+=M[i][0];n-=M[i][1];}}byId('nr-out').textContent=s;}

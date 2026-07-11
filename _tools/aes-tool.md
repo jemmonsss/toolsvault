@@ -30,7 +30,7 @@ category: "Security"
     <div id="dec-msg" class="msg"></div>
   </div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function b64from(u){var bin='';var a=new Uint8Array(u);for(var i=0;i<a.length;i++)bin+=String.fromCharCode(a[i]);return btoa(bin);}
 function b64to(s){s=s.replace(/\s/g,'');var bin=atob(s);var u=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u;}

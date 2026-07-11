@@ -27,7 +27,7 @@ category: "Converters"
     <div id="de-out" class="result"></div>
   </div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function en(){var s=byId('en-in').value.replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});byId('en-out').textContent=s;}
 function de(){var t=document.createElement('textarea');t.innerHTML=byId('de-in').value;byId('de-out').textContent=t.value;}

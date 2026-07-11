@@ -27,7 +27,7 @@ category: "Color & Design"
     <div id="img-prev" style="margin-top:1rem"></div>
   </div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function toB64(){var f=byId('file').files[0];if(!f)return;var r=new FileReader();r.onload=function(){byId('b64-out').value=r.result;};r.readAsDataURL(f);}
 function fromB64(){var v=byId('b64-in').value.trim();if(!v)return;byId('img-prev').innerHTML='<img src="'+v+'" style="max-width:100%;border:1px solid #2d2d2d;border-radius:8px" onerror="this.style.display=\'none\'">';}

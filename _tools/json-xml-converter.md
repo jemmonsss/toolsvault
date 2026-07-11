@@ -29,7 +29,7 @@ category: "Converters"
     <div id="xj-msg" class="msg"></div>
   </div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function escXml(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c];});}
 function jsonToXml(v,name){if(v===null||v===undefined)return '';if(Array.isArray(v))return v.map(function(i){return jsonToXml(i,name);}).join('');if(typeof v==='object'){var inner=Object.keys(v).map(function(k){return jsonToXml(v[k],k);}).join('');return '<'+name+'>'+inner+'</'+name+'>';}return '<'+name+'>'+escXml(v)+'</'+name+'>';}

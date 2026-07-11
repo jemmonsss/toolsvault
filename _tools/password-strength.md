@@ -22,7 +22,7 @@ category: "Security"
     <div class="kv"><span>Symbols</span><span id="c4">✗</span></div>
   </div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function set(id,ok){byId(id).textContent=ok?'✓':'✗';byId(id).style.color=ok?'#22c55e':'#ef4444';}
 function run(){var p=byId('pw').value;var len=p.length;var low=/[a-z]/.test(p),up=/[A-Z]/.test(p),num=/\d/.test(p),sym=/[^A-Za-z0-9]/.test(p);

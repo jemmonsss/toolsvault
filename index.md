@@ -7,12 +7,12 @@
     </div>
 
     <section class="search-section">
-        <div class="search-bar">
+        <div class="search-bar" role="search">
             <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            <input type="text" id="tool-search" placeholder="Search tools...">
+            <input type="text" id="tool-search" placeholder="Search tools..." aria-label="Search tools">
         </div>
         <div class="search-extra">
             <button type="button" id="random-tool" class="text-btn">&#127922; Random tool</button>

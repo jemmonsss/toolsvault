@@ -33,7 +33,7 @@ category: "Generators"
     <div id="dice-out" class="result"></div>
   </div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function rnd(){var min=parseInt(byId('min').value,10),max=parseInt(byId('max').value,10),cnt=Math.min(50,Math.max(1,parseInt(byId('cnt').value,10)||1));if(min>max){var t=min;min=max;max=t;}var a=[];for(var i=0;i<cnt;i++)a.push(Math.floor(Math.random()*(max-min+1))+min);byId('num-out').textContent=a.join('\n');}
 function roll(){var s=parseInt(byId('sides').value,10),c=Math.min(20,Math.max(1,parseInt(byId('dcnt').value,10)||1));var a=[];for(var i=0;i<c;i++)a.push(Math.floor(Math.random()*s)+1);byId('dice-out').textContent=a.join(', ')+'\nTotal: '+a.reduce(function(x,y){return x+y;},0);}

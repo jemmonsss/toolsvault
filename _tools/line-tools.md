@@ -23,7 +23,7 @@ category: "Text & Strings"
   </div>
   <div id="out" class="result"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function act(k){var lines=byId('in').value.split('\n');if(k==='sort')lines.sort();else if(k==='sortr')lines.sort().reverse();else if(k==='dedupe'){var s={},o=[];lines.forEach(function(l){if(!(l in s)){s[l]=1;o.push(l);}});lines=o;}else if(k==='reverse')lines.reverse();else if(k==='shuffle'){for(var i=lines.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=lines[i];lines[i]=lines[j];lines[j]=t;}}byId('out').textContent=lines.join('\n');}
 </script>

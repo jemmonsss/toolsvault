@@ -28,7 +28,7 @@ category: "Converters"
     <div id="jc-msg" class="msg"></div>
   </div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function parseCsv(text){var rows=[],row=[],field='',inQ=false,i=0;while(i<text.length){var c=text[i];if(inQ){if(c==='"'){if(text[i+1]==='"'){field+='"';i+=2;continue;}inQ=false;i++;continue;}field+=c;i++;continue;}if(c==='"'){inQ=true;i++;continue;}if(c===','){row.push(field);field='';i++;continue;}if(c==='\n'){row.push(field);rows.push(row);row=[];field='';i++;continue;}if(c==='\r'){i++;continue;}field+=c;i++;}if(field.length||row.length){row.push(field);rows.push(row);}return rows;}
 function csvToJson(text){var rows=parseCsv(text).filter(function(r){return r.length>1||(r.length===1&&r[0].trim());});if(!rows.length)return [];var head=rows[0];var arr=rows.slice(1).map(function(r){var o={};head.forEach(function(h,idx){var v=r[idx]!==undefined?r[idx].trim():'';if(v!==''&&!isNaN(v)&&v===(+v+''))v=+v;o[h.trim()||('col'+(idx+1))]=v;});return o;});return arr;}

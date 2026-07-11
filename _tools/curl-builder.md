@@ -20,7 +20,7 @@ category: "Web & Dev"
   <div class="row"><button class="btn btn-primary" onclick="run()">Build</button><button class="btn btn-secondary" onclick="copy('out')">Copy</button></div>
   <div id="out" class="result"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function q(s){return "'"+s.replace(/'/g,"'\\''")+"'";}
 function run(){var m=byId('method').value,u=byId('url').value.trim();if(!u){byId('out').textContent='';return;}var c='curl -X '+m+' '+q(u);

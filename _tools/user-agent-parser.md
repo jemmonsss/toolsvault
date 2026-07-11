@@ -14,7 +14,7 @@ category: "Web & Dev"
   <textarea id="in" placeholder="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" oninput="run()"></textarea>
   <div id="out" class="result" style="margin-top:1rem"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function run(){var ua=byId('in').value.trim();if(!ua){byId('out').textContent='';return;}var r={};
   if(/Edg\//.test(ua)){r.Browser='Edge';r.Version=(ua.match(/Edg\/([\d.]+)/)||[])[1];}

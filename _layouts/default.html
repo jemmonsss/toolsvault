@@ -6,23 +6,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#8b5cf6">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    <link rel="icon" href="{{ '/favicon.svg' | relative_url }}" type="image/svg+xml">
     <link rel="preload" href="/assets/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/fonts/inter-500.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/fonts/inter-700.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M%S' }}">
-    <script>
-      (function(){
-        try {
-          var t = localStorage.getItem('toolsvault_theme');
-          if (!t) t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-          document.documentElement.setAttribute('data-theme', t);
-        } catch(e){}
-      })();
-    </script>
+    <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}" fetchpriority="high">
+    <script>document.documentElement.setAttribute('data-theme',window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');</script>
     {% seo %}
 </head>
 <body>
@@ -32,8 +22,8 @@
                 <span>ToolsVault</span>
             </a>
             <nav class="main-nav">
-                <a href="/" class="nav-link active">Tools</a>
-                <a href="/about/" class="nav-link">About</a>
+                <a href="/" class="nav-link{% if page.url == '/' %} active{% endif %}">Tools</a>
+                <a href="/about/" class="nav-link{% if page.url == '/about/' %} active{% endif %}">About</a>
                 <a href="/blog/" class="nav-link{% if page.url contains '/blog/' %} active{% endif %}">Blog</a>
                 <a href="/#favorites" id="nav-favorites" class="nav-link nav-favorites" title="Your favorites" aria-label="Favorites">&#9829;<span class="fav-count" id="fav-count-header">0</span></a>
                 <button type="button" id="theme-toggle" class="icon-btn" aria-label="Toggle light/dark theme" title="Toggle theme">&#9789;</button>
@@ -47,7 +37,7 @@
 
     <footer class="site-footer">
         <div class="container">
-            <p>Built for developers. <a href="https://github.com/yourusername/toolsvault">Star on GitHub</a></p>
+            <p>Built for developers. <a href="{{ site.github }}">Star on GitHub</a></p>
         </div>
     </footer>
 
@@ -84,7 +74,7 @@
             var fc = document.getElementById('fav-count-header');
             if (fc) fc.textContent = (JSON.parse(localStorage.getItem('toolsvault_favorites')) || []).length;
         } catch(e){}
-    });
+    });(function(){try{var t=localStorage.getItem('toolsvault_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
     </script>
 
     {% if page.url == '/' %}

@@ -19,7 +19,7 @@ category: "Web & Dev"
   <div id="msg" class="msg"></div>
 </div>
 <style>.tui mark{background:#8b5cf6;color:#fff;border-radius:3px;padding:0 2px}</style>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function esc(s){return s.replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function run(){var p=byId('pat').value,f=byId('flags').value,t=byId('txt').value;byId('out').textContent='';byId('msg').className='msg';if(!p){byId('hl').textContent=t;return;}var re;try{re=new RegExp(p,f);}catch(e){err('msg',e.message);byId('hl').textContent=t;return;}var g=re.global?re:new RegExp(re.source,re.flags+'g');var res='',last=0,m;while((m=g.exec(t))!==null){res+='@'+m.index+': '+JSON.stringify(m[0])+(m.length>1?(' groups='+JSON.stringify(m.slice(1))):'')+'\n';byId('hl').innerHTML=esc(t.slice(last,m.index))+'<mark>'+esc(m[0])+'</mark>';last=m.index+m[0].length;if(m[0]==='')g.lastIndex++;}byId('hl').innerHTML+=esc(t.slice(last));byId('out').textContent=res||'(no matches)';showMsg('msg',re.global?(''+((res.match(/@/g)||[]).length)+' match(es)'):'','');}

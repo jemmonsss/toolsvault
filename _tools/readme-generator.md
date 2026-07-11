@@ -22,7 +22,7 @@ category: "Generators"
   <div class="row"><button class="btn btn-primary" onclick="gen()">Generate</button><button class="btn btn-secondary" onclick="copy('out')">Copy</button></div>
   <div id="out" class="result"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function gen(){var n=byId('name').value||'My Project';var b=byId('badge').value.trim();var d=byId('desc').value.trim();var inst=byId('install').value.trim();var u=byId('usage').value.trim();var feats=byId('features').value.split('\n').map(function(x){return x.trim();}).filter(Boolean);
   var md='# '+n+(b?'\n\n![#'+b+'](https://img.shields.io/badge/'+b.replace(/ /g,'%20')+'-8b5cf6)':'');

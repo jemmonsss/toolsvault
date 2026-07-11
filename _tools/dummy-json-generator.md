@@ -20,7 +20,7 @@ category: "Generators"
   <div class="row"><button class="btn btn-primary" onclick="gen()">Generate</button><button class="btn btn-secondary" onclick="copy('out')">Copy</button></div>
   <div id="out" class="result"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 var WORDS=['alpha','beta','gamma','delta','value','item','count','status','name','flag','size','score','enabled','active','label','total','data','node','level','index'];
 function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a;}

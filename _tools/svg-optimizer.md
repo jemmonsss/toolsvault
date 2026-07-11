@@ -17,7 +17,7 @@ category: "Color & Design"
   <div id="out" class="result"></div>
   <div id="msg" class="msg"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function run(){var s=byId('in').value;if(!s.trim()){byId('out').textContent='';return;}var o=s.replace(/<!--[\s\S]*?-->/g,'').replace(/>\s+</g,'><').replace(/\s{2,}/g,' ').replace(/\s+\/>/g,'/>').trim();byId('out').textContent=o;ok('msg','Minified');}
 </script>

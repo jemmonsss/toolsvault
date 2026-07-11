@@ -16,7 +16,7 @@ category: "Web & Dev"
   <div id="out" class="result" style="margin-top:1rem"></div>
   <div id="msg" class="msg"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function field(str,min,max){var set=new Set(),star=(str.trim()==='*');if(star){for(var i=min;i<=max;i++)set.add(i);return {set:set,star:true};}str.split(',').forEach(function(part){var step=1,base=part,sp=part.indexOf('/');if(sp>=0){step=+part.slice(sp+1);base=part.slice(0,sp);}var ran=base,dash=ran.indexOf('-'),lo,hi;if(dash>=0){lo=+ran.slice(0,dash);hi=+ran.slice(dash+1);}else{lo=hi=+ran;}if(isNaN(lo))return;for(var v=lo;v<=hi;v+=step)if(v>=min&&v<=max)set.add(v);});return {set:set,star:false};}
 function run(){var e=byId('expr').value.trim().split(/\s+/);if(e.length!==5){err('msg','Need 5 fields: min hour day month weekday');return;}showMsg('msg','','');var M=field(e[0],0,59),H=field(e[1],0,23),D=field(e[2],1,31),Mo=field(e[3],1,12),W=field(e[4],0,6);

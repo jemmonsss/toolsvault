@@ -29,7 +29,7 @@ category: "Converters"
     <div id="js-msg" class="msg"></div>
   </div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function parseVal(v){v=v.trim();if(v===''||v.toUpperCase()==='NULL')return null;if(v[0]==="'")return v.slice(1,-1).replace(/''/g,"'");var n=Number(v);return isNaN(n)?v:n;}
 function parseValues(str){var vals=[],depth=0,inS=false,cur='',tuple=[];for(var i=0;i<str.length;i++){var c=str[i];if(inS){if(c==="'"){if(str[i+1]==="'"){cur+="'";i++;continue;}inS=false;}cur+=c;continue;}if(c==="'"){inS=true;cur+=c;continue;}if(c==='('){depth++;if(depth===1){tuple=[];cur='';continue;}}else if(c===')'){depth--;if(depth===0){tuple.push(cur.trim());vals.push(tuple);cur='';continue;}}else if(c===','&&depth===1){tuple.push(cur.trim());cur='';continue;}if(!(c==='('||c===')'))cur+=c;}return vals;}

@@ -13,6 +13,6 @@ layout: default
         <p>1. Copy <code>_tools/example.md</code> to <code>_tools/your-tool.md</code><br>
         2. Edit the frontmatter and description<br>
         3. Commit and push</p>
-        <p>Contributions welcome! Open a pull request on <a href="https://github.com/yourusername/toolsvault">GitHub</a>.</p>
+        <p>Contributions welcome! Open a pull request on <a href="{{ site.github }}">GitHub</a>.</p>
     </div>
 </div>

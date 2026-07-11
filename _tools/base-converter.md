@@ -29,7 +29,7 @@ category: "Converters"
   </div>
   <div id="msg" class="msg"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function run(){var s=byId('val').value.trim();var f=byId('from').value;if(!s){['b2','b8','b10','b16'].forEach(function(id){byId(id).textContent='';});byId('msg').className='msg';return;}
   try{var v=(f==='10')?BigInt(s):BigInt(parseInt(s,parseInt(f)));byId('b2').textContent=v.toString(2);byId('b8').textContent=v.toString(8);byId('b10').textContent=v.toString(10);byId('b16').textContent=v.toString(16).toUpperCase();showMsg('msg','','');}catch(e){err('msg','Invalid number for base '+f);}}

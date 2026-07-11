@@ -20,7 +20,7 @@ category: "Security"
   <div id="out" class="result"></div>
   <div id="msg2" class="msg"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function run(){var m=byId('msg').value,k=byId('key').value,a=byId('algo').value;crypto.subtle.importKey('raw',new TextEncoder().encode(k),{name:'HMAC',hash:a},false,['sign']).then(function(key){return crypto.subtle.sign({name:'HMAC',hash:a},key,new TextEncoder().encode(m));}).then(function(sig){byId('out').textContent=Array.from(new Uint8Array(sig)).map(function(x){return x.toString(16).padStart(2,'0');}).join('');showMsg('msg2','','');}).catch(function(e){err('msg2',e.message);});}
 </script>

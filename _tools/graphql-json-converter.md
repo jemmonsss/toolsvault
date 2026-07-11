@@ -29,7 +29,7 @@ category: "Converters"
     <div id="jg-msg" class="msg"></div>
   </div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function stripArgs(s){var out='',inS=false,inP=0,i=0;while(i<s.length){var c=s[i];if(c==='#'&&!inS){while(i<s.length&&s[i]!=='\n')i++;continue;}if(c==='"'||c==="'"){inS=!inS;out+=c;i++;continue;}if(c==='('&&!inS){inP++;i++;continue;}if(c===')'&&!inS){inP--;i++;continue;}if(inP===0)out+=c;i++;}return out;}
 function closeIdx(s,open){var d=0;for(var i=open;i<s.length;i++){if(s[i]==='{')d++;else if(s[i]==='}'){d--;if(d===0)return i;}}return s.length;}

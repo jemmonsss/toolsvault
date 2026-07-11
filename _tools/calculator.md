@@ -22,7 +22,7 @@ category: "Math & Data"
   <div id="out" class="result" style="margin-top:.5rem"></div>
   <div id="msg" class="msg"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function ins(s){byId('disp').value+=s;}
 function tokenize(s){var t=[],i=0;while(i<s.length){var c=s[i];if(/[0-9.]/.test(c)){var n='';while(i<s.length&&/[0-9.]/.test(s[i]))n+=s[i++];t.push({t:'num',v:parseFloat(n)});continue;}if(/[a-z]/.test(c)){var w='';while(i<s.length&&/[a-z]/.test(s[i]))w+=s[i++];if(w==='pi'){t.push({t:'num',v:Math.PI});}else if(w==='e'){t.push({t:'num',v:Math.E});}else t.push({t:'fn',v:w});continue;}if('+-*/%^()'.indexOf(c)>=0){t.push({t:'op',v:c});i++;continue;}throw new Error('Bad character: '+c);}return t;}

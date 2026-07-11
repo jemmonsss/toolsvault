@@ -22,7 +22,7 @@ category: "Converters"
   <div id="sym" class="result" style="margin-top:1rem"></div>
   <table id="tbl" style="margin-top:1rem"></table>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function digit(c){var d=0;document.querySelectorAll('.bx[data-c="'+c+'"]').forEach(function(b){if(b.checked)d+=+b.dataset.p;});return d;}
 function fromBox(){var n=''+digit(0)+digit(1)+digit(2);byId('num').value=n;render(n);}

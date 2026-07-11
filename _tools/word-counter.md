@@ -22,7 +22,7 @@ category: "Text & Strings"
     <div class="kv"><span>Reading time</span><span id="read">0s</span></div>
   </div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function run(){var t=byId('in').value;var chars=t.length;var nospace=t.replace(/\s/g,'').length;var lines=t?t.split(/\n/).length:0;var words=t.trim()?t.trim().split(/\s+/).length:0;var sent=t.trim()?(t.match(/[.!?]+(\s|$)/g)||[]).length:0;var sec=Math.ceil(words/200);byId('words').textContent=words;byId('chars').textContent=chars;byId('nospace').textContent=nospace;byId('lines').textContent=lines;byId('sent').textContent=sent;byId('read').textContent=sec+'s';}
 </script>

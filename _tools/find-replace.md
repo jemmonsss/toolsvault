@@ -23,7 +23,7 @@ category: "Text & Strings"
   <div id="out" class="result"></div>
   <div id="msg" class="msg"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function run(){var t=byId('in').value,f=byId('find').value,r=byId('repl').value;if(!f){byId('out').textContent=t;return;}try{if(byId('re').checked){var flags=byId('cs').checked?'g':'gi';byId('out').textContent=t.replace(new RegExp(f,flags),r);}else{var flags2=byId('cs').checked?'g':'gi';byId('out').textContent=t.replace(new RegExp(f.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),flags2),r);}showMsg('msg','','');}catch(e){err('msg',e.message);}}
 </script>

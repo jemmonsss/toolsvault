@@ -17,7 +17,7 @@ category: "Web & Dev"
   <div id="raw" class="result" style="margin-top:1rem"></div>
   <div id="msg" class="msg"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function meta(doc,p){var el=doc.querySelector('meta[property="'+p+'"],meta[name="'+p+'"]');return el?el.getAttribute('content'):'';}
 function run(){var u=byId('url').value.trim();if(!u){err('msg','Enter a URL');return;}byId('msg').className='msg ok';byId('msg').textContent='Fetching...';

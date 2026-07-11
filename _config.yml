@@ -7,10 +7,13 @@ url: "https://toolsvault.org"
 # Set to your GoatCounter site code, e.g. "toolsvault".
 analytics_id: ""
 
+# Canonical GitHub repository (used in footer, about page, SEO).
+github: "https://github.com/jemmonsss/toolsvault"
+
 social:
   name: "ToolsVault"
   links:
-    - "https://github.com/yourusername/toolsvault"
+    - "https://github.com/jemmonsss/toolsvault"
 
 theme: null
 

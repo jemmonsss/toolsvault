@@ -21,7 +21,7 @@ category: "Color & Design"
   <div id="ratio" class="big"></div>
   <div id="out" class="result" style="margin-top:.5rem"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function lum(hex){hex=hex.replace('#','');if(hex.length===3)hex=hex.split('').map(function(c){return c+c;}).join('');var r=parseInt(hex.slice(0,2),16)/255,g=parseInt(hex.slice(2,4),16)/255,b=parseInt(hex.slice(4,6),16)/255;function f(x){return x<=0.03928?x/12.92:Math.pow((x+0.055)/1.055,2.4);}return 0.2126*f(r)+0.7152*f(g)+0.0722*f(b);}
 function run(){var fg=byId('fg').value,bg=byId('bg').value;var L1=lum(fg),L2=lum(bg);var hi=Math.max(L1,L2),lo=Math.min(L1,L2);var r=(hi+0.05)/(lo+0.05);byId('preview').style.background=bg;byId('preview').style.color=fg;byId('preview').textContent='The quick brown fox';byId('ratio').textContent='Contrast ratio: '+r.toFixed(2)+':1';

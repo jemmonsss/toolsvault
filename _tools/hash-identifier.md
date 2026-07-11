@@ -14,7 +14,7 @@ category: "Security"
   <input type="text" id="in" placeholder="5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8" oninput="run()" style="font-family:'Courier New',monospace">
   <div id="out" class="result"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function run(){var s=byId('in').value.trim();if(!s){byId('out').textContent='';return;}
   var hex=/^[0-9a-fA-F]+$/.test(s);

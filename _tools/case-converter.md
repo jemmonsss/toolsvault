@@ -15,7 +15,7 @@ category: "Converters"
   <div class="row"><button class="btn btn-primary" onclick="run()">Convert</button><button class="btn btn-secondary" onclick="copy('out')">Copy all</button></div>
   <div id="out" class="result"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function tokens(s){return s.replace(/([a-z0-9])([A-Z])/g,'$1 $2').replace(/[^a-zA-Z0-9]+/g,' ').trim().split(/\s+/).filter(Boolean);}
 function run(){var t=tokens(byId('in').value);if(!t.length){byId('out').textContent='';return;}
