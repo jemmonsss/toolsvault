@@ -6,6 +6,7 @@ tags:
   - uuid
   - generator
 category: "Generators"
+featured: true
 ---
 <div class="tui">
   <h1>UUID Generator</h1>

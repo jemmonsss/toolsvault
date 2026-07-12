@@ -8,6 +8,7 @@ tags:
   - uuid
   - skin
 category: "Minecraft"
+featured: true
 ---
 <div class="tui">
   <h1>Minecraft Player Lookup</h1>

@@ -8,6 +8,7 @@ tags:
   - vehicles
   - space
 category: "Star Citizen"
+featured: true
 ---
 <div class="tui">
   <h1>Star Citizen Ship Lookup</h1>

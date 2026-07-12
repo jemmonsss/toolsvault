@@ -8,6 +8,7 @@ tags:
   - decoder
   - utilities
 category: "Converters"
+featured: true
 ---
 <div class="tool-container">
     <h1>Base64 Tool</h1>

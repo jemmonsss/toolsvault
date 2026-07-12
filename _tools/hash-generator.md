@@ -8,6 +8,7 @@ tags:
   - generator
   - security
 category: "Generators"
+featured: true
 ---
 <div class="tui">
   <h1>Hash Generator</h1>

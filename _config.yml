@@ -43,6 +43,7 @@ defaults:
       type: "tools"
     values:
       layout: "tool"
+      featured: false
   - scope:
       type: "blog"
     values:

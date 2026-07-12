@@ -6,6 +6,7 @@ tags:
   - qr
   - generator
 category: "Generators"
+featured: true
 ---
 <div class="tui">
   <h1>QR Code Generator</h1>

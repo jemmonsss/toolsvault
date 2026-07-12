@@ -8,6 +8,7 @@ tags:
   - placeholder
   - text
 category: "Generators"
+featured: true
 ---
 <div class="tool-container">
     <h1>Lorem Ipsum Generator</h1>

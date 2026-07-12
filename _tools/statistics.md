@@ -7,6 +7,7 @@ tags:
   - math
   - data
 category: "Math & Data"
+featured: true
 ---
 <div class="tui">
   <h1>Statistics Calculator</h1>
