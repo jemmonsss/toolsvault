@@ -27,8 +27,9 @@ function render(){
   const size=document.getElementById('size').value;
   const result=document.getElementById('result');
   if(!username){result.textContent='Enter a username';result.style.color='var(--danger)';return;}
-  const url='https://render.crafty.gg/'+type+'/'+encodeURIComponent(username)+'?size='+size;
-  result.innerHTML='<img src="'+url+'" style="max-width:100%;height:auto;image-rendering:pixelated;border:2px solid var(--border);border-radius:8px" onerror="this.alt=\'Failed to load skin\'"><p style="margin-top:.75rem"><a href="'+url+'" target="_blank" rel="noopener" class="btn btn-secondary">Open Original</a> <button class="btn btn-secondary" onclick="navigator.clipboard.writeText(\''+url+'\').then(()=>alert(\'URL copied!\'))">Copy URL</button></p>';
+  const primaryUrl='https://render.crafty.gg/'+type+'/'+encodeURIComponent(username)+'?size='+size;
+  const fallbackUrl='https://api.mcheads.org/head/'+encodeURIComponent(username)+'/'+size;
+  result.innerHTML='<img src="'+primaryUrl+'" style="max-width:100%;height:auto;image-rendering:pixelated;border:2px solid var(--border);border-radius:8px" onerror="this.onerror=null;this.src=\''+fallbackUrl+'\';this.alt=\'2D head fallback\'"><p style="margin-top:.75rem"><a href="'+primaryUrl+'" target="_blank" rel="noopener" class="btn btn-secondary">Open Original</a> <button class="btn btn-secondary" onclick="navigator.clipboard.writeText(\''+primaryUrl+'\').then(()=>alert(\'URL copied!\'))">Copy URL</button></p>';
   result.style.color='var(--text)';
 }
 </script>

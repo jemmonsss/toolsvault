@@ -37,7 +37,7 @@ async function search(){
     if(!res.ok)throw new Error('API error');
     let games=await res.json();
     if(q)games=games.filter(function(g){return (g.title||'').toLowerCase().includes(q)||(g.genre||'').toLowerCase().includes(q)||(g.developer||'').toLowerCase().includes(q);});
-    if(!games.length){result.textContent='No games found';result.style.color='var(--text-dim)');return;}
+    if(!games.length){result.textContent='No games found';result.style.color='var(--text-dim)';return;}
     let html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem">';
     games.forEach(function(g){
       html+='<div style="padding:1rem;background:var(--bg-elev);border:1px solid var(--border);border-radius:8px">';
@@ -51,6 +51,30 @@ async function search(){
     });
     html+='</div>';
     result.innerHTML=html;result.style.color='var(--text)';
-  }catch(e){result.textContent='Error: '+(e.message||'Failed to fetch games');result.style.color='var(--danger)';}
+  }catch(e){
+    result.textContent='Primary API failed. Trying fallback...';result.style.color='var(--text-dim)';
+    try{
+      const res2=await fetch('https://www.freetogame.com/api/games?platform='+platform);
+      if(!res2.ok)throw new Error('Fallback API error');
+      let games=await res2.json();
+      if(category!=='all')games=games.filter(function(g){return (g.genre||'').toLowerCase().includes(category);});
+      if(q)games=games.filter(function(g){return (g.title||'').toLowerCase().includes(q)||(g.genre||'').toLowerCase().includes(q);});
+      if(!games.length){result.textContent='No games found';result.style.color='var(--text-dim)';return;}
+      let html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem">';
+      games.forEach(function(g){
+        html+='<div style="padding:1rem;background:var(--bg-elev);border:1px solid var(--border);border-radius:8px">';
+        if(g.thumbnail)html+='<img src="'+g.thumbnail+'" style="width:100%;height:150px;object-fit:cover;border-radius:6px;margin-bottom:.75rem">';
+        html+='<div style="font-weight:600;color:var(--text);font-size:1rem">'+(g.title||'')+'</div>';
+        html+='<div style="color:var(--text-dim);font-size:.85rem;margin-top:.25rem">'+(g.genre||'')+'</div>';
+        html+='<div style="color:var(--text-dim);font-size:.85rem">'+(g.developer||'')+' · '+(g.publisher||'')+'</div>';
+        if(g.release_date)html+='<div style="color:var(--text-dim);font-size:.8rem;margin-top:.25rem">'+(g.release_date||'')+'</div>';
+        html+='</div>';
+      });
+      html+='</div>';
+      result.innerHTML=html;result.style.color='var(--text)';
+    }catch(fe){
+      result.innerHTML='<strong style="color:var(--danger)">All APIs unavailable</strong><br><span style="color:var(--text-dim)">Could not reach freetogame.com. Please try again later.</span>';result.style.color='var(--danger)';
+    }
+  }
 }
 </script>

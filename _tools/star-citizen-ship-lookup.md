@@ -45,6 +45,16 @@ async function search(){
     });
     html+='</div>';
     result.innerHTML=html;result.style.color='var(--text)';
-  }catch(e){result.textContent='Error: '+(e.message||'Failed to fetch ship data');result.style.color='var(--danger)';}
+  }catch(e){
+    result.textContent='Primary API failed. Trying fallback...';result.style.color='var(--text-dim)';
+    try{
+      const res2=await fetch('https://api.star-citizen.wiki/api/vehicles/filters');
+      if(!res2.ok)throw new Error('Fallback API error');
+      const filters=await res2.json();
+      result.innerHTML='<strong style="color:var(--text)">API search unavailable, but the API is reachable.</strong><br><span style="color:var(--text-dim)">Try a simpler search term, or visit <a href="https://starcitizen.tools" target="_blank" rel="noopener">starcitizen.tools</a> for full ship data.</span>';result.style.color='var(--text)';
+    }catch(fe){
+      result.innerHTML='<strong style="color:var(--danger)">All APIs unavailable</strong><br><span style="color:var(--text-dim)">Could not reach star-citizen.wiki. Please try again later.</span>';result.style.color='var(--danger)';
+    }
+  }
 }
 </script>
