@@ -1,4 +1,7 @@
 ---
+permalink: /
+title: "ToolsVault"
+description: "A curated vault of developer tools and resources"
 ---
 <div class="container">
     <div class="hero">
@@ -15,72 +18,32 @@
             <input type="text" id="tool-search" placeholder="Search all tools..." aria-label="Search tools">
         </div>
         <div class="search-extra">
-            <button type="button" id="random-tool" class="text-btn">&#127922; Random tool</button>
+            <a href="/tools/" class="text-btn">&#128269; Browse all tools</a>
             <a href="/games/" class="text-btn">&#127918; Games</a>
             <a href="/blog/" class="text-btn">&#128197; Blog</a>
         </div>
     </section>
-
-    <section class="filter-section" id="filter-section">
-        <button class="filter-btn active" data-category="all">Featured</button>
-        <button class="filter-btn" data-category="favorites" id="favorites-filter">Favorites <span class="fav-count" id="fav-count">0</span></button>
-    </section>
-
-    <div id="no-results" style="display:none;">
-        <p>No tools match your search.</p>
-    </div>
-
-    <section id="favorites-view" class="category-section" style="display:none;">
-        <div class="category-header">
-            <h2>Favorites</h2>
-            <span class="category-count" id="fav-total">0</span>
-        </div>
-        <div class="favorites-controls">
-            <button type="button" id="clear-favorites" class="text-btn">Clear all favorites</button>
-        </div>
-        <div class="tools-grid" id="favorites-grid"></div>
-    </section>
-
-    {% assign featured_tools = site.tools | where: 'featured', true | sort: 'title' %}
-    {% if featured_tools.size > 0 %}
-    <section class="category-section" data-category="featured">
-        <div class="category-header">
-            <h2>Featured Tools</h2>
-            <span class="category-count">{{ featured_tools.size }} tool{% if featured_tools.size != 1 %}s{% endif %}</span>
-        </div>
-        <div class="tools-grid">
-            {% for tool in featured_tools %}
-            <a href="{{ tool.url | relative_url }}" class="tool-card"
-               data-title="{{ tool.title | escape | downcase }}"
-               data-description="{{ tool.description | escape | downcase }}"
-               data-tags="{{ tool.tags | join: ' ' | escape | downcase }}"
-               data-category="{{ tool.category | downcase | escape }}"
-               data-fav="{{ tool.url | relative_url }}">
-                <button class="fav-btn" type="button" aria-label="Toggle favorite" data-fav="{{ tool.url | relative_url }}">&#9825;</button>
-                <div class="tool-header">
-                    <h3>{{ tool.title }}</h3>
-                    {% if tool.icon %}<span class="tool-icon">{{ tool.icon }}</span>{% endif %}
-                </div>
-                <div class="tool-description">{{ tool.description }}</div>
-                <div class="tool-footer">
-                    <div class="tool-tags">
-                        {% for tag in tool.tags %}
-                        <span class="tag">{{ tag }}</span>
-                        {% endfor %}
-                    </div>
-                </div>
-                <span class="btn-link">View details &rarr;</span>
-            </a>
-            {% endfor %}
-        </div>
-    </section>
-    {% endif %}
 
     <section class="category-section" style="margin-top:3rem">
         <div class="category-header">
             <h2>Explore</h2>
         </div>
         <div class="tools-grid">
+            <a href="/tools/" class="tool-card" data-category="tools">
+                <div class="tool-header">
+                    <h3>&#128269; All Tools</h3>
+                </div>
+                <div class="tool-description">Browse all developer tools organized by category.</div>
+                <div class="tool-footer">
+                    <div class="tool-tags">
+                        <span class="tag">Converters</span>
+                        <span class="tag">Generators</span>
+                        <span class="tag">Security</span>
+                        <span class="tag">Web & Dev</span>
+                    </div>
+                </div>
+                <span class="btn-link">Browse tools &rarr;</span>
+            </a>
             <a href="/games/" class="tool-card" data-category="games">
                 <div class="tool-header">
                     <h3>&#127918; Games</h3>
@@ -125,3 +88,11 @@
         </div>
     </section>
 </div>
+<script>
+document.getElementById('tool-search')?.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        var q = this.value.trim();
+        if (q) window.location.href = '/tools/';
+    }
+});
+</script>

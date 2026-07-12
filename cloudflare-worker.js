@@ -23,11 +23,11 @@ async function handleRequest(request) {
     const rootPrefixes = ['/assets/', '/favicon.svg', '/robots.txt',
                           '/sitemap.xml', '/tools/', '/about/', '/blog/', '/games/', '/404.html']
 
-    if (SECTIONS[sub]) {
-      // Section subdomain: its root mounts to the mapped path; nested paths stay at root.
+    if (sub === 'tools') {
+      targetPath = '/tools' + (url.pathname === '/' ? '/' : url.pathname)
+    } else if (SECTIONS[sub]) {
       targetPath = (url.pathname === '/') ? SECTIONS[sub] + '/' : url.pathname
     } else {
-      // Tool subdomain: mount under /tools/<sub>/ (assets & known sections stay at root).
       const isRoot = rootPrefixes.some(p => url.pathname === p || url.pathname.startsWith(p))
       targetPath = (url.pathname === '/' || !isRoot)
         ? '/tools/' + sub + (url.pathname === '/' ? '/' : url.pathname)
