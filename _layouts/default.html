@@ -242,7 +242,7 @@
     });
     </script>
     {% endif %}
-    {% if site.analytics_id %}
+    {% if site.analytics_id and site.analytics_id != "" %}
     <script data-goatcounter="https://{{ site.analytics_id }}.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
     {% endif %}
 </body>

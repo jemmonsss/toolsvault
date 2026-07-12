@@ -47,7 +47,7 @@
                             {{ content }}
                         </div>
                         <div class="tool-actions">
-                            <a href="{{ page.link }}" target="_blank" rel="noopener" class="btn btn-primary">Visit Tool</a>
+                            {% if page.link and page.link != page.url %}<a href="{{ page.link }}" target="_blank" rel="noopener" class="btn btn-primary">Visit Tool</a>{% endif %}
                             <button type="button" id="share-tool" class="btn btn-secondary">Copy link</button>
                         </div>
                     </div>
@@ -132,7 +132,7 @@
         } catch(e){}
     });(function(){try{var t=localStorage.getItem('toolsvault_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
     </script>
-    {% if site.analytics_id %}
+    {% if site.analytics_id and site.analytics_id != "" %}
     <script data-goatcounter="https://{{ site.analytics_id }}.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
     {% endif %}
 </body>
