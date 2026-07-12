@@ -17,26 +17,7 @@
     {% seo %}
 </head>
 <body>
-    <header class="site-header">
-        <div class="container">
-            <a href="{{ '/' | absolute_url }}" class="logo">
-                <span>ToolsVault</span>
-            </a>
-            <button type="button" id="menu-toggle" class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
-                <span></span><span></span><span></span>
-            </button>
-            <nav class="main-nav" id="main-nav">
-                <a href="{{ '/' | absolute_url }}" class="nav-link{% if page.url == '/' %} active{% endif %}" data-nav="home">Home</a>
-                <a href="/tools/" class="nav-link{% if page.url == '/tools/' or page.url == '/tools/index.html' %} active{% endif %}" data-nav="tools">Tools</a>
-                <a href="/games/" class="nav-link{% if page.url contains '/games/' %} active{% endif %}" data-nav="games">Games</a>
-                <a href="/blog/" class="nav-link{% if page.url contains '/blog/' %} active{% endif %}" data-nav="blog">Blog</a>
-                <a href="/about/" class="nav-link{% if page.url == '/about/' %} active{% endif %}" data-nav="about">About</a>
-                <a href="{{ '/' | absolute_url }}feed.xml" class="nav-link" aria-label="RSS Feed" title="RSS Feed">&#9851;</a>
-                <a href="{{ '/' | absolute_url }}#favorites" id="nav-favorites" class="nav-link nav-favorites" title="Your favorites" aria-label="Favorites">&#9829;<span class="fav-count" id="fav-count-header">0</span></a>
-                <button type="button" id="theme-toggle" class="icon-btn" aria-label="Toggle light/dark theme" title="Toggle theme">&#9789;</button>
-            </nav>
-        </div>
-    </header>
+    {% include header.html %}
 
     <main>
         {{ content }}
