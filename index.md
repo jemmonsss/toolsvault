@@ -48,11 +48,12 @@ description: "A curated vault of developer tools and resources"
                 <div class="tool-header">
                     <h3>&#127918; Games</h3>
                 </div>
-                <div class="tool-description">Minecraft, Star Citizen, and game-specific utilities powered by live APIs.</div>
+                <div class="tool-description">Minecraft, Star Citizen, FiveM, and game-specific utilities powered by live APIs.</div>
                 <div class="tool-footer">
                     <div class="tool-tags">
                         <span class="tag">Minecraft</span>
                         <span class="tag">Star Citizen</span>
+                        <span class="tag">FiveM</span>
                         <span class="tag">Free To Play</span>
                     </div>
                 </div>

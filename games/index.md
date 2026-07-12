@@ -13,7 +13,7 @@ description: "Game-specific tools, including Minecraft, Star Citizen, and more."
 
     <section class="filter-section" id="filter-section">
         <button class="filter-btn active" data-category="all">All Games</button>
-        {% assign game_categories = "Minecraft,Star Citizen,Games" | split: ',' %}
+        {% assign game_categories = "Minecraft,Star Citizen,Games,FiveM" | split: ',' %}
         {% for cat in game_categories %}
         {% assign cat_tools = site.tools | where: 'category', cat %}
         {% if cat_tools.size > 0 %}
@@ -22,7 +22,7 @@ description: "Game-specific tools, including Minecraft, Star Citizen, and more."
         {% endfor %}
     </section>
 
-    {% assign game_categories = "Minecraft,Star Citizen,Games" | split: ',' %}
+    {% assign game_categories = "Minecraft,Star Citizen,Games,FiveM" | split: ',' %}
     {% for cat in game_categories %}
     {% assign cat_tools = site.tools | where: 'category', cat | sort: 'title' %}
     {% if cat_tools.size > 0 %}
