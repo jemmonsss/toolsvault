@@ -13,7 +13,7 @@
     <link rel="preload" href="/assets/fonts/inter-700.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}" fetchpriority="high">
     <link rel="alternate" type="application/rss+xml" title="{{ site.title | escape }}" href="{{ '/' | absolute_url }}feed.xml">
-    <script>document.documentElement.setAttribute('data-theme',window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');</script>
+    <script>document.documentElement.setAttribute('data-theme','dark');</script>
     {% seo %}
 </head>
 <body>
@@ -29,6 +29,7 @@
                 <a href="{{ '/' | absolute_url }}" class="nav-link{% if page.url == '/' %} active{% endif %}" data-nav="tools">Tools</a>
                 <a href="/about/" class="nav-link{% if page.url == '/about/' %} active{% endif %}" data-nav="about">About</a>
                 <a href="/blog/" class="nav-link{% if page.url contains '/blog/' %} active{% endif %}" data-nav="blog">Blog</a>
+                <a href="/games/" class="nav-link{% if page.url contains '/games/' %} active{% endif %}" data-nav="games">Games</a>
                 <a href="{{ '/' | absolute_url }}feed.xml" class="nav-link" aria-label="RSS Feed" title="RSS Feed">&#9851;</a>
                 <a href="{{ '/' | absolute_url }}#favorites" id="nav-favorites" class="nav-link nav-favorites" title="Your favorites" aria-label="Favorites">&#9829;<span class="fav-count" id="fav-count-header">0</span></a>
                 <button type="button" id="theme-toggle" class="icon-btn" aria-label="Toggle light/dark theme" title="Toggle theme">&#9789;</button>
@@ -139,6 +140,9 @@
             } else if (path.indexOf('/blog/') === 0) {
                 var blogLink = document.querySelector('.nav-link[data-nav="blog"]');
                 if (blogLink) blogLink.classList.add('active');
+            } else if (path.indexOf('/games/') === 0) {
+                var gamesLink = document.querySelector('.nav-link[data-nav="games"]');
+                if (gamesLink) gamesLink.classList.add('active');
             }
             var favLink = document.getElementById('nav-favorites');
             if (favLink && hash === '#favorites') {
