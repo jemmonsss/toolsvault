@@ -18,14 +18,14 @@
 <body>
     <header class="site-header">
         <div class="container">
-            <a href="/" class="logo">
+            <a href="{{ '/' | absolute_url }}" class="logo">
                 <span>ToolsVault</span>
             </a>
             <nav class="main-nav">
-                <a href="/" class="nav-link{% if page.url == '/' %} active{% endif %}">Tools</a>
+                <a href="{{ '/' | absolute_url }}" class="nav-link{% if page.url == '/' %} active{% endif %}">Tools</a>
                 <a href="/about/" class="nav-link{% if page.url == '/about/' %} active{% endif %}">About</a>
                 <a href="/blog/" class="nav-link{% if page.url contains '/blog/' %} active{% endif %}">Blog</a>
-                <a href="/#favorites" id="nav-favorites" class="nav-link nav-favorites" title="Your favorites" aria-label="Favorites">&#9829;<span class="fav-count" id="fav-count-header">0</span></a>
+                <a href="{{ '/' | absolute_url }}#favorites" id="nav-favorites" class="nav-link nav-favorites" title="Your favorites" aria-label="Favorites">&#9829;<span class="fav-count" id="fav-count-header">0</span></a>
                 <button type="button" id="theme-toggle" class="icon-btn" aria-label="Toggle light/dark theme" title="Toggle theme">&#9789;</button>
             </nav>
         </div>
