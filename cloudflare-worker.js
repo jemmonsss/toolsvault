@@ -24,7 +24,8 @@ async function handleRequest(request) {
                           '/sitemap.xml', '/tools/', '/about/', '/blog/', '/games/', '/404.html']
 
     if (sub === 'tools') {
-      targetPath = '/tools' + (url.pathname === '/' ? '/' : url.pathname)
+      const isRoot = rootPrefixes.some(p => url.pathname === p || url.pathname.startsWith(p))
+      targetPath = isRoot ? url.pathname : '/tools' + (url.pathname === '/' ? '/' : url.pathname)
     } else if (SECTIONS[sub]) {
       targetPath = (url.pathname === '/') ? SECTIONS[sub] + '/' : url.pathname
     } else {
