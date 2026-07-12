@@ -18,8 +18,14 @@ social:
 theme: null
 
 plugins:
+  - jekyll-feed
   - jekyll-seo-tag
   - jekyll-sitemap
+  - jekyll-paginate-v2
+  - jekyll-archives
+  - jekyll-include-cache
+  - jekyll-last-modified-at
+  - jekyll-toc
 
 markdown: kramdown
 
@@ -53,3 +59,25 @@ exclude:
   - README.md
   - node_modules
   - _sass
+
+# Pagination (jekyll-paginate-v2)
+pagination:
+  enabled: true
+  per_page: 6
+  permalink: "/blog/page/:num/"
+  title: ":title - page :num"
+  limit_page: 0
+  sort_field: "date"
+  sort_reverse: true
+
+# Archives (jekyll-archives)
+jekyll-archives:
+  enabled:
+    - tags
+    - categories
+  layouts:
+    tag: blog-tag
+    category: blog-category
+  permalinks:
+    tag: "/blog/tags/:name/"
+    category: "/blog/categories/:name/"

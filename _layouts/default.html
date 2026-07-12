@@ -12,6 +12,7 @@
     <link rel="preload" href="/assets/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/fonts/inter-700.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}" fetchpriority="high">
+    <link rel="alternate" type="application/rss+xml" title="{{ site.title | escape }}" href="{{ '/' | absolute_url }}feed.xml">
     <script>document.documentElement.setAttribute('data-theme',window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');</script>
     {% seo %}
 </head>
@@ -21,10 +22,14 @@
             <a href="{{ '/' | absolute_url }}" class="logo">
                 <span>ToolsVault</span>
             </a>
-            <nav class="main-nav">
-                <a href="{{ '/' | absolute_url }}" class="nav-link{% if page.url == '/' %} active{% endif %}">Tools</a>
-                <a href="/about/" class="nav-link{% if page.url == '/about/' %} active{% endif %}">About</a>
-                <a href="/blog/" class="nav-link{% if page.url contains '/blog/' %} active{% endif %}">Blog</a>
+            <button type="button" id="menu-toggle" class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <nav class="main-nav" id="main-nav">
+                <a href="{{ '/' | absolute_url }}" class="nav-link{% if page.url == '/' %} active{% endif %}" data-nav="tools">Tools</a>
+                <a href="/about/" class="nav-link{% if page.url == '/about/' %} active{% endif %}" data-nav="about">About</a>
+                <a href="/blog/" class="nav-link{% if page.url contains '/blog/' %} active{% endif %}" data-nav="blog">Blog</a>
+                <a href="{{ '/' | absolute_url }}feed.xml" class="nav-link" aria-label="RSS Feed" title="RSS Feed">&#9851;</a>
                 <a href="{{ '/' | absolute_url }}#favorites" id="nav-favorites" class="nav-link nav-favorites" title="Your favorites" aria-label="Favorites">&#9829;<span class="fav-count" id="fav-count-header">0</span></a>
                 <button type="button" id="theme-toggle" class="icon-btn" aria-label="Toggle light/dark theme" title="Toggle theme">&#9789;</button>
             </nav>
@@ -35,16 +40,12 @@
         {{ content }}
     </main>
 
-    <footer class="site-footer">
-        <div class="container">
-            <p>Built for developers. <a href="{{ site.github }}">Star on GitHub</a></p>
-        </div>
-    </footer>
+    {% include footer.html %}
 
     <button type="button" id="back-to-top" class="back-to-top" aria-label="Back to top" title="Back to top">&#8593;</button>
 
     <script>
-    // Universal UI (all pages): theme toggle, back-to-top, header favorites count
+    // Universal UI (all pages): theme toggle, back-to-top, header favorites count, mobile nav, active indicator
     document.addEventListener('DOMContentLoaded', function() {
         var btt = document.getElementById('back-to-top');
         if (btt) {
@@ -74,6 +75,79 @@
             var fc = document.getElementById('fav-count-header');
             if (fc) fc.textContent = (JSON.parse(localStorage.getItem('toolsvault_favorites')) || []).length;
         } catch(e){}
+
+        // Mobile nav toggle
+        var menuToggle = document.getElementById('menu-toggle');
+        var mainNav = document.getElementById('main-nav');
+        var navOverlay = document.getElementById('nav-overlay');
+        function openMenu() {
+            if (!mainNav || !menuToggle || !navOverlay) return;
+            mainNav.classList.add('active');
+            navOverlay.classList.add('active');
+            menuToggle.classList.add('active');
+            menuToggle.setAttribute('aria-expanded', 'true');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeMenu() {
+            if (!mainNav || !menuToggle || !navOverlay) return;
+            mainNav.classList.remove('active');
+            navOverlay.classList.remove('active');
+            menuToggle.classList.remove('active');
+            menuToggle.setAttribute('aria-expanded', 'false');
+            document.body.style.overflow = '';
+        }
+        if (menuToggle) {
+            menuToggle.addEventListener('click', function() {
+                if (mainNav && mainNav.classList.contains('active')) {
+                    closeMenu();
+                } else {
+                    openMenu();
+                }
+            });
+        }
+        if (navOverlay) {
+            navOverlay.addEventListener('click', closeMenu);
+        }
+        if (mainNav) {
+            mainNav.querySelectorAll('.nav-link').forEach(function(link) {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) closeMenu();
+                });
+            });
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && mainNav && mainNav.classList.contains('active')) {
+                closeMenu();
+            }
+        });
+
+        // Active nav indicator updater
+        function updateActiveNav() {
+            var path = window.location.pathname;
+            var hash = window.location.hash;
+            var navLinks = document.querySelectorAll('.main-nav .nav-link[data-nav]');
+            navLinks.forEach(function(link) { link.classList.remove('active'); });
+            if (path === '/' || path === '/index.html') {
+                var toolsLink = document.querySelector('.nav-link[data-nav="tools"]');
+                if (toolsLink) toolsLink.classList.add('active');
+            } else if (path.indexOf('/tools/') === 0) {
+                var toolsLink = document.querySelector('.nav-link[data-nav="tools"]');
+                if (toolsLink) toolsLink.classList.add('active');
+            } else if (path === '/about/') {
+                var aboutLink = document.querySelector('.nav-link[data-nav="about"]');
+                if (aboutLink) aboutLink.classList.add('active');
+            } else if (path.indexOf('/blog/') === 0) {
+                var blogLink = document.querySelector('.nav-link[data-nav="blog"]');
+                if (blogLink) blogLink.classList.add('active');
+            }
+            var favLink = document.getElementById('nav-favorites');
+            if (favLink && hash === '#favorites') {
+                favLink.classList.add('active');
+            } else if (favLink) {
+                favLink.classList.remove('active');
+            }
+        }
+        updateActiveNav();
     });(function(){try{var t=localStorage.getItem('toolsvault_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
     </script>
 
@@ -242,6 +316,7 @@
     });
     </script>
     {% endif %}
+    <div class="nav-overlay" id="nav-overlay"></div>
     {% if site.analytics_id and site.analytics_id != "" %}
     <script data-goatcounter="https://{{ site.analytics_id }}.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
     {% endif %}
