@@ -66,6 +66,43 @@
     return (s || 'pack').toLowerCase().replace(/[^a-z0-9_-]+/g, '_').replace(/^_+|_+$/g, '') || 'pack';
   }
 
+  /* ---------- Vanilla reference textures (fetched from a public CDN, never
+   * hosted on this site). Source: InventivetalentDev/minecraft-assets on the
+   * GitHub raw CDN, which sends `access-control-allow-origin: *`, so images can
+   * be drawn to the canvas (crossOrigin) and re-exported. ---------- */
+  var VANILLA_BASE = 'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/';
+  // Map pack_format -> asset version tag used by the CDN repo.
+  function formatToVersion(fmt) {
+    fmt = parseInt(fmt, 10);
+    if (fmt >= 48) return '1.21.5';
+    if (fmt >= 42) return '1.21.4';
+    if (fmt >= 34) return '1.21';
+    if (fmt >= 32) return '1.20.6';
+    if (fmt >= 26) return '1.20.4';
+    if (fmt >= 22) return '1.20.2';
+    if (fmt >= 18) return '1.19.4';
+    if (fmt >= 15) return '1.19.3';
+    if (fmt >= 13) return '1.19.2';
+    if (fmt >= 9) return '1.18.2';
+    if (fmt >= 8) return '1.18.1';
+    if (fmt >= 7) return '1.17.1';
+    return '1.16.5';
+  }
+  function vanillaUrl(slot) {
+    var ver = formatToVersion($('tpc-format').value);
+    return VANILLA_BASE + ver + '/' + slot;
+  }
+
+  function loadImageCORS(url) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function () { resolve(img); };
+      img.onerror = function () { reject(new Error('not found')); };
+      img.src = url;
+    });
+  }
+
   function hexToRgb(hex) {
     hex = hex.replace('#', '');
     if (hex.length === 3) hex = hex.split('').map(function (c) { return c + c; }).join('');
@@ -117,15 +154,20 @@
 
   // Choose a zoom that fits the canvas comfortably inside its box (responsive).
   function fitZoom() {
-    var box = document.querySelector('.tpc-canvas-box');
-    if (!box) return;
-    var avail = box.clientWidth - 24; // minus padding
-    if (avail <= 0) return;
     var slider = $('tpc-zoom');
     var min = slider ? parseInt(slider.min, 10) || 4 : 4;
     var max = slider ? parseInt(slider.max, 10) || 32 : 32;
-    var z = Math.floor(avail / canvas.width);
-    z = Math.max(min, Math.min(max, z));
+    var box = document.querySelector('.tpc-canvas-box');
+    // If the box hasn't been laid out yet (e.g. panel hidden or CSS not applied),
+    // fall back to a sane default zoom instead of collapsing the canvas to ~0.
+    var avail = box ? box.clientWidth - 24 : 0;
+    var z;
+    if (!box || avail < 32) {
+      z = Math.min(max, Math.max(min, Math.floor(512 / canvas.width)));
+    } else {
+      z = Math.floor(avail / canvas.width);
+      z = Math.max(min, Math.min(max, z));
+    }
     zoom = z;
     if (slider) slider.value = String(z);
     renderCanvas();
@@ -275,7 +317,25 @@
     $('tpc-slot-hint').textContent = 'Editing: ' + path;
     refreshTreeFlags();
     fitZoom();
+    showVanillaPreview(path);
     undoStack = []; redoStack = [];
+  }
+
+  // Show a live vanilla reference thumbnail for the selected slot (from CDN).
+  function showVanillaPreview(path) {
+    var wrap = $('tpc-vanilla');
+    var img = $('tpc-vanilla-img');
+    if (!wrap || !img) return;
+    wrap.hidden = true;
+    var url = vanillaUrl(path);
+    var probe = new Image();
+    probe.crossOrigin = 'anonymous';
+    probe.onload = function () {
+      img.src = url;
+      wrap.hidden = false;
+    };
+    probe.onerror = function () { wrap.hidden = true; };
+    probe.src = url;
   }
 
   function resetCanvas(w, h) {
@@ -482,6 +542,26 @@
     }
   }
 
+  // Fetch the current slot's vanilla texture from the CDN and draw it in.
+  async function loadVanilla() {
+    if (!selectedSlot) { showMsg('Select a texture slot on the left first.', false); return; }
+    var url = vanillaUrl(selectedSlot);
+    showMsg('Fetching vanilla ' + selectedSlot.split('/').pop() + '…', true);
+    try {
+      var img = await loadImageCORS(url);
+      var w = img.width, h = img.height;
+      resetCanvas(w, h);
+      prepCtx();
+      ctx.drawImage(img, 0, 0, w, h);
+      renderCanvas();
+      fitZoom();
+      afterEdit();
+      showMsg('Loaded vanilla ' + selectedSlot.split('/').pop() + ' — edit and export.', true);
+    } catch (e) {
+      showMsg('No vanilla texture found for this slot in ' + formatToVersion($('tpc-format').value) + '. It may live in a sub-folder or not exist.', false);
+    }
+  }
+
   async function importFolder(fileList) {
     var added = 0;
     for (var i = 0; i < fileList.length; i++) {
@@ -596,6 +676,8 @@
     // Upload
     $('tpc-upload-btn').addEventListener('click', function () { $('tpc-upload').click(); });
     $('tpc-upload').addEventListener('change', function () { handleFiles(this.files); this.value = ''; });
+    var loadVanillaBtn = $('tpc-load-vanilla');
+    if (loadVanillaBtn) loadVanillaBtn.addEventListener('click', loadVanilla);
     var dz = $('tpc-drop');
     ['dragenter', 'dragover'].forEach(function (ev) {
       dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add('drag'); });
@@ -624,7 +706,10 @@
 
     // Metadata inputs
     $('tpc-name').addEventListener('input', function () { project.name = this.value; });
-    $('tpc-format').addEventListener('change', renderMeta);
+    $('tpc-format').addEventListener('change', function () {
+      renderMeta();
+      if (selectedSlot) showVanillaPreview(selectedSlot);
+    });
     $('tpc-desc').addEventListener('input', renderMeta);
 
     // Tree search
@@ -673,12 +758,6 @@
 
   /* ---------- Init ---------- */
   function init() {
-    // Load scoped styles (kept in a separate file to avoid touching the shared main.css).
-    var link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = '/assets/css/tpc.css';
-    document.head.appendChild(link);
-
     if (!canvas || typeof TpcZip === 'undefined') {
       console.error('TPC init failed: missing canvas or TpcZip.');
       return;

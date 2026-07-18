@@ -12,6 +12,8 @@ category: "Minecraft"
 icon: "&#127959;"
 ---
 
+<link rel="stylesheet" href="{{ '/assets/css/tpc.css' | relative_url }}">
+
 <div class="tui tpc">
   <h1>Minecraft Texture Pack Creator</h1>
   <p class="sub">Design, edit, preview, and export a valid Minecraft resource pack — entirely in your browser.</p>
@@ -101,6 +103,11 @@ icon: "&#127959;"
               <input type="color" id="tpc-color" value="#8b5cf6">
             </label>
             <div class="tpc-swatches" id="tpc-swatches"></div>
+            <div class="tpc-vanilla" id="tpc-vanilla" hidden>
+              <span class="tpc-vanilla-label">Vanilla reference</span>
+              <img id="tpc-vanilla-img" alt="Vanilla texture reference" crossorigin="anonymous">
+              <button class="btn btn-secondary tpc-sm" id="tpc-load-vanilla" type="button">Edit this texture</button>
+            </div>
             <p class="tpc-hint" id="tpc-slot-hint">Select a texture on the left to begin.</p>
           </div>
         </div>
@@ -110,6 +117,7 @@ icon: "&#127959;"
             <button class="btn btn-secondary tpc-sm" id="tpc-upload-btn">Upload to selected slot</button>
             <input type="file" id="tpc-upload" accept="image/png,image/*" hidden>
           </p>
+          <p class="tpc-hint" style="margin-top:.5rem">Vanilla textures are loaded live from a public CDN and are <strong>not</strong> hosted on this site.</p>
         </div>
       </div>
     </div>
