@@ -138,38 +138,50 @@
   function undo() { if (undoStack.length) { redoStack.push(snapshot()); applyImageData(undoStack.pop()); afterEdit(); } }
   function redo() { if (redoStack.length) { undoStack.push(snapshot()); applyImageData(redoStack.pop()); afterEdit(); } }
 
-  /* ---------- Render canvas at zoom (non-destructive grid overlay) ---------- */
+  /* ---------- Render canvas at zoom (non-destructive grid overlay) ----------
+   * Display size is always derived from the canvas drawing-buffer (canvas.width/
+   * canvas.height) times an integer zoom. We clamp the result so the canvas can
+   * NEVER collapse to a sub-pixel size (the old "2px" bug): if a bad zoom ever
+   * slips through, we fall back to a sensible default here. */
+  var DEFAULT_ZOOM = 16;
+  function clampDisp(v) {
+    v = Math.round(v);
+    if (!isFinite(v) || v < 16) v = 16; // absolute floor so it is always visible
+    return v;
+  }
   function renderCanvas() {
-    var w = canvas.width, h = canvas.height;
-    var dispW = w * zoom, dispH = h * zoom;
+    var w = canvas.width || 16, h = canvas.height || 16;
+    var z = (isFinite(zoom) && zoom >= 1) ? Math.floor(zoom) : DEFAULT_ZOOM;
+    var dispW = clampDisp(w * z), dispH = clampDisp(h * z);
     canvas.style.width = dispW + 'px';
     canvas.style.height = dispH + 'px';
     var overlay = $('tpc-grid-overlay');
     if (overlay) {
       overlay.style.width = dispW + 'px';
       overlay.style.height = dispH + 'px';
-      overlay.style.backgroundSize = zoom + 'px ' + zoom + 'px';
-      overlay.classList.toggle('show', showGrid && zoom >= 6);
+      overlay.style.backgroundSize = z + 'px ' + z + 'px';
+      overlay.classList.toggle('show', showGrid && z >= 6);
     }
   }
 
   // Choose a zoom that fits the canvas comfortably inside its box (responsive).
-  // Never produce a broken (near-zero) size: if the box can't be measured yet,
-  // keep the current zoom rather than collapsing the canvas.
+  // If the box can't be measured yet (hidden panel / pre-paint / behind a
+  // challenge script), we keep a safe default rather than collapsing it.
   function fitZoom() {
     var slider = $('tpc-zoom');
     var min = slider ? parseInt(slider.min, 10) || 4 : 4;
     var max = slider ? parseInt(slider.max, 10) || 32 : 32;
+    if (!isFinite(zoom) || zoom < 1) zoom = DEFAULT_ZOOM;
     var box = document.querySelector('.tpc-canvas-box');
     var avail = box ? box.clientWidth - 24 : 0; // minus padding
     if (avail < 32 || !isFinite(avail)) {
-      // Box not laid out yet (hidden panel / pre-paint). Do not touch zoom now;
-      // the ResizeObserver will re-fit once the box has a real width.
-      if (!zoom || zoom < min) zoom = Math.min(max, Math.max(min, Math.floor(512 / canvas.width)));
+      // Box not laid out yet. Keep a safe zoom; ResizeObserver / load / timeouts
+      // will re-fit once the box has a real width.
+      if (zoom < min) zoom = Math.min(max, Math.max(min, Math.floor(512 / (canvas.width || 16))));
       renderCanvas();
       return;
     }
-    var z = Math.floor(avail / canvas.width);
+    var z = Math.floor(avail / (canvas.width || 16));
     z = Math.max(min, Math.min(max, z));
     zoom = z;
     if (slider) slider.value = String(z);
@@ -903,6 +915,13 @@
     requestAnimationFrame(fitZoom);
     setTimeout(fitZoom, 100);
     setTimeout(fitZoom, 350);
+    setTimeout(fitZoom, 800);
+    // Final, most reliable fit: after ALL styles/fonts/challenge scripts settle.
+    if (document.readyState === 'complete') {
+      setTimeout(fitZoom, 1000);
+    } else {
+      window.addEventListener('load', function () { fitZoom(); setTimeout(fitZoom, 200); });
+    }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
