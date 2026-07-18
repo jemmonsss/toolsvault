@@ -31,19 +31,13 @@
     return { time: time & 0xFFFF, date: dosDate & 0xFFFF };
   }
 
-  function strToBytes(str) {
-    var out = new Uint8Array(str.length);
-    for (var i = 0; i < str.length; i++) out[i] = str.charCodeAt(i) & 0xFF;
-    return out;
-  }
-
-  // Convert string name to UTF-8 bytes and flag general purpose bit 11 (UTF-8).
+  // Convert a filename to UTF-8 bytes. We also set general-purpose bit 11
+  // (UTF-8) in the headers so non-ASCII names decode correctly.
   function nameToBytes(str) {
     return new TextEncoder().encode(str);
   }
 
   function createZip(files) {
-    var enc = new TextEncoder();
     var now = new Date();
     var t = dosTime(now);
 

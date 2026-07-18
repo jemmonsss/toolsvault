@@ -44,6 +44,10 @@
   var $ = function (id) { return document.getElementById(id); };
   var canvas = $('tpc-canvas');
   var ctx = canvas.getContext('2d', { willReadFrequently: true });
+  // Pixel art must never be smoothed. Setting canvas.width/height resets this,
+  // so we re-apply it via prepCtx() after every dimension change.
+  function prepCtx() { ctx.imageSmoothingEnabled = false; }
+  prepCtx();
 
   /* ---------- Helpers ---------- */
   function slotPath(cat, name) {
@@ -119,12 +123,29 @@
     return { x: Math.floor(cx / (rect.width / canvas.width)), y: Math.floor(cy / (rect.height / canvas.height)) };
   }
 
+  function brushBox(cx, cy) {
+    // Centered, canvas-clamped square for the current brush size.
+    var s = Math.max(1, brushSize);
+    var half = Math.floor(s / 2);
+    var x0 = Math.max(0, cx - half);
+    var y0 = Math.max(0, cy - half);
+    var x1 = Math.min(canvas.width, cx - half + s);
+    var y1 = Math.min(canvas.height, cy - half + s);
+    return { x: x0, y: y0, w: Math.max(0, x1 - x0), h: Math.max(0, y1 - y0) };
+  }
+
   function paintPixel(x, y, color, alpha) {
-    if (x < 0 || y < 0 || x >= canvas.width || y >= canvas.height) return;
+    var b = brushBox(x, y);
+    if (b.w === 0 || b.h === 0) return;
     var rgb = hexToRgb(color);
     ctx.fillStyle = 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',' + (alpha == null ? 1 : alpha) + ')';
-    var s = Math.max(1, brushSize);
-    ctx.fillRect(x, y, s, s);
+    ctx.fillRect(b.x, b.y, b.w, b.h);
+  }
+
+  function erasePixel(x, y) {
+    var b = brushBox(x, y);
+    if (b.w === 0 || b.h === 0) return;
+    ctx.clearRect(b.x, b.y, b.w, b.h);
   }
 
   function floodFill(x, y, color) {
@@ -242,6 +263,7 @@
 
   function resetCanvas(w, h) {
     canvas.width = w; canvas.height = h;
+    prepCtx();
     ctx.clearRect(0, 0, w, h);
     renderCanvas();
   }
@@ -249,12 +271,15 @@
   function cloneCanvas(src) {
     var c = document.createElement('canvas');
     c.width = src.width; c.height = src.height;
-    c.getContext('2d').drawImage(src, 0, 0);
+    var cctx = c.getContext('2d');
+    cctx.imageSmoothingEnabled = false;
+    cctx.drawImage(src, 0, 0);
     return c;
   }
   function copyCanvas(src, dst) {
     dst.width = src.width; dst.height = src.height;
-    dst.getContext('2d').drawImage(src, 0, 0);
+    prepCtx();
+    ctx.drawImage(src, 0, 0);
     renderCanvas();
   }
 
@@ -423,6 +448,7 @@
         var w, h;
         if (entry) { w = canvas.width; h = canvas.height; }
         else { w = img.width; h = img.height; resetCanvas(w, h); }
+        prepCtx();
         ctx.clearRect(0, 0, w, h);
         ctx.drawImage(img, 0, 0, w, h);
         renderCanvas();
@@ -503,7 +529,7 @@
       pushUndo();
       lastPt = p;
       if (currentTool === 'pencil' || currentTool === 'eraser') {
-        if (currentTool === 'eraser') ctx.clearRect(p.x, p.y, brushSize, brushSize);
+        if (currentTool === 'eraser') erasePixel(p.x, p.y);
         else paintPixel(p.x, p.y, currentColor);
         afterEdit();
       } else if (currentTool === 'line' || currentTool === 'rect') {
@@ -514,7 +540,7 @@
       if (!drawing) return;
       var p = eventToPixel(e);
       if (currentTool === 'pencil') paintPixel(p.x, p.y, currentColor);
-      else if (currentTool === 'eraser') ctx.clearRect(p.x, p.y, brushSize, brushSize);
+      else if (currentTool === 'eraser') erasePixel(p.x, p.y);
       else if ((currentTool === 'line' || currentTool === 'rect') && lastPt && shapeSnapshot) {
         applyImageData(shapeSnapshot);
         if (currentTool === 'line') drawLine(lastPt.x, lastPt.y, p.x, p.y, currentColor);
@@ -578,9 +604,7 @@
         n.style.display = show ? '' : 'none';
       });
       document.querySelectorAll('.tpc-cat').forEach(function (cat) {
-        var any = cat.nextElementSibling && cat.nextElementSibling.classList.contains('tpc-node') &&
-          cat.nextElementSibling.style.display !== 'none';
-        // simpler: hide category if no visible siblings
+        // Hide a category header if none of its sibling nodes are visible.
         var sib = cat.nextElementSibling; var visible = false;
         while (sib && sib.classList.contains('tpc-node')) { if (sib.style.display !== 'none') visible = true; sib = sib.nextElementSibling; }
         cat.style.display = visible ? '' : 'none';
