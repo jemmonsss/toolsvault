@@ -139,52 +139,46 @@
   function redo() { if (redoStack.length) { undoStack.push(snapshot()); applyImageData(redoStack.pop()); afterEdit(); } }
 
   /* ---------- Render canvas at zoom (non-destructive grid overlay) ----------
-   * Display size is always derived from the canvas drawing-buffer (canvas.width/
-   * canvas.height) times an integer zoom. We clamp the result so the canvas can
-   * NEVER collapse to a sub-pixel size (the old "2px" bug): if a bad zoom ever
-   * slips through, we fall back to a sensible default here. */
+   * The canvas DISPLAY size is driven by CSS (width:100% of its box, capped by
+   * max-width for crisp integer pixels) so it always fits the box at ANY
+   * resolution and can never collapse to a sub-pixel size. The drawing buffer
+   * (canvas.width/height) is untouched. Pixel mapping stays correct because
+   * eventToPixel() uses getBoundingClientRect(). The zoom slider only sets the
+   * max-width cap (and the grid overlay scale). */
   var DEFAULT_ZOOM = 16;
-  function clampDisp(v) {
-    v = Math.round(v);
-    if (!isFinite(v) || v < 16) v = 16; // absolute floor so it is always visible
-    return v;
-  }
   function renderCanvas() {
     var w = canvas.width || 16, h = canvas.height || 16;
     var z = (isFinite(zoom) && zoom >= 1) ? Math.floor(zoom) : DEFAULT_ZOOM;
-    var dispW = clampDisp(w * z), dispH = clampDisp(h * z);
-    canvas.style.width = dispW + 'px';
-    canvas.style.height = dispH + 'px';
+    // Cap the rendered size so pixels stay crisp; CSS width:100% lets it shrink
+    // to fit smaller boxes. aspect-ratio keeps the texture proportions.
+    canvas.style.maxWidth = (w * z) + 'px';
+    canvas.style.aspectRatio = w + ' / ' + h;
+    var stage = document.querySelector('.tpc-canvas-stage');
+    if (stage) stage.style.aspectRatio = w + ' / ' + h;
     var overlay = $('tpc-grid-overlay');
     if (overlay) {
-      overlay.style.width = dispW + 'px';
-      overlay.style.height = dispH + 'px';
-      overlay.style.backgroundSize = z + 'px ' + z + 'px';
+      overlay.style.backgroundSize = 'calc(100% / ' + w + ') calc(100% / ' + h + ')';
       overlay.classList.toggle('show', showGrid && z >= 6);
     }
   }
 
-  // Choose a zoom that fits the canvas comfortably inside its box (responsive).
-  // If the box can't be measured yet (hidden panel / pre-paint / behind a
-  // challenge script), we keep a safe default rather than collapsing it.
+  // Keep the zoom slider in sync with how much room the canvas box has, so the
+  // default cap is sensible for the current resolution. Never forces a broken
+  // size — the CSS width:100% guarantee handles actual rendering.
   function fitZoom() {
     var slider = $('tpc-zoom');
     var min = slider ? parseInt(slider.min, 10) || 4 : 4;
     var max = slider ? parseInt(slider.max, 10) || 32 : 32;
     if (!isFinite(zoom) || zoom < 1) zoom = DEFAULT_ZOOM;
-    var box = document.querySelector('.tpc-canvas-box');
-    var avail = box ? box.clientWidth - 24 : 0; // minus padding
-    if (avail < 32 || !isFinite(avail)) {
-      // Box not laid out yet. Keep a safe zoom; ResizeObserver / load / timeouts
-      // will re-fit once the box has a real width.
-      if (zoom < min) zoom = Math.min(max, Math.max(min, Math.floor(512 / (canvas.width || 16))));
-      renderCanvas();
-      return;
+    if (slider) {
+      // Suggest a zoom that would let the texture fill the box, clamped.
+      var box = document.querySelector('.tpc-canvas-box');
+      var avail = box ? box.clientWidth - 24 : 0;
+      if (avail >= 32) {
+        var z = Math.max(min, Math.min(max, Math.floor(avail / (canvas.width || 16))));
+        if (z !== zoom) { zoom = z; slider.value = String(z); }
+      }
     }
-    var z = Math.floor(avail / (canvas.width || 16));
-    z = Math.max(min, Math.min(max, z));
-    zoom = z;
-    if (slider) slider.value = String(z);
     renderCanvas();
   }
 
