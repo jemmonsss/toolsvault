@@ -139,27 +139,30 @@
   function redo() { if (redoStack.length) { undoStack.push(snapshot()); applyImageData(redoStack.pop()); afterEdit(); } }
 
   /* ---------- Render canvas at zoom (non-destructive grid overlay) ----------
-   * The canvas DISPLAY size is driven by CSS (width:100% of its box, capped by
-   * max-width for crisp integer pixels) so it always fits the box at ANY
-   * resolution and can never collapse to a sub-pixel size. The drawing buffer
-   * (canvas.width/height) is untouched. Pixel mapping stays correct because
-   * eventToPixel() uses getBoundingClientRect(). The zoom slider only sets the
-   * max-width cap (and the grid overlay scale). */
+   * The canvas DISPLAY size is set to an EXACT integer multiple of the texture
+   * size (w*zoom by h*zoom px). This keeps every painted pixel and every grid
+   * cell perfectly aligned — the grid overlay uses the same integer cell size,
+    * so lines never drift from pixel centers. CSS caps it to the box via
+    * max-width so it never overflows at small resolutions. Pixel mapping stays
+    * correct because eventToPixel() uses getBoundingClientRect(). */
   var DEFAULT_ZOOM = 16;
   function renderCanvas() {
     var w = canvas.width || 16, h = canvas.height || 16;
     var z = (isFinite(zoom) && zoom >= 1) ? Math.floor(zoom) : DEFAULT_ZOOM;
-    // Cap the rendered size so pixels stay crisp; CSS width:100% lets it shrink
-    // to fit smaller boxes. aspect-ratio keeps the texture proportions.
-    canvas.style.maxWidth = (w * z) + 'px';
-    canvas.style.aspectRatio = w + ' / ' + h;
+    // Exact display size: w*z by h*z px. This is what makes pixels and grid
+    // line up exactly (no sub-pixel rounding drift).
+    canvas.style.width = (w * z) + 'px';
+    canvas.style.height = (h * z) + 'px';
+    // Guard against pathological zooms producing a 0px canvas.
+    if (!canvas.style.width || canvas.style.width === '0px') {
+      canvas.style.width = '16px'; canvas.style.height = '16px';
+    }
     var stage = document.querySelector('.tpc-canvas-stage');
-    if (stage) stage.style.aspectRatio = w + ' / ' + h;
+    if (stage) { stage.style.width = (w * z) + 'px'; stage.style.height = (h * z) + 'px'; }
     var overlay = $('tpc-grid-overlay');
     if (overlay) {
-      overlay.style.backgroundSize = 'calc(100% / ' + w + ') calc(100% / ' + h + ')';
-      // Always show the grid as one cell per texture pixel whenever enabled,
-      // at any zoom (so large textures still display a per-pixel grid).
+      // One grid cell == one texture pixel == exactly z display px.
+      overlay.style.backgroundSize = z + 'px ' + z + 'px';
       overlay.classList.toggle('show', showGrid);
     }
   }
