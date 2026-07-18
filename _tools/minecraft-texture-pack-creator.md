@@ -80,7 +80,7 @@ icon: "&#127959;"
           </div>
           <div class="tpc-tool-opts">
             <label class="tpc-inline">Size
-              <select id="tpc-brush"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>6</option><option>8</option></select>
+              <select id="tpc-brush"><option selected>1</option><option>2</option><option>3</option><option>4</option><option>6</option><option>8</option></select>
             </label>
             <label class="tpc-inline">Zoom
               <input type="range" id="tpc-zoom" min="4" max="32" value="16">

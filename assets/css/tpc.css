@@ -54,11 +54,22 @@
 .tpc-canvas-box{background:
   repeating-conic-gradient(var(--border) 0% 25%, transparent 0% 50%) 50%/16px 16px,
   var(--bg);border:1px solid var(--border);border-radius:10px;padding:.75rem;display:flex;justify-content:center;align-items:center;min-height:240px;min-width:0;overflow:auto;-webkit-overflow-scrolling:touch}
-.tpc-canvas-stage{position:relative;display:block;width:100%;line-height:0}
+.tpc-canvas-stage{position:relative;display:block;width:100%;line-height:0;
+  /* Transparency checkerboard: shows through the canvas where pixels are
+     transparent, so users can tell empty/transparent areas from solid white. */
+  background-color:#fff;
+  background-image:
+    linear-gradient(45deg, #c9c9c9 25%, transparent 25%),
+    linear-gradient(-45deg, #c9c9c9 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #c9c9c9 75%),
+    linear-gradient(-45deg, transparent 75%, #c9c9c9 75%);
+  background-size:16px 16px;
+  background-position:0 0,0 8px,8px -8px,-8px 0;
+  box-shadow:0 2px 12px rgba(0,0,0,.35);border-radius:2px}
 .tpc-grid-overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;display:none;
   background-image:linear-gradient(to right,rgba(0,0,0,.18) 1px,transparent 1px),linear-gradient(to bottom,rgba(0,0,0,.18) 1px,transparent 1px)}
 .tpc-grid-overlay.show{display:block}
-#tpc-canvas{display:block;width:100%;height:auto;max-width:100%;image-rendering:pixelated;image-rendering:crisp-edges;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.35);cursor:crosshair;border-radius:2px;touch-action:none}
+#tpc-canvas{display:block;width:100%;height:auto;max-width:100%;image-rendering:pixelated;image-rendering:crisp-edges;background:transparent;cursor:crosshair;border-radius:2px;touch-action:none}
 .tpc-colorbar{display:flex;flex-direction:column;gap:.6rem}
 .tpc-colorbar input[type=color]{width:100%;height:48px;background:var(--bg-elev);border:1px solid var(--border);border-radius:8px;cursor:pointer}
 .tpc-swatches{display:grid;grid-template-columns:repeat(8,1fr);gap:.35rem}

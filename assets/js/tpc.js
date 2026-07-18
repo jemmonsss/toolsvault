@@ -30,7 +30,7 @@
   var selectedSlot = null;
   var currentTool = 'pencil';
   var currentColor = '#8b5cf6';
-  var brushSize = 2;
+  var brushSize = 1;
   var zoom = 16;
   var showGrid = true;
   var undoStack = [];
