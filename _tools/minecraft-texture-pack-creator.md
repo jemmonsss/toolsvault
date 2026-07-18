@@ -13,7 +13,7 @@ games_only: true
 icon: "&#127959;"
 ---
 
-<link rel="stylesheet" href="{{ '/assets/css/tpc.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/css/tpc.css' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M' }}">
 
 <div class="tui tpc">
   <h1>Minecraft Texture Pack Creator</h1>
@@ -165,6 +165,6 @@ icon: "&#127959;"
     </div>
   </section>
 </div>
+<script src="{{ '/assets/js/zip-writer.js' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M' }}" defer></script>
 
-<script src="{{ '/assets/js/zip-writer.js' | relative_url }}" defer></script>
-<script src="{{ '/assets/js/tpc.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/tpc.js' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M' }}" defer></script>
