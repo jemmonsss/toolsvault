@@ -3,7 +3,7 @@
  * Reuses the site's CSS variables for full theme parity. */
 
 /* ---- Layout container ---- */
-.tpc{max-width:1000px}
+.tpc{max-width:1200px;margin:0 auto}
 
 /* ---- Metadata bar (stacks on mobile, row on larger screens) ---- */
 .tpc-bar{display:flex;flex-direction:column;gap:.75rem;margin-bottom:1rem}
@@ -127,7 +127,14 @@
 @media (min-width:1024px){
   .tpc-layout{display:grid;grid-template-columns:240px 1fr;gap:1rem;align-items:start}
   .tpc-tree{max-height:560px}
+  /* Stack the color bar UNDER the canvas so the canvas always gets the full
+     width of the main column (never squeezed by a side-by-side 220px column). */
+  .tpc-canvas-wrap{grid-template-columns:1fr;gap:1rem}
   .tpc-prev img{width:80px;height:80px}
+}
+/* At very wide screens there is room to put the color bar beside the canvas. */
+@media (min-width:1320px){
+  .tpc-canvas-wrap{grid-template-columns:minmax(0,1fr) 220px}
 }
 
 /* Respect reduced-motion for the tilted preview */
