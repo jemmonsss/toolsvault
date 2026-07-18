@@ -158,7 +158,9 @@
     var overlay = $('tpc-grid-overlay');
     if (overlay) {
       overlay.style.backgroundSize = 'calc(100% / ' + w + ') calc(100% / ' + h + ')';
-      overlay.classList.toggle('show', showGrid && z >= 6);
+      // Always show the grid as one cell per texture pixel whenever enabled,
+      // at any zoom (so large textures still display a per-pixel grid).
+      overlay.classList.toggle('show', showGrid);
     }
   }
 
@@ -428,7 +430,11 @@
     }
     $('tpc-slot-hint').textContent = 'Editing: ' + path;
     refreshTreeFlags();
+    // Fit the canvas to the selected texture's resolution and the available
+    // box. Use rAF so we measure the final laid-out box (not a pre-paint size),
+    // and again on the next frame in case layout shifted.
     fitZoom();
+    requestAnimationFrame(fitZoom);
     showVanillaPreview(path);
     undoStack = []; redoStack = [];
   }
@@ -667,6 +673,7 @@
       ctx.drawImage(img, 0, 0, w, h);
       renderCanvas();
       fitZoom();
+      requestAnimationFrame(fitZoom);
       afterEdit();
       showMsg('Loaded vanilla ' + selectedSlot.split('/').pop() + ' — edit and export.', true);
     } catch (e) {
