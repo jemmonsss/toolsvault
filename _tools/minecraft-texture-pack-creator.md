@@ -45,12 +45,15 @@ icon: "&#127959;"
     </div>
   </div>
 
-  <div class="tabs">
-    <button class="tab active" data-tab="editor">Editor</button>
-    <button class="tab" data-tab="files">Files</button>
-    <button class="tab" data-tab="preview">Preview</button>
-    <button class="tab" data-tab="export">Export</button>
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-tab="editor" role="tab" aria-selected="true" aria-controls="tab-editor">Editor</button>
+    <button class="tab" data-tab="files" role="tab" aria-selected="false" aria-controls="tab-files">Files</button>
+    <button class="tab" data-tab="preview" role="tab" aria-selected="false" aria-controls="tab-preview">Preview</button>
+    <button class="tab" data-tab="export" role="tab" aria-selected="false" aria-controls="tab-export">Export</button>
   </div>
+
+  <!-- Global status toast (visible on every tab) -->
+  <div class="tpc-status" id="tpc-status" role="status" aria-live="polite" hidden></div>
 
   <!-- EDITOR -->
   <section class="panel active" id="tab-editor">
@@ -145,7 +148,6 @@ icon: "&#127959;"
         </div>
         <button class="btn btn-primary" id="tpc-export-zip">⬇ Download .zip</button>
         <button class="btn btn-secondary" id="tpc-export-meta">Download pack.mcmeta only</button>
-        <div class="msg" id="tpc-export-msg" style="display:none"></div>
       </div>
       <div class="tpc-export-col">
         <h3>pack.mcmeta preview</h3>

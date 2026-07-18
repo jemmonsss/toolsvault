@@ -115,6 +115,22 @@
     }
   }
 
+  // Choose a zoom that fits the canvas comfortably inside its box (responsive).
+  function fitZoom() {
+    var box = document.querySelector('.tpc-canvas-box');
+    if (!box) return;
+    var avail = box.clientWidth - 24; // minus padding
+    if (avail <= 0) return;
+    var slider = $('tpc-zoom');
+    var min = slider ? parseInt(slider.min, 10) || 4 : 4;
+    var max = slider ? parseInt(slider.max, 10) || 32 : 32;
+    var z = Math.floor(avail / canvas.width);
+    z = Math.max(min, Math.min(max, z));
+    zoom = z;
+    if (slider) slider.value = String(z);
+    renderCanvas();
+  }
+
   /* ---------- Pixel drawing ---------- */
   function eventToPixel(e) {
     var rect = canvas.getBoundingClientRect();
@@ -258,6 +274,7 @@
     }
     $('tpc-slot-hint').textContent = 'Editing: ' + path;
     refreshTreeFlags();
+    fitZoom();
     undoStack = []; redoStack = [];
   }
 
@@ -380,11 +397,16 @@
 
   function zipName() { return sanitizeName($('tpc-name').value) + '.zip'; }
 
+  var statusTimer = null;
   function showMsg(text, ok) {
-    var m = $('tpc-export-msg');
-    m.style.display = 'block';
-    m.className = 'msg ' + (ok ? 'ok' : 'err');
+    var m = $('tpc-status');
+    if (!m) return;
+    m.hidden = false;
+    m.className = 'tpc-status ' + (ok ? 'ok' : 'err');
     m.textContent = text;
+    if (statusTimer) clearTimeout(statusTimer);
+    // Errors stay a little longer; both auto-dismiss so the toast never lingers.
+    statusTimer = setTimeout(function () { m.hidden = true; }, ok ? 3500 : 6000);
   }
 
   async function exportZip() {
@@ -484,17 +506,26 @@
   }
 
   /* ---------- Wire up UI ---------- */
+  function activateTab(name) {
+    document.querySelectorAll('.tpc .tab').forEach(function (t) {
+      var on = t.dataset.tab === name;
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    document.querySelectorAll('.tpc .panel').forEach(function (p) {
+      p.classList.toggle('active', p.id === 'tab-' + name);
+    });
+    if (name === 'preview') renderPreview();
+    if (name === 'files') renderFileList();
+    if (name === 'export') { renderMeta(); renderIconOptions(); }
+  }
+
   function bindUI() {
     // Tabs
     document.querySelectorAll('.tpc .tab').forEach(function (tab) {
-      tab.addEventListener('click', function () {
-        document.querySelectorAll('.tpc .tab').forEach(function (t) { t.classList.remove('active'); });
-        document.querySelectorAll('.tpc .panel').forEach(function (p) { p.classList.remove('active'); });
-        tab.classList.add('active');
-        $('tab-' + tab.dataset.tab).classList.add('active');
-        if (tab.dataset.tab === 'preview') renderPreview();
-        if (tab.dataset.tab === 'files') renderFileList();
-        if (tab.dataset.tab === 'export') { renderMeta(); renderIconOptions(); }
+      tab.addEventListener('click', function () { activateTab(tab.dataset.tab); });
+      tab.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activateTab(tab.dataset.tab); }
       });
     });
 
@@ -615,6 +646,13 @@
     $('tpc-export-zip').addEventListener('click', exportZip);
     $('tpc-export-meta').addEventListener('click', exportMetaOnly);
 
+    // Responsive: re-fit the canvas when the viewport changes (debounced).
+    var resizeTimer = null;
+    window.addEventListener('resize', function () {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(fitZoom, 150);
+    });
+
     // Keyboard
     document.addEventListener('keydown', function (e) {
       var tag = (e.target.tagName || '').toLowerCase();
@@ -657,6 +695,9 @@
     // Auto-select first node so users can start immediately.
     var first = document.querySelector('.tpc-node');
     if (first) first.click();
+    // Fit again after styles/layout settle (stylesheet is injected async).
+    requestAnimationFrame(fitZoom);
+    setTimeout(fitZoom, 250);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
