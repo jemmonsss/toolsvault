@@ -704,10 +704,21 @@
     if (name === 'preview') renderPreview();
     if (name === 'files') renderFileList();
     if (name === 'export') { renderMeta(); renderIconOptions(); }
+    // The Editor canvas may have been hidden (0-width) when last measured;
+    // re-fit now that it is visible so it is the correct size at any resolution.
+    if (name === 'editor') { requestAnimationFrame(fitZoom); setTimeout(fitZoom, 50); }
   }
 
   function bindUI() {
-    // Tabs
+    // Tabs — delegated on the container so clicks always work even if the
+    // per-button listeners were added before the buttons existed.
+    var tabsEl = document.querySelector('.tpc .tabs');
+    if (tabsEl) {
+      tabsEl.addEventListener('click', function (e) {
+        var t = e.target.closest ? e.target.closest('.tab') : null;
+        if (t && t.dataset && t.dataset.tab) activateTab(t.dataset.tab);
+      });
+    }
     document.querySelectorAll('.tpc .tab').forEach(function (tab) {
       tab.addEventListener('click', function () { activateTab(tab.dataset.tab); });
       tab.addEventListener('keydown', function (e) {
@@ -873,20 +884,25 @@
     project.name = $('tpc-name').value;
     project.format = parseInt($('tpc-format').value, 10);
     project.description = $('tpc-desc').value;
-    resetCanvas(16, 16);
-    buildTree();
+    // Wire up ALL UI listeners FIRST so tabs/tools work even if a later
+    // step (tree fetch, auto-select, fit) fails or races layout.
     renderSwatches();
     bindUI();
-    renderMeta();
-    renderIconOptions();
+    try { resetCanvas(16, 16); } catch (e) {}
+    try { renderMeta(); renderIconOptions(); } catch (e) {}
+    // Populate the texture tree (CDN-backed, async).
+    try { buildTree(); } catch (e) { buildTreeFallback(); }
     // Auto-select first node so users can start immediately.
-    var first = document.querySelector('.tpc-node');
-    if (first) first.click();
+    try {
+      var first = document.querySelector('.tpc-node');
+      if (first) first.click();
+    } catch (e) {}
     // Re-fit whenever the canvas box gets a real size (covers async CSS,
     // desktop grid layout, window resize, and switching back to the Editor).
     observeCanvasBox();
     requestAnimationFrame(fitZoom);
-    setTimeout(fitZoom, 250);
+    setTimeout(fitZoom, 100);
+    setTimeout(fitZoom, 350);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
