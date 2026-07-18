@@ -9,6 +9,7 @@ tags:
   - search
   - gtarp
 category: "FiveM"
+games_only: true
 featured: true
 icon: "🔍"
 ---

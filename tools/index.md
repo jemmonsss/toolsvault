@@ -51,10 +51,10 @@ description: "Browse all developer tools organized by category."
     <section class="category-section" data-category="{{ category | downcase | escape }}">
         <div class="category-header">
             <h2>{{ category }}</h2>
-            <span class="category-count">{{ site.tools | where: 'category', category | size }}</span>
+            <span class="category-count">{{ site.tools | where: 'category', category | where_exp: 't', 't.games_only != true' | size }}</span>
         </div>
         <div class="tools-grid">
-            {% assign cat_tools = site.tools | where: 'category', category %}
+            {% assign cat_tools = site.tools | where: 'category', category | where_exp: 't', 't.games_only != true' %}
             {% for tool in cat_tools %}
             <a href="{{ tool.url | relative_url }}" class="tool-card"
                data-title="{{ tool.title | escape | downcase }}"

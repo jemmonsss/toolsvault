@@ -8,6 +8,7 @@ tags:
   - vehicles
   - space
 category: "Star Citizen"
+games_only: true
 featured: true
 ---
 <div class="tui">

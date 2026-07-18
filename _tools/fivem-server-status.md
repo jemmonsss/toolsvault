@@ -9,6 +9,7 @@ tags:
   - status
   - gtarp
 category: "FiveM"
+games_only: true
 featured: true
 icon: "🎮"
 ---

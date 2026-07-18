@@ -8,6 +8,7 @@ tags:
   - viewer
   - render
 category: "Minecraft"
+games_only: true
 ---
 <div class="tui">
   <h1>Minecraft Skin Viewer</h1>

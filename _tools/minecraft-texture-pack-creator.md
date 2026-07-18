@@ -9,6 +9,7 @@ tags:
   - editor
   - zip
 category: "Minecraft"
+games_only: true
 icon: "&#127959;"
 ---
 

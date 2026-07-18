@@ -8,6 +8,7 @@ tags:
   - browser
   - discovery
 category: "Games"
+games_only: true
 ---
 <div class="tui">
   <h1>Free To Play Games</h1>

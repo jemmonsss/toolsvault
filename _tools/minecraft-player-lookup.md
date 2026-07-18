@@ -8,6 +8,7 @@ tags:
   - uuid
   - skin
 category: "Minecraft"
+games_only: true
 featured: true
 ---
 <div class="tui">

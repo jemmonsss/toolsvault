@@ -35,6 +35,7 @@
   var showGrid = true;
   var undoStack = [];
   var redoStack = [];
+  var inited = false;
   var recentColors = ['#8b5cf6', '#000000', '#ffffff', '#7cba3f', '#a05a2c', '#5b9cff'];
   var drawing = false;
   var lastPt = null;
@@ -153,24 +154,35 @@
   }
 
   // Choose a zoom that fits the canvas comfortably inside its box (responsive).
+  // Never produce a broken (near-zero) size: if the box can't be measured yet,
+  // keep the current zoom rather than collapsing the canvas.
   function fitZoom() {
     var slider = $('tpc-zoom');
     var min = slider ? parseInt(slider.min, 10) || 4 : 4;
     var max = slider ? parseInt(slider.max, 10) || 32 : 32;
     var box = document.querySelector('.tpc-canvas-box');
-    // If the box hasn't been laid out yet (e.g. panel hidden or CSS not applied),
-    // fall back to a sane default zoom instead of collapsing the canvas to ~0.
-    var avail = box ? box.clientWidth - 24 : 0;
-    var z;
-    if (!box || avail < 32) {
-      z = Math.min(max, Math.max(min, Math.floor(512 / canvas.width)));
-    } else {
-      z = Math.floor(avail / canvas.width);
-      z = Math.max(min, Math.min(max, z));
+    var avail = box ? box.clientWidth - 24 : 0; // minus padding
+    if (avail < 32 || !isFinite(avail)) {
+      // Box not laid out yet (hidden panel / pre-paint). Do not touch zoom now;
+      // the ResizeObserver will re-fit once the box has a real width.
+      if (!zoom || zoom < min) zoom = Math.min(max, Math.max(min, Math.floor(512 / canvas.width)));
+      renderCanvas();
+      return;
     }
+    var z = Math.floor(avail / canvas.width);
+    z = Math.max(min, Math.min(max, z));
     zoom = z;
     if (slider) slider.value = String(z);
     renderCanvas();
+  }
+
+  // Re-fit automatically whenever the canvas box actually changes size. This
+  // removes all timing races (async CSS, hidden panels, window resize, layout).
+  function observeCanvasBox() {
+    var box = document.querySelector('.tpc-canvas-box');
+    if (!box || typeof ResizeObserver === 'undefined') return;
+    var ro = new ResizeObserver(function () { fitZoom(); });
+    ro.observe(box);
   }
 
   /* ---------- Pixel drawing ---------- */
@@ -271,8 +283,81 @@
     });
   }
 
-  /* ---------- Slots / tree ---------- */
-  function buildTree() {
+  /* ---------- Slots / tree ----------
+   * The tree is populated from the vanilla asset listing on the public CDN
+   * (each directory has a _list.json with { directories, files }). This gives
+   * EVERY editable texture in the game, always accurate for the chosen version,
+   * without hosting anything. Directories load lazily on expand. If the CDN is
+   * unreachable, we fall back to the built-in CATEGORIES list. */
+  var TEX_ROOT = 'assets/minecraft/textures';
+
+  function cdnListUrl(relDir) {
+    var ver = formatToVersion($('tpc-format').value);
+    return VANILLA_BASE + ver + '/' + TEX_ROOT + (relDir ? '/' + relDir : '') + '/_list.json';
+  }
+
+  function fetchJSON(url) {
+    if (typeof fetch !== 'function') return Promise.reject(new Error('no fetch'));
+    return fetch(url, { cache: 'force-cache' }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+  }
+
+  function makeFileNode(relPath, name) {
+    var path = TEX_ROOT + '/' + relPath;
+    var node = document.createElement('div');
+    node.className = 'tpc-node';
+    node.dataset.path = path;
+    node.dataset.name = name;
+    node.innerHTML = '<span class="tpc-dot"></span><span class="tpc-name">' + name + '</span>';
+    node.addEventListener('click', function () { selectSlot(path); });
+    return node;
+  }
+
+  // Create a collapsible group for a directory; lazy-loads its contents.
+  function makeDirGroup(relDir, label, depth) {
+    var wrap = document.createElement('div');
+    wrap.className = 'tpc-group';
+    var head = document.createElement('div');
+    head.className = 'tpc-cat tpc-cat-toggle';
+    head.style.paddingLeft = (0.4 + depth * 0.6) + 'rem';
+    head.innerHTML = '<span class="tpc-caret">▸</span> ' + label;
+    var body = document.createElement('div');
+    body.className = 'tpc-group-body';
+    body.style.display = 'none';
+    var loaded = false;
+    head.addEventListener('click', function () {
+      var open = body.style.display !== 'none';
+      body.style.display = open ? 'none' : 'block';
+      head.querySelector('.tpc-caret').textContent = open ? '▸' : '▾';
+      if (!loaded && !open) {
+        loaded = true;
+        body.innerHTML = '<div class="tpc-loading">Loading…</div>';
+        fetchJSON(cdnListUrl(relDir)).then(function (data) {
+          body.innerHTML = '';
+          (data.directories || []).sort().forEach(function (d) {
+            body.appendChild(makeDirGroup(relDir + '/' + d, d, depth + 1));
+          });
+          (data.files || []).filter(function (f) { return /\.png$/i.test(f); }).sort().forEach(function (f) {
+            var rel = relDir + '/' + f;
+            var node = makeFileNode(rel, f.replace(/\.png$/i, ''));
+            node.style.paddingLeft = (0.6 + depth * 0.6) + 'rem';
+            body.appendChild(node);
+          });
+          refreshTreeFlags();
+        }).catch(function (e) {
+          body.innerHTML = '<div class="tpc-loading">Could not load list.</div>';
+          loaded = false;
+        });
+      }
+    });
+    wrap.appendChild(head);
+    wrap.appendChild(body);
+    return wrap;
+  }
+
+  function buildTreeFallback() {
     var body = $('tpc-tree-body');
     body.innerHTML = '';
     Object.keys(CATEGORIES).forEach(function (cat) {
@@ -285,14 +370,35 @@
         node.className = 'tpc-node';
         node.dataset.path = path;
         node.dataset.name = name;
-        node.dataset.cat = cat;
         node.innerHTML = '<span class="tpc-dot"></span><span class="tpc-name">' + name + '</span>';
-        node.addEventListener('click', function () { selectSlot(path, cat, name); });
+        node.addEventListener('click', function () { selectSlot(path); });
         body.appendChild(node);
       });
     });
     refreshTreeFlags();
   }
+
+  function buildTree() {
+    var body = $('tpc-tree-body');
+    body.innerHTML = '<div class="tpc-loading">Loading texture list…</div>';
+    fetchJSON(cdnListUrl('')).then(function (data) {
+      body.innerHTML = '';
+      var dirs = (data.directories || []).sort();
+      if (!dirs.length) throw new Error('empty');
+      dirs.forEach(function (d) { body.appendChild(makeDirGroup(d, d, 0)); });
+      // Auto-open block + item so users see content immediately.
+      var groups = body.querySelectorAll('.tpc-cat-toggle');
+      for (var i = 0; i < groups.length; i++) {
+        var t = groups[i].textContent.trim().toLowerCase();
+        if (t === 'block' || t === 'item') { groups[i].click(); }
+      }
+      refreshTreeFlags();
+    }).catch(function () {
+      buildTreeFallback();
+      showMsg('Using built-in texture list (could not reach the vanilla CDN).', false);
+    });
+  }
+
 
   function refreshTreeFlags() {
     document.querySelectorAll('.tpc-node').forEach(function (n) {
@@ -758,6 +864,8 @@
 
   /* ---------- Init ---------- */
   function init() {
+    if (inited) return;
+    inited = true;
     if (!canvas || typeof TpcZip === 'undefined') {
       console.error('TPC init failed: missing canvas or TpcZip.');
       return;
@@ -774,7 +882,9 @@
     // Auto-select first node so users can start immediately.
     var first = document.querySelector('.tpc-node');
     if (first) first.click();
-    // Fit again after styles/layout settle (stylesheet is injected async).
+    // Re-fit whenever the canvas box gets a real size (covers async CSS,
+    // desktop grid layout, window resize, and switching back to the Editor).
+    observeCanvasBox();
     requestAnimationFrame(fitZoom);
     setTimeout(fitZoom, 250);
   }

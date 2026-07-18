@@ -11,6 +11,10 @@ description: "Game-specific tools, including Minecraft, Star Citizen, and more."
         <p>Tools and utilities for your favorite games</p>
     </div>
 
+    <div class="disclaimer" role="note">
+        <strong>Not affiliated:</strong> ToolsVault is an independent project and is not affiliated with, endorsed by, or sponsored by Mojang, Microsoft, Minecraft, Star Citizen, Cloud Imperium Games, FiveM, Rockstar Games, or any other company whose games or services these tools interact with. All trademarks and game assets belong to their respective owners.
+    </div>
+
     <section class="filter-section" id="filter-section">
         <button class="filter-btn active" data-category="all">All Games</button>
         {% assign game_categories = "Minecraft,Star Citizen,Games,FiveM" | split: ',' %}

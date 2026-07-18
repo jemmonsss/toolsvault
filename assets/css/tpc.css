@@ -30,6 +30,12 @@
 .tpc-node .tpc-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:0 0 auto;opacity:0}
 .tpc-node.has .tpc-dot{opacity:1}
 .tpc-node .tpc-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tpc-cat-toggle{cursor:pointer;user-select:none}
+.tpc-cat-toggle:hover{color:var(--text)}
+.tpc-caret{display:inline-block;width:1em;color:var(--accent);font-size:.85em}
+.tpc-group-body{padding-bottom:.15rem}
+.tpc-loading{padding:.6rem .8rem;color:var(--text-dim);font-size:.85rem;font-style:italic}
+.tpc-group .tpc-node{padding-left:.8rem}
 .tpc-main{min-width:0}
 
 /* ---- Toolbar (wraps freely, larger tap targets on mobile) ---- */
@@ -47,7 +53,7 @@
 .tpc-canvas-wrap{display:flex;flex-direction:column;gap:1rem}
 .tpc-canvas-box{background:
   repeating-conic-gradient(var(--border) 0% 25%, transparent 0% 50%) 50%/16px 16px,
-  var(--bg);border:1px solid var(--border);border-radius:10px;padding:.75rem;display:flex;justify-content:center;align-items:center;min-height:240px;overflow:auto;-webkit-overflow-scrolling:touch}
+  var(--bg);border:1px solid var(--border);border-radius:10px;padding:.75rem;display:flex;justify-content:center;align-items:center;min-height:240px;min-width:0;overflow:auto;-webkit-overflow-scrolling:touch}
 .tpc-canvas-stage{position:relative;display:inline-block;line-height:0;flex:0 0 auto}
 .tpc-grid-overlay{position:absolute;inset:0;pointer-events:none;display:none;
   background-image:linear-gradient(to right,rgba(0,0,0,.18) 1px,transparent 1px),linear-gradient(to bottom,rgba(0,0,0,.18) 1px,transparent 1px)}
@@ -103,7 +109,7 @@
   .tpc-bar{flex-direction:row;flex-wrap:wrap;align-items:flex-end}
   .tpc-field{flex:0 0 auto;min-width:150px}
   .tpc-field-grow{flex:1 1 240px}
-  .tpc-canvas-wrap{display:grid;grid-template-columns:1fr 220px;align-items:start}
+  .tpc-canvas-wrap{display:grid;grid-template-columns:minmax(0,1fr) 220px;align-items:start}
   .tpc-swatches{grid-template-columns:repeat(6,1fr)}
   .tpc-filebar .btn{flex:0 0 auto}
   .tpc-count{flex-basis:auto;margin-left:auto}

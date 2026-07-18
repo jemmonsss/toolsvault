@@ -8,6 +8,7 @@ tags:
   - trading
   - uec
 category: "Star Citizen"
+games_only: true
 ---
 <div class="tui">
   <h1>Star Citizen Commodity Prices</h1>

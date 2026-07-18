@@ -8,6 +8,7 @@ tags:
   - status
   - ping
 category: "Minecraft"
+games_only: true
 ---
 <div class="tui">
   <h1>Minecraft Server Status</h1>
