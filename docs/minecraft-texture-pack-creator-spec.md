@@ -36,20 +36,30 @@ dedicated asset files.
 ## 3. Functional Requirements
 
 ### 3.1 Core functionality (UI for upload, edit, organize)
-- **Namespace browser / file tree**: a left sidebar listing the standard Minecraft
-  texture paths (`assets/minecraft/textures/block/...`, `item/...`,
-  `entity/...`, `gui/...`, `model/...`, `font/...`, etc.). Clicking a node selects
-  the target texture slot.
-- **Upload**: drag-and-drop or file picker to import an image into a selected slot.
-  Accepts PNG (16×16 / 32×32 / 64×64 — any power-of-two). Auto-detects dimensions.
-- **New from blank**: create an empty canvas at a chosen resolution.
+- **Namespace browser / file tree**: a left sidebar populated **live from the
+  vanilla asset CDN** (`InventivetalentDev/minecraft-assets`). Every editable texture in the
+  game is listed — `block/`, `item/`, `entity/` (with nested subfolders), `gui/`, `trims/`,
+  etc. — accurate to the selected `pack_format` version. Directories lazy-load on expand, so
+  thousands of slots stay fast. Nothing is hosted on ToolsVault. Clicking a node selects the slot.
+- **Vanilla reference**: selecting a slot shows a live vanilla thumbnail from the CDN, plus an
+  "Edit this texture" button that draws the real vanilla base onto the canvas (CORS-enabled CDN,
+  so it can be re-exported without tainting).
+- **Upload**: drag-and-drop or file picker to import an image into a selected slot. Accepts PNG,
+  any power-of-two; auto-detects dimensions.
+- **Resolution selector (16–512)**: a dropdown sets the working canvas size (16/32/64/128/256/512).
+  Resizing preserves existing art via nearest-neighbor. "New blank" creates at the chosen size,
+  enabling **higher-resolution** custom textures.
 - **Pixel editor**: HTML `<canvas>` with:
   - pencil / eraser / fill (bucket) / eyedropper / rectangle / line tools
-  - adjustable brush size, foreground + background color, recent palette
-  - zoom & pan, grid overlay toggle, "pixelated" rendering
+  - adjustable brush size (starts at 1), foreground + background color, recent palette
+  - zoom & pan, grid overlay toggle (one cell == one texture pixel, perfectly aligned),
+    "pixelated" rendering, **transparency checkerboard** so transparent vs solid-white is obvious
   - undo / redo history stack
+- **Upscaler (rule-based, no AI)**: a **"Upscale 2×"** button runs an EPX/Scale2x edge-preserving
+  pass plus an optional **Smooth** pass (edge-aware HQ2x-style interpolation). Repeated clicks go
+  16→32→64→…→512. Hard edges stay crisp; gradients smooth out for more detail without looking weird.
 - **Organize**: rename slots, delete slots, search/filter the tree, bulk import a
-  folder of PNGs (mapped to slots by filename), reorder/duplicate.
+  folder of PNGs (mapped to slots by filename).
 
 ### 3.2 Preview
 - **Block/item preview**: render the edited texture on a representative 3D-ish block
@@ -100,9 +110,9 @@ dedicated asset files.
 ## 4. File-by-File Implementation Plan (AS BUILT)
 
 > Implementation note: rather than appending a large block to the shared `main.css`,
-> the tool ships a **separate scoped stylesheet** `assets/css/tpc.css` (injected at
-> runtime from `tpc.js`) to avoid touching the global design system. Everything else
-> follows the plan.
+> the tool ships a **separate scoped stylesheet** `assets/css/tpc.css`, linked directly from the
+> tool page (`<link rel="stylesheet" href="/assets/css/tpc.css?v=...">`). It is cache-busted per
+> build so Cloudflare always serves the fresh asset. Everything else follows the plan.
 
 ### 4.1 New tool page — `_tools/minecraft-texture-pack-creator.md`
 ```yaml
@@ -144,12 +154,16 @@ Responsive collapse at ≤768px. The grid is a non-destructive CSS overlay
 ### 4.4 New JS — `assets/js/tpc.js` (app logic)
 IIFE; loads `tpc.css`, then on init builds the namespace tree and wires UI.
 - **State**: `project = { name, format, description, files: Map<path, {canvas}> }`.
-- **Tree**: static manifest (`CATEGORIES`) of common Minecraft slots rendered as
-  nodes; search filter; "has"/"active" indicators.
+- **Tree**: built **from the vanilla CDN** at runtime (per `pack_format`); folders
+  lazy-load on expand; falls back to a small static `CATEGORIES` manifest if the CDN is unreachable.
+  Search filter + "has"/"active" indicators.
 - **Editor**: Canvas 2D tool state machine — pencil, eraser, fill (flood),
-  eyedropper, line, rectangle. Brush size, zoom, non-destructive grid overlay,
+  eyedropper, line, rectangle. Brush size (default 1), zoom, non-destructive grid overlay
+  (exact integer cell == one texture pixel, perfectly aligned), transparency checkerboard,
   color picker + recent swatches, undo/redo (`ImageData` stack, capped 40).
   Shape tools use a pre-drag snapshot restored on each `pointermove` for live preview.
+  Canvas display size is an exact integer multiple of the texture size so pixels + grid never drift;
+  the resolution dropdown resizes via nearest-neighbor.
 - **Upload**: drag-drop + file picker → selected slot; power-of-two / square warning.
   Folder import (`webkitdirectory`) maps files into `assets/minecraft/…`.
   "+ New blank texture" creates a custom slot.
