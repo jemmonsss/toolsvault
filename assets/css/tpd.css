@@ -3,7 +3,7 @@
  * Reuses the site's CSS variables for full theme parity. */
 
 /* ---- Layout container ---- */
-.tpd{max-width:1400px;margin:0 auto}
+.tpd{max-width:1400px;margin:0 auto;overflow-x:hidden}
 
 /* ---- Metadata bar (stacks on mobile, row on larger screens) ---- */
 .tpd-bar{display:flex;flex-direction:column;gap:.75rem;margin-bottom:1rem}
@@ -93,7 +93,7 @@
 .tpd-saved{font-size:.82rem;color:var(--accent);margin-left:.25rem}
 
 /* ---- New file dropdown ---- */
-.tpd-new-menu{position:absolute;background:var(--bg-elev);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);padding:.5rem 0;min-width:220px;z-index:50;max-height:60vh;overflow:auto}
+.tpd-new-menu{position:fixed;background:var(--bg-elev);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);padding:.5rem 0;min-width:220px;max-width:min(320px,calc(100vw - 20px));z-index:50;max-height:60vh;overflow:auto}
 .tpd-new-menu[hidden]{display:none}
 .tpd-new-group{padding:.35rem .8rem;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text-dim);font-weight:600;margin-top:.25rem}
 .tpd-new-item{padding:.5rem .9rem;cursor:pointer;font-size:.88rem;color:var(--text);display:flex;justify-content:space-between;align-items:center}

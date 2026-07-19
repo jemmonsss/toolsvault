@@ -68,6 +68,52 @@
     { label: 'Structures', key: 'structures' }
   ];
 
+  var PACK_TEMPLATES = {
+    hello_world: {
+      name: 'Hello World',
+      description: 'A minimal datapack that prints a message on load.',
+      files: [
+        { path: 'pack.mcmeta', type: 'meta', content: '{\n  "pack": {\n    "pack_format": 61,\n    "description": "Hello World Datapack"\n  }\n}\n' },
+        { path: 'data/hello_world/functions/load.mcfunction', type: 'functions', content: '# Runs when the datapack loads\nsay Hello from my datapack!\n' },
+        { path: 'data/hello_world/functions/tick.mcfunction', type: 'functions', content: '# Runs every tick\n# execute as @a at @s run say Tick!\n' }
+      ]
+    },
+    custom_recipe: {
+      name: 'Custom Crafting Recipe',
+      description: 'Adds a new shaped crafting recipe (netherite ingot example).',
+      files: [
+        { path: 'data/custom_recipe/recipes/netherite_ingot.json', type: 'recipes', content: '{\n  "type": "minecraft:crafting_shaped",\n  "pattern": ["NNN", "GNG", "NNN"],\n  "key": {\n    "N": { "item": "minecraft:netherite_scrap" },\n    "G": { "item": "minecraft:gold_ingot" }\n  },\n  "result": {\n    "item": "minecraft:netherite_ingot",\n    "count": 1\n  }\n}\n' }
+      ]
+    },
+    loot_table_modifier: {
+      name: 'Loot Table Modifier',
+      description: 'Adds an item modifier that sets count on chest loot.',
+      files: [
+        { path: 'data/custom_loot/loot_tables/chests/simple_dungeon.json', type: 'loot_tables', content: '{\n  "pools": [\n    {\n      "rolls": 1,\n      "entries": [\n        {\n          "type": "minecraft:item",\n          "name": "minecraft:diamond",\n          "functions": [\n            {\n              "function": "minecraft:set_count",\n              "count": {\n                "type": "minecraft:uniform",\n                "min": 1,\n                "max": 3\n              }\n            }\n          ]\n        }\n      ]\n    }\n  ]\n}\n' }
+      ]
+    },
+    tag_example: {
+      name: 'Tag Example',
+      description: 'Adds a custom item tag and a function that uses it.',
+      files: [
+        { path: 'data/custom_tags/tags/item/my_gems.json', type: 'tags', content: '{\n  "values": [\n    "minecraft:diamond",\n    "minecraft:emerald",\n    "minecraft:lapis_lazuli"\n  ]\n}\n' },
+        { path: 'data/custom_tags/functions/check_gems.mcfunction', type: 'functions', content: '# This function references the tag above\n# execute as @a if entity @s[nbt={Inventory:[{tag:{Tags:["my_gems"]}}]}] run say You have a custom gem!\n' }
+      ]
+    },
+    advancement_reward: {
+      name: 'Advancement Reward',
+      description: 'Grants the player a reward when they craft a diamond.',
+      files: [
+        { path: 'data/advancement_rewards/advancements/craft_diamond.json', type: 'advancements', content: '{\n  "display": {\n    "title": "Diamond Crafter",\n    "description": "Craft a diamond",\n    "icon": { "item": "minecraft:diamond" },\n    "frame": "task",\n    "announce_to_chat": true,\n    "show_toast": true\n  },\n  "criteria": {\n    "crafted_diamond": {\n      "trigger": "minecraft:recipe_crafted",\n      "conditions": {\n        "recipe_id": "minecraft:diamond"\n      }\n    }\n  },\n  "rewards": {\n    "function": "advancement_rewards:give_reward"\n  }\n}\n' },
+        { path: 'data/advancement_rewards/functions/give_reward.mcfunction', type: 'functions', content: '# Reward function\ngive @s minecraft:golden_apple 1\nadvancement revoke @s only advancement_rewards:craft_diamond\n' }
+      ]
+    }
+  };
+
+  var TEMPLATE_LIST = Object.keys(PACK_TEMPLATES).map(function (k) {
+    return { key: k, name: PACK_TEMPLATES[k].name, desc: PACK_TEMPLATES[k].description };
+  });
+
   /* ---------- State ---------- */
   var project = {
     name: 'My Datapack',
@@ -114,8 +160,8 @@
     project.namespace = obj.namespace || 'minecraft';
     project.files = new Map();
     $('tpd-name').value = project.name;
-    $('tpc-format').value = String(project.format);
-    $('tpc-desc').value = project.description;
+    $('tpd-format').value = String(project.format);
+    $('tpd-desc').value = project.description;
     $('tpd-namespace').value = project.namespace;
     var tasks = [];
     obj.files.forEach(function (f) {
@@ -295,6 +341,54 @@
     showMsg('Created ' + path, true);
   }
 
+  function showTemplateMenu() {
+    var existing = $('tpd-template-menu');
+    if (existing) { existing.remove(); return; }
+    var btn = $('tpd-load-template');
+    var rect = btn.getBoundingClientRect();
+    var menu = document.createElement('div');
+    menu.className = 'tpd-new-menu';
+    menu.id = 'tpd-template-menu';
+    menu.style.position = 'fixed';
+    menu.style.top = (rect.bottom + 4) + 'px';
+    menu.style.left = rect.left + 'px';
+    TEMPLATE_LIST.forEach(function (t) {
+      var item = document.createElement('div');
+      item.className = 'tpd-new-item';
+      item.innerHTML = '<span>' + t.name + '</span><span class="tpd-new-ext">pack</span>';
+      item.addEventListener('click', function () {
+        loadPackTemplate(t.key);
+        menu.remove();
+      });
+      menu.appendChild(item);
+    });
+    document.body.appendChild(menu);
+    var close = function (e) {
+      if (!menu.contains(e.target) && e.target !== btn) { menu.remove(); document.removeEventListener('click', close); }
+    };
+    setTimeout(function () { document.addEventListener('click', close); }, 0);
+  }
+
+  function loadPackTemplate(key) {
+    var tmpl = PACK_TEMPLATES[key];
+    if (!tmpl) return;
+    project.name = tmpl.name;
+    project.description = tmpl.description;
+    $('tpd-name').value = project.name;
+    $('tpd-desc').value = project.description;
+    project.files = new Map();
+    selectedPath = null;
+    editor.value = '';
+    tmpl.files.forEach(function (f) {
+      var path = f.path.replace('<namespace>', project.namespace);
+      project.files.set(path, { name: fileNameFromPath(path), type: f.type, content: f.content });
+    });
+    updateEditorHeader(); validateCurrent();
+    buildTree(); renderFileList(); renderPreview(); renderMeta();
+    if (project.files.size > 0) selectFile(Array.from(project.files.keys())[0]);
+    showMsg('Loaded template: ' + tmpl.name, true);
+  }
+
   /* ---------- Tree ---------- */
   function buildTree() {
     var body = $('tpd-tree-body');
@@ -432,8 +526,8 @@
   function buildMeta() {
     return {
       pack: {
-        pack_format: parseInt($('tpc-format').value, 10) || 61,
-        description: $('tpc-desc').value || ''
+        pack_format: parseInt($('tpd-format').value, 10) || 61,
+        description: $('tpd-desc').value || ''
       }
     };
   }
@@ -634,10 +728,22 @@
       showNewFileMenu();
     });
 
+    $('tpd-load-template').addEventListener('click', function (e) {
+      e.stopPropagation();
+      showTemplateMenu();
+    });
+
     $('tpd-new-blank').addEventListener('click', function () {
       var ns = sanitizeNamespace($('tpd-namespace').value || 'minecraft');
       showNewFileMenu();
     });
+
+    var templateFilesBtn = $('tpd-load-template-files');
+    if (templateFilesBtn) {
+      templateFilesBtn.addEventListener('click', function () {
+        showTemplateMenu();
+      });
+    }
 
     $('tpd-delete-file').addEventListener('click', function () {
       if (!selectedPath) { showMsg('No file selected.', false); return; }
@@ -686,8 +792,8 @@
 
     // Metadata inputs
     $('tpd-name').addEventListener('input', function () { project.name = this.value; renderMeta(); });
-    $('tpc-format').addEventListener('change', function () { project.format = parseInt(this.value, 10) || 61; renderMeta(); });
-    $('tpc-desc').addEventListener('input', function () { project.description = this.value; renderMeta(); });
+    $('tpd-format').addEventListener('change', function () { project.format = parseInt(this.value, 10) || 61; renderMeta(); });
+    $('tpd-desc').addEventListener('input', function () { project.description = this.value; renderMeta(); });
     $('tpd-namespace').addEventListener('input', function () { project.namespace = sanitizeNamespace(this.value); renderMeta(); });
 
     // Tree search
@@ -724,8 +830,8 @@
     });
 
     // Upload
-    $('tpd-upload-btn').addEventListener('click', function () { $('tpc-upload').click(); });
-    $('tpc-upload').addEventListener('change', function () { handleFiles(this.files); this.value = ''; });
+    $('tpd-upload-btn').addEventListener('click', function () { $('tpd-upload').click(); });
+    $('tpd-upload').addEventListener('change', function () { handleFiles(this.files); this.value = ''; });
     var dz = $('tpd-drop');
     ['dragenter', 'dragover'].forEach(function (ev) {
       dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add('drag'); });
@@ -754,8 +860,8 @@
       return;
     }
     project.name = $('tpd-name').value;
-    project.format = parseInt($('tpc-format').value, 10) || 61;
-    project.description = $('tpc-desc').value;
+    project.format = parseInt($('tpd-format').value, 10) || 61;
+    project.description = $('tpd-desc').value;
     project.namespace = sanitizeNamespace($('tpd-namespace').value || 'minecraft');
     bindUI();
     buildTree();

@@ -90,6 +90,7 @@ icon: "&#128190;"
         <div class="tpd-toolbar">
           <div class="tpd-tools">
             <button class="btn btn-primary tpd-sm" id="tpd-new-file" type="button" title="Create a new datapack file">+ New file</button>
+            <button class="btn btn-secondary tpd-sm" id="tpd-load-template" type="button" title="Load a built-in pack template">Load template</button>
           </div>
           <div class="tpd-tool-opts">
             <button class="btn btn-secondary tpd-sm" id="tpd-validate" type="button" title="Validate the current file">Validate</button>
@@ -111,7 +112,7 @@ icon: "&#128190;"
         <div class="tpd-dropzone" id="tpd-drop">
           <p>Drop a <strong>.json</strong> or <strong>.mcfunction</strong> here, or
             <button class="btn btn-secondary tpd-sm" id="tpd-upload-btn">Upload file</button>
-            <input type="file" id="tpc-upload" accept=".json,.mcfunction,text/plain,application/json" hidden>
+            <input type="file" id="tpd-upload" accept=".json,.mcfunction,text/plain,application/json" hidden>
           </p>
           <p class="tpd-hint" style="margin-top:.5rem">Files are parsed as text and added to the datapack tree.</p>
         </div>
@@ -123,6 +124,7 @@ icon: "&#128190;"
   <section class="panel" id="tab-files">
     <div class="tpd-filebar">
       <button class="btn btn-secondary" id="tpd-new-blank">+ New file</button>
+      <button class="btn btn-secondary" id="tpd-load-template-files">Load template</button>
       <span class="tpd-count" id="tpd-file-count">0 files</span>
     </div>
     <div class="tpd-filelist" id="tpd-filelist">
