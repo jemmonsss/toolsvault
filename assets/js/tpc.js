@@ -50,6 +50,150 @@
   function prepCtx() { ctx.imageSmoothingEnabled = false; }
   prepCtx();
 
+  /* ---------- Persistence (localStorage + file import/export) ---------- */
+  var STORAGE_KEY = 'tpc:project';
+  var SAVE_VERSION = 1;
+
+  // Serialize the project to a plain object (canvases -> data URLs).
+  function serializeProject() {
+    // Persist the current canvas into its slot before saving.
+    if (selectedSlot && project.files.has(selectedSlot)) {
+      project.files.get(selectedSlot).canvas = cloneCanvas(canvas);
+    }
+    var filesArr = [];
+    project.files.forEach(function (entry, path) {
+      filesArr.push({ path: path, name: entry.name, data: canvasToDataURL(entry.canvas) });
+    });
+    return {
+      version: SAVE_VERSION,
+      name: project.name,
+      format: project.format,
+      description: project.description,
+      files: filesArr
+    };
+  }
+
+  // Build a canvas from a PNG data URL.
+  function dataUrlToCanvas(dataUrl) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      img.onload = function () {
+        var c = document.createElement('canvas');
+        c.width = img.naturalWidth || img.width;
+        c.height = img.naturalHeight || img.height;
+        c.getContext('2d').drawImage(img, 0, 0);
+        resolve(c);
+      };
+      img.onerror = reject;
+      img.src = dataUrl;
+    });
+  }
+
+  // Apply a serialized project object to the editor state.
+  function applyProject(obj) {
+    if (!obj || !obj.files) throw new Error('Invalid project');
+    project.name = obj.name || 'My Texture Pack';
+    project.format = obj.format || 34;
+    project.description = obj.description || '';
+    project.files = new Map();
+    $('tpc-name').value = project.name;
+    $('tpc-format').value = String(project.format);
+    $('tpc-desc').value = project.description;
+    var tasks = obj.files.map(function (f) {
+      return dataUrlToCanvas(f.data).then(function (c) {
+        project.files.set(f.path, { canvas: c, name: f.name || f.path.split('/').pop() });
+      });
+    });
+    return Promise.all(tasks);
+  }
+
+  function storageAvailable() {
+    try {
+      var k = '__tpc_test__';
+      window.localStorage.setItem(k, '1');
+      window.localStorage.removeItem(k);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function saveProject() {
+    if (!storageAvailable()) { showMsg('Browser storage is unavailable — cannot save here.', false); return; }
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeProject()));
+      setSavedLabel(true);
+      showMsg('Saved "' + project.name + '" to this browser.', true);
+    } catch (e) {
+      showMsg('Save failed: ' + e.message, false);
+    }
+  }
+
+  function loadSavedProject() {
+    if (!storageAvailable()) { showMsg('Browser storage is unavailable.', false); return; }
+    var raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) { showMsg('No saved project found in this browser.', false); return; }
+    try {
+      applyProject(JSON.parse(raw)).then(function () {
+        selectedSlot = null;
+        resetCanvas(16, 16);
+        refreshTreeFlags(); renderFileList(); renderPreview(); renderMeta(); renderIconOptions();
+        showMsg('Loaded saved project.', true);
+      }).catch(function (e) { showMsg('Could not load saved project: ' + e.message, false); });
+    } catch (e) { showMsg('Saved project is corrupted.', false); }
+  }
+
+  function deleteSavedProject() {
+    if (!storageAvailable()) return;
+    window.localStorage.removeItem(STORAGE_KEY);
+    setSavedLabel(false);
+    showMsg('Deleted saved project from this browser.', true);
+  }
+
+  function importProjectFile(file) {
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var obj = JSON.parse(reader.result);
+        applyProject(obj).then(function () {
+          selectedSlot = null;
+          resetCanvas(16, 16);
+          refreshTreeFlags(); renderFileList(); renderPreview(); renderMeta(); renderIconOptions();
+          setSavedLabel(false);
+          showMsg('Imported "' + (obj.name || 'project') + '".', true);
+        }).catch(function (e) { showMsg('Import failed: ' + e.message, false); });
+      } catch (e) { showMsg('Invalid project file.', false); }
+    };
+    reader.onerror = function () { showMsg('Could not read file.', false); };
+    reader.readAsText(file);
+  }
+
+  function exportProjectFile() {
+    var data = serializeProject();
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = sanitizeName(project.name) + '.tpc.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    showMsg('Exported project file "' + sanitizeName(project.name) + '.tpc.json".', true);
+  }
+
+  function setSavedLabel(has) {
+    var el = $('tpc-saved-label');
+    if (!el) return;
+    if (has) {
+      var raw = storageAvailable() ? window.localStorage.getItem(STORAGE_KEY) : null;
+      var name = 'project';
+      if (raw) { try { name = JSON.parse(raw).name || 'project'; } catch (e) {} }
+      el.hidden = false;
+      el.textContent = 'Saved: ' + name;
+    } else { el.hidden = true; el.textContent = ''; }
+  }
+
+  function checkSavedExists() {
+    if (!storageAvailable()) { setSavedLabel(false); return; }
+    setSavedLabel(!!window.localStorage.getItem(STORAGE_KEY));
+  }
+
   /* ---------- Helpers ---------- */
   function slotPath(cat, name) {
     var base = 'assets/minecraft/textures/';
@@ -1014,6 +1158,19 @@
     $('tpc-export-zip').addEventListener('click', exportZip);
     $('tpc-export-meta').addEventListener('click', exportMetaOnly);
 
+    // Save / load / import / delete
+    $('tpc-save').addEventListener('click', saveProject);
+    $('tpc-load').addEventListener('click', loadSavedProject);
+    $('tpc-export-project').addEventListener('click', exportProjectFile);
+    $('tpc-import').addEventListener('click', function () { $('tpc-import-file').click(); });
+    $('tpc-import-file').addEventListener('change', function () {
+      if (this.files && this.files[0]) importProjectFile(this.files[0]);
+      this.value = '';
+    });
+    $('tpc-clear-project').addEventListener('click', function () {
+      if (window.confirm('Delete the saved project from this browser?')) deleteSavedProject();
+    });
+
     // Responsive: re-fit the canvas when the viewport changes (debounced).
     var resizeTimer = null;
     window.addEventListener('resize', function () {
@@ -1066,6 +1223,7 @@
     // Re-fit whenever the canvas box gets a real size (covers async CSS,
     // desktop grid layout, window resize, and switching back to the Editor).
     observeCanvasBox();
+    try { checkSavedExists(); } catch (e) {}
     requestAnimationFrame(fitZoom);
     setTimeout(fitZoom, 100);
     setTimeout(fitZoom, 350);

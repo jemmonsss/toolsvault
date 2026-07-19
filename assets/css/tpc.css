@@ -109,9 +109,16 @@
 .tpc-json{background:var(--bg-elev);border:1px solid var(--border);border-radius:8px;padding:.75rem;font-family:'Courier New',monospace;font-size:.82rem;white-space:pre-wrap;word-break:break-word;max-height:320px;overflow:auto;color:var(--text)}
 .tpc code{background:var(--bg-elev);border:1px solid var(--border);border-radius:4px;padding:.05rem .3rem;font-size:.82em}
 
-/* ---- Make the tab strip usable on small screens ---- */
-.tpc .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap}
-.tpc .tab{flex:1 0 auto;white-space:nowrap;text-align:center}
+/* ---- Save / load bar ---- */
+.tpc-savebar{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem}
+.tpc-savebar .btn{flex:0 0 auto}
+.tpc-saved{font-size:.82rem;color:var(--accent);margin-left:.25rem}
+
+/* ---- SVG icons (replace unicode emoji) ---- */
+.tpc-ico{display:inline-block;vertical-align:middle}
+.tpc-tool .tpc-ico{width:20px;height:20px}
+.tpc-tool.active .tpc-ico{color:#fff}
+.tpc-info .tpc-ico{width:1em;height:1em;margin:.1em}
 
 /* =====================================================================
    >= 640px : tablets — bring back side-by-side color bar, wider swatches
@@ -150,3 +157,6 @@
 @media (prefers-reduced-motion:reduce){
   .tpc-prev img{transform:none}
 }
+
+.tpc-info{display:inline-flex;align-items:center;justify-content:center;width:1.15rem;height:1.15rem;margin-left:.25rem;border-radius:50%;color:var(--accent);font-size:.8rem;font-style:normal;cursor:help;user-select:none;outline:none}
+.tpc-info:focus-visible{box-shadow:0 0 0 2px var(--accent-ring)}

@@ -61,6 +61,17 @@ dedicated asset files.
 - **Organize**: rename slots, delete slots, search/filter the tree, bulk import a
   folder of PNGs (mapped to slots by filename).
 
+### 3.1b Persistence & project files
+- **Save** (`localStorage`): serialize the whole project (name, `pack_format`,
+  description, and every texture as a PNG data URL) to `tpc:project` in the browser so
+  work survives a reload. The Save button also downloads a portable `.tpc.json`
+  project file.
+- **Load saved**: restore the last `localStorage` project into the editor.
+- **Import**: open a `.tpc.json` project file (exported by this tool or shared by
+  another user) and continue editing it.
+- **Delete save**: clear the `localStorage` project.
+- Portable project files make projects shareable and re-editable across devices.
+
 ### 3.2 Preview
 - **Block/item preview**: render the edited texture on a representative 3D-ish block
   / item swatch (CSS transform, no WebGL required) using the canvas pixels.
@@ -130,8 +141,11 @@ category: "Minecraft"
 icon: "&#127959;"
 ---
 ```
-Body = `<div class="tui">` shell with:
+  Body = `<div class="tui">` shell with:
+- `.tpc-savebar` (Save / Load saved / Export file / Import / Delete save) above the tabs.
 - `.tabs` → **Editor**, **Browser/Upload**, **Preview**, **Export** panels.
+- Toolbar glyphs are inline **SVG** icons (in `_includes/tpc/*.svg`, pulled via
+  `{%- include tpc/<name>.svg -%}`) rather than unicode emoji, styled by `.tpc-ico`.
 - Links to `assets/js/tpc.js` (and `assets/js/zip-writer.js` if separate).
 
 ### 4.2 New CSS — `assets/css/tpc.css` (scoped `.tpc-*` rules)
@@ -171,6 +185,10 @@ IIFE; loads `tpc.css`, then on init builds the namespace tree and wires UI.
 - **Export**: builds `pack.mcmeta` from the form, optional 64×64 `pack.png` icon
   (nearest-neighbor from a chosen slot), every texture as PNG bytes → `TpcZip.createZip`
   → `Blob` → object-URL download. Also "Download pack.mcmeta only".
+- **Save / load / import**: `serializeProject()` writes the project to `localStorage`
+  (`tpc:project`) and downloads a `.tpc.json` file; `loadSavedProject()` restores it;
+  `importProjectFile()` loads a `.tpc.json` (textures decoded from PNG data URLs onto
+  canvases); `deleteSavedProject()` clears storage. A small save bar sits above the tabs.
 - **Keyboard**: Ctrl+Z/Y undo/redo; B/E/G/I tool shortcuts (ignored in inputs).
 
 ### 4.5 (Optional Phase 2) `assets/js/unzip-reader.js`

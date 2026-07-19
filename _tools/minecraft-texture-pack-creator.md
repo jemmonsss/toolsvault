@@ -16,8 +16,18 @@ icon: "&#127959;"
 <link rel="stylesheet" href="{{ '/assets/css/tpc.css' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M' }}">
 
 <div class="tui tpc">
-  <h1>Minecraft Texture Pack Creator</h1>
-  <p class="sub">Design, edit, preview, and export a valid Minecraft resource pack — entirely in your browser.</p>
+    <h1>Minecraft Texture Pack Creator</h1>
+    <p class="sub">Design, edit, preview, and export a valid Minecraft resource pack — entirely in your browser.</p>
+
+    <div class="tpc-savebar">
+      <button class="btn btn-secondary tpc-sm" id="tpc-save" type="button" title="Save this project in your browser">Save</button>
+      <button class="btn btn-secondary tpc-sm" id="tpc-load" type="button" title="Load the last saved project">Load saved</button>
+      <button class="btn btn-secondary tpc-sm" id="tpc-export-project" type="button" title="Download a project file to share or back up">Export file</button>
+      <button class="btn btn-secondary tpc-sm" id="tpc-import" type="button" title="Import a saved project file">Import</button>
+      <input type="file" id="tpc-import-file" accept="application/json,.json" hidden>
+      <button class="btn btn-secondary tpc-sm" id="tpc-clear-project" type="button" title="Remove the saved project from this browser">Delete save</button>
+      <span class="tpc-saved" id="tpc-saved-label" hidden></span>
+    </div>
 
   <div class="tpc-bar">
     <div class="tpc-field">
@@ -71,12 +81,12 @@ icon: "&#127959;"
       <div class="tpc-main">
         <div class="tpc-toolbar">
           <div class="tpc-tools">
-            <button class="tpc-tool active" data-tool="pencil" title="Pencil (B)">✏️</button>
-            <button class="tpc-tool" data-tool="eraser" title="Eraser (E)">🧽</button>
-            <button class="tpc-tool" data-tool="fill" title="Fill (G)">🪣</button>
-            <button class="tpc-tool" data-tool="picker" title="Eyedropper (I)">💉</button>
-            <button class="tpc-tool" data-tool="line" title="Line">📏</button>
-            <button class="tpc-tool" data-tool="rect" title="Rectangle">▭</button>
+            <button class="tpc-tool active" data-tool="pencil" title="Pencil (B)" aria-label="Pencil">{%- include tpc/pencil.svg -%}</button>
+            <button class="tpc-tool" data-tool="eraser" title="Eraser (E)" aria-label="Eraser">{%- include tpc/eraser.svg -%}</button>
+            <button class="tpc-tool" data-tool="fill" title="Fill (G)" aria-label="Fill">{%- include tpc/fill.svg -%}</button>
+            <button class="tpc-tool" data-tool="picker" title="Eyedropper (I)" aria-label="Eyedropper">{%- include tpc/picker.svg -%}</button>
+            <button class="tpc-tool" data-tool="line" title="Line" aria-label="Line">{%- include tpc/line.svg -%}</button>
+            <button class="tpc-tool" data-tool="rect" title="Rectangle" aria-label="Rectangle">{%- include tpc/rect.svg -%}</button>
           </div>
           <div class="tpc-tool-opts">
             <label class="tpc-inline">Size
@@ -96,10 +106,10 @@ icon: "&#127959;"
 <input type="range" id="tpc-zoom" min="4" max="32" value="16">
 </label>
 <label class="tpc-inline"><input type="checkbox" id="tpc-grid" checked> Grid</label>
-<button class="btn btn-secondary tpc-sm" id="tpc-upscale" type="button" title="Upscale 2x (rule-based, edge-preserving)">⬆ Upscale 2×</button>
+<button class="btn btn-secondary tpc-sm" id="tpc-upscale" type="button" title="Upscale 2x (rule-based, edge-preserving)">{%- include tpc/upscale.svg -%} Upscale 2×</button><span class="tpc-info" tabindex="0" role="img" aria-label="Upscaling is 100% rule-based with no AI. It uses classic pixel-art algorithms (EPX/Scale2x) to enlarge textures while keeping edges sharp." title="100% rule-based — no AI. Uses classic pixel-art algorithms (EPX/Scale2x) to enlarge textures while keeping edges sharp.">{%- include tpc/info.svg -%}</span>
 <label class="tpc-inline"><input type="checkbox" id="tpc-smooth" checked> Smooth</label>
-            <button class="btn btn-secondary tpc-sm" id="tpc-undo" title="Undo (Ctrl+Z)">↶</button>
-            <button class="btn btn-secondary tpc-sm" id="tpc-redo" title="Redo (Ctrl+Y)">↷</button>
+            <button class="btn btn-secondary tpc-sm" id="tpc-undo" title="Undo (Ctrl+Z)">{%- include tpc/undo.svg -%}</button>
+            <button class="btn btn-secondary tpc-sm" id="tpc-redo" title="Redo (Ctrl+Y)">{%- include tpc/redo.svg -%}</button>
             <button class="btn btn-secondary tpc-sm" id="tpc-clear">Clear</button>
           </div>
         </div>
@@ -167,7 +177,7 @@ icon: "&#127959;"
           <label for="tpc-icon">Pack icon (from slot)</label>
           <select id="tpc-icon"><option value="">None</option></select>
         </div>
-        <button class="btn btn-primary" id="tpc-export-zip">⬇ Download .zip</button>
+        <button class="btn btn-primary" id="tpc-export-zip">{%- include tpc/download.svg -%} Download .zip</button>
         <button class="btn btn-secondary" id="tpc-export-meta">Download pack.mcmeta only</button>
       </div>
       <div class="tpc-export-col">
