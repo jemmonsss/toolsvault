@@ -1171,6 +1171,27 @@
       if (window.confirm('Delete the saved project from this browser?')) deleteSavedProject();
     });
 
+    // Info popover toggle (works on click/tap, not just hover)
+    var infoBtn = $('tpc-info');
+    var infoPop = $('tpc-info-pop');
+    if (infoBtn && infoPop) {
+      function setInfo(open) {
+        infoPop.hidden = !open;
+        infoBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      }
+      infoBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        setInfo(infoPop.hidden);
+      });
+      infoBtn.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { setInfo(false); infoBtn.focus(); }
+      });
+      document.addEventListener('click', function (e) {
+        if (!infoPop.hidden && !e.target.closest('.tpc-info-wrap')) setInfo(false);
+      });
+      infoPop.addEventListener('click', function (e) { e.stopPropagation(); });
+    }
+
     // Responsive: re-fit the canvas when the viewport changes (debounced).
     var resizeTimer = null;
     window.addEventListener('resize', function () {

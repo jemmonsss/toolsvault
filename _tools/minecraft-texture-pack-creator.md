@@ -106,7 +106,7 @@ icon: "&#127959;"
 <input type="range" id="tpc-zoom" min="4" max="32" value="16">
 </label>
 <label class="tpc-inline"><input type="checkbox" id="tpc-grid" checked> Grid</label>
-<button class="btn btn-secondary tpc-sm" id="tpc-upscale" type="button" title="Upscale 2x (rule-based, edge-preserving)">{%- include tpc/upscale.svg -%} Upscale 2×</button><span class="tpc-info" tabindex="0" role="img" aria-label="Upscaling is 100% rule-based with no AI. It uses classic pixel-art algorithms (EPX/Scale2x) to enlarge textures while keeping edges sharp." title="100% rule-based — no AI. Uses classic pixel-art algorithms (EPX/Scale2x) to enlarge textures while keeping edges sharp.">{%- include tpc/info.svg -%}</span>
+<button class="btn btn-secondary tpc-sm" id="tpc-upscale" type="button" title="Upscale 2x (rule-based, edge-preserving)">{%- include tpc/upscale.svg -%} Upscale 2×</button><span class="tpc-info-wrap"><button type="button" class="tpc-info" id="tpc-info" aria-label="About upscaling" aria-expanded="false" aria-describedby="tpc-info-pop">{%- include tpc/info.svg -%}</button><span class="tpc-info-pop" id="tpc-info-pop" role="tooltip" hidden>100% rule-based — no AI. Uses classic pixel-art algorithms (EPX/Scale2x) to enlarge textures while keeping edges sharp.</span></span>
 <label class="tpc-inline"><input type="checkbox" id="tpc-smooth" checked> Smooth</label>
             <button class="btn btn-secondary tpc-sm" id="tpc-undo" title="Undo (Ctrl+Z)">{%- include tpc/undo.svg -%}</button>
             <button class="btn btn-secondary tpc-sm" id="tpc-redo" title="Redo (Ctrl+Y)">{%- include tpc/redo.svg -%}</button>
