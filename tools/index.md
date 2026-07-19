@@ -25,7 +25,7 @@ description: "Browse all developer tools organized by category."
     <section class="filter-section" id="filter-section">
         <button class="filter-btn active" data-category="all">All</button>
         <button class="filter-btn" data-category="favorites" id="favorites-filter">Favorites <span class="fav-count" id="fav-count">0</span></button>
-        {% assign categories = site.tools | map: 'category' | uniq | sort %}
+        {% assign categories = site.tools | where_exp: 't', 't.games_only != true' | map: 'category' | uniq | sort %}
         {% for category in categories %}
         <button class="filter-btn" data-category="{{ category | downcase | escape }}">{{ category }}</button>
         {% endfor %}
@@ -46,7 +46,7 @@ description: "Browse all developer tools organized by category."
         <div class="tools-grid" id="favorites-grid"></div>
     </section>
 
-    {% assign categories = site.tools | map: 'category' | uniq | sort %}
+    {% assign categories = site.tools | where_exp: 't', 't.games_only != true' | map: 'category' | uniq | sort %}
     {% for category in categories %}
     <section class="category-section" data-category="{{ category | downcase | escape }}">
         <div class="category-header">

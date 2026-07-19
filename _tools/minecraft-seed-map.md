@@ -11,6 +11,7 @@ tags:
   - worldgen
 category: "Minecraft"
 icon: "&#128506;"
+games_only: true
 ---
 
 <link rel="stylesheet" href="{{ '/assets/css/smap.css' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M' }}">

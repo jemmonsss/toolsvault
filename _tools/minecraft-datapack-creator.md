@@ -11,6 +11,7 @@ tags:
   - zip
 category: "Minecraft"
 icon: "&#128190;"
+games_only: true
 ---
 
 <link rel="stylesheet" href="{{ '/assets/css/tpd.css' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M' }}">
