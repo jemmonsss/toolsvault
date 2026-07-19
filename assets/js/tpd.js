@@ -51,6 +51,46 @@
     structures: {
       ext: '.nbt',
       content: '# Binary .nbt structures are not editable as text.\n# Paste raw NBT here if your tool supports it, or leave empty.\n'
+    },
+    smithing_trim: {
+      ext: '.json',
+      content: '{\n  "type": "minecraft:smithing_trim",\n  "template": "minecraft:template_sentry",\n  "base": "minecraft:netherite_chestplate",\n  "trim": "minecraft:quartz"\n}\n'
+    },
+    smithing_transform: {
+      ext: '.json',
+      content: '{\n  "type": "minecraft:smithing_transform",\n  "template": "minecraft:template_sentry",\n  "base": "minecraft:netherite_sword",\n  "addition": "minecraft:netherite_ingot"\n}\n'
+    },
+    chat_type: {
+      ext: '.json',
+      content: '{\n  "chat_type": {\n    "display_name": { "translate": "chat.type.text" },\n    "parameters": ["text", "selector"]\n  }\n}\n'
+    },
+    jukebox_song: {
+      ext: '.json',
+      content: '{\n  "jukebox_song": {\n    "comparator_output": 6,\n    "length_in_seconds": 180,\n    "sound_event": "minecraft:record.pigstep"\n  }\n}\n'
+    },
+    trim_pattern: {
+      ext: '.json',
+      content: '{\n  "trim_pattern": {\n    "description": { "translate": "trim_pattern.minecraft.spire" },\n    "template_item": "minecraft:template_sentry"\n  }\n}\n'
+    },
+    trim_material: {
+      ext: '.json',
+      content: '{\n  "trim_material": {\n    "description": { "translate": "trim_material.minecraft.quartz" },\n    "ingredient": "minecraft:quartz",\n    "item_model_index": 0.5\n  }\n}\n'
+    },
+    damage_type: {
+      ext: '.json',
+      content: '{\n  "damage_type": {\n    "exhaustion": 0.1,\n    "message_id": "my_damage",\n    "scaling": "never",\n    "effects": "hurt",\n    "death_message_type": "default"\n  }\n}\n'
+    },
+    painting_variant: {
+      ext: '.json',
+      content: '{\n  "painting_variant": {\n    "asset_id": "minecraft:backyard",\n    "height": 1,\n    "width": 2\n  }\n}\n'
+    },
+    wolf_variant: {
+      ext: '.json',
+      content: '{\n  "wolf_variant": {\n    "asset_name": "pale",\n    "tame_texture": "minecraft:entity/wolf/tame/pale",\n    "wild_texture": "minecraft:entity/wolf/wild/pale"\n  }\n}\n'
+    },
+    instrument: {
+      ext: '.json',
+      content: '{\n  "instrument": {\n    "sound_event": "minecraft:block.note_block.pling",\n    "use_duration": 0.5,\n    "range": 16.0\n  }\n}\n'
     }
   };
 
@@ -65,7 +105,17 @@
     { label: 'Dimension', key: 'dimension' },
     { label: 'Dimension type', key: 'dimension_type' },
     { label: 'Worldgen', key: 'worldgen' },
-    { label: 'Structures', key: 'structures' }
+    { label: 'Structures', key: 'structures' },
+    { label: 'Smithing trims', key: 'smithing_trim' },
+    { label: 'Smithing transforms', key: 'smithing_transform' },
+    { label: 'Chat types', key: 'chat_type' },
+    { label: 'Jukebox songs', key: 'jukebox_song' },
+    { label: 'Trim patterns', key: 'trim_pattern' },
+    { label: 'Trim materials', key: 'trim_material' },
+    { label: 'Damage types', key: 'damage_type' },
+    { label: 'Painting variants', key: 'painting_variant' },
+    { label: 'Wolf variants', key: 'wolf_variant' },
+    { label: 'Instruments', key: 'instrument' }
   ];
 
   var PACK_TEMPLATES = {
@@ -172,6 +222,92 @@
         { path: 'data/full_pack/tags/item/starters.json', type: 'tags', content: '{\n  "values": [\n    "minecraft:stone",\n    "minecraft:cobblestone"\n  ]\n}\n' },
         { path: 'data/full_pack/predicates/always_true.json', type: 'predicates', content: '{\n  "condition": "minecraft:random_chance",\n  "chance": 1.0\n}\n' },
         { path: 'data/full_pack/item_modifiers/give_chance.json', type: 'item_modifiers', content: '{\n  "function": "minecraft:set_count",\n  "count": {\n    "type": "minecraft:uniform",\n    "min": 1,\n    "max": 3\n  }\n}\n' }
+      ]
+    },
+    sound_pack: {
+      name: 'Sound Pack',
+      description: 'Functions that play sounds using /playsound and a tag to auto-run on load.',
+      files: [
+        { path: 'data/sound_pack/tags/function/load.json', type: 'tags', content: '{\n  "values": [\n    "sound_pack:play_sounds"\n  ]\n}\n' },
+        { path: 'data/sound_pack/functions/play_sounds.mcfunction', type: 'functions', content: '# Play a few vanilla sounds\ndatapack enable "self"\nplaysound minecraft:block.note_block.pling master @a ~ ~ ~ 1.0 1.0\nplaysound minecraft:entity.player.levelup master @a ~ ~ ~ 1.0 1.0\nsay Sound pack loaded!\n' }
+      ]
+    },
+    smelting_pack: {
+      name: 'Smelting Recipes',
+      description: 'Furnace, smoker, and blast furnace recipes.',
+      files: [
+        { path: 'data/smelting_pack/recipes/cooked_pork.json', type: 'recipes', content: '{\n  "type": "minecraft:cooking",\n  "ingredient": { "item": "minecraft:porkchop" },\n  "result": "minecraft:cooked_porkchop",\n  "experience": 0.35,\n  "cookingtime": 200\n}\n' },
+        { path: 'data/smelting_pack/recipes/smoked_beef.json', type: 'recipes', content: '{\n  "type": "minecraft:cooking",\n  "ingredient": { "item": "minecraft:beef" },\n  "result": "minecraft:steak",\n  "experience": 0.35,\n  "cookingtime": 100\n}\n' },
+        { path: 'data/smelting_pack/recipes/blast_gold.json', type: 'recipes', content: '{\n  "type": "minecraft:blasting",\n  "ingredient": { "item": "minecraft:raw_gold" },\n  "result": "minecraft:gold_ingot",\n  "experience": 0.7,\n  "cookingtime": 100\n}\n' }
+      ]
+    },
+    smithing_trim_pack: {
+      name: 'Smithing Trim Pack',
+      description: 'Adds a custom armor trim recipe using a trim template, base armor, and trim material.',
+      files: [
+        { path: 'data/trim_pack/smithing_trim/spire_trim.json', type: 'smithing_trim', content: '{\n  "type": "minecraft:smithing_trim",\n  "template": "minecraft:template_sentry",\n  "base": "minecraft:netherite_chestplate",\n  "trim": "minecraft:quartz"\n}\n' }
+      ]
+    },
+    chat_pack: {
+      name: 'Custom Chat Type',
+      description: 'Adds a custom chat_type JSON so commands can use a custom chat style.',
+      files: [
+        { path: 'data/chat_pack/chat_type/my_chat.json', type: 'chat_type', content: '{\n  "chat_type": {\n    "display_name": { "translate": "chat.type.text" },\n    "parameters": ["text", "selector"]\n  }\n}\n' }
+      ]
+    },
+    damage_type_pack: {
+      name: 'Custom Damage Type',
+      description: 'Adds a damage_type JSON for custom weapon or environmental damage.',
+      files: [
+        { path: 'data/damage_pack/damage_types/freeze.json', type: 'damage_type', content: '{\n  "damage_type": {\n    "exhaustion": 0.1,\n    "message_id": "my_freeze",\n    "scaling": "never",\n    "effects": "freeze",\n    "death_message_type": "default"\n  }\n}\n' }
+      ]
+    },
+    jukebox_pack: {
+      name: 'Jukebox Song',
+      description: 'Adds a custom jukebox song JSON.',
+      files: [
+        { path: 'data/jukebox_pack/jukebox_song/my_song.json', type: 'jukebox_song', content: '{\n  "jukebox_song": {\n    "comparator_output": 6,\n    "length_in_seconds": 180,\n    "sound_event": "minecraft:record.pigstep"\n  }\n}\n' }
+      ]
+    },
+    trim_material_pack: {
+      name: 'Trim Material Pack',
+      description: 'Adds a custom trim material JSON for armor trims.',
+      files: [
+        { path: 'data/trim_mat/trim_material/my_material.json', type: 'trim_material', content: '{\n  "trim_material": {\n    "description": { "translate": "trim_material.minecraft.quartz" },\n    "ingredient": "minecraft:quartz",\n    "item_model_index": 0.5\n  }\n}\n' }
+      ]
+    },
+    worldgen_pack: {
+      name: 'Worldgen Biome Pack',
+      description: 'Adds a basic biome, configured_feature, and placed_feature for world generation.',
+      files: [
+        { path: 'data/worldgen_pack/worldgen/biome/my_biome.json', type: 'worldgen', content: '{\n  "temperature": 0.8,\n  "downfall": 0.4,\n  "precipitation": "rain",\n  "category": "forest",\n  "effects": {\n    "sky_color": 7842047,\n    "fog_color": 12638463,\n    "water_color": 4159204,\n    "water_fog_color": 329011\n  }\n}\n' },
+        { path: 'data/worldgen_pack/worldgen/configured_feature/my_flower.json', type: 'worldgen', content: '{\n  "type": "minecraft:flower",\n  "config": {\n    "tries": 64,\n    "xz_spread": 7,\n    "y_spread": 3,\n    "state": { "Name": "minecraft:dandelion" }\n  }\n}\n' },
+        { path: 'data/worldgen_pack/worldgen/placed_feature/my_flower.json', type: 'worldgen', content: '{\n  "feature": "worldgen_pack:my_flower",\n  "placement": [\n    { "type": "minecraft:count", "count": 4 },\n    { "type": "minecraft:in_square" },\n    { "type": "minecraft:surface_water_depth_filter", "max_water_depth": 0 },\n    { "type": "minecraft:heightmap", "heightmap": "WORLD_SURFACE_WG" },\n    { "type": "minecraft:block_predicate_filter", "predicate": { "type": "minecraft:matching_blocks", "blocks": [ "minecraft:grass_block" ] } }\n  ]\n}\n' }
+      ]
+    },
+    complete_pack: {
+      name: 'Complete Datapack',
+      description: 'Uses almost every datapack folder: functions, recipes, advancements, loot tables, tags, predicates, item modifiers, chat types, jukebox songs, damage types, trims, worldgen, and dimensions.',
+      files: [
+        { path: 'data/complete_pack/tags/function/load.json', type: 'tags', content: '{\n  "values": [\n    "complete_pack:on_load"\n  ]\n}\n' },
+        { path: 'data/complete_pack/functions/on_load.mcfunction', type: 'functions', content: 'say Complete pack loaded!\nplaysound minecraft:block.note_block.pling master @a ~ ~ ~ 1.0 1.0\ngive @a minecraft:stone 1\n' },
+        { path: 'data/complete_pack/advancements/root.json', type: 'advancements', content: '{\n  "display": {\n    "title": "Complete Pack",\n    "description": "Uses many datapack features",\n    "icon": { "item": "minecraft:knowledge_book" },\n    "frame": "task",\n    "show_toast": true,\n    "announce_to_chat": true\n  },\n  "criteria": {\n    "loaded": {\n      "trigger": "minecraft:tick"\n    }\n  }\n}\n' },
+        { path: 'data/complete_pack/recipes/stone_from_cobble.json', type: 'recipes', content: '{\n  "type": "minecraft:crafting_shaped",\n  "pattern": ["## ", "## ", "   "],\n  "key": {\n    "#": { "item": "minecraft:cobblestone" }\n  },\n  "result": { "item": "minecraft:stone", "count": 2 }\n}\n' },
+        { path: 'data/complete_pack/recipes/cooked_pork.json', type: 'recipes', content: '{\n  "type": "minecraft:cooking",\n  "ingredient": { "item": "minecraft:porkchop" },\n  "result": "minecraft:cooked_porkchop",\n  "experience": 0.35,\n  "cookingtime": 200\n}\n' },
+        { path: 'data/complete_pack/smithing_trim/trim_example.json', type: 'smithing_trim', content: '{\n  "type": "minecraft:smithing_trim",\n  "template": "minecraft:template_sentry",\n  "base": "minecraft:netherite_chestplate",\n  "trim": "minecraft:quartz"\n}\n' },
+        { path: 'data/complete_pack/loot_tables/chests/simple_dungeon.json', type: 'loot_tables', content: '{\n  "pools": [\n    {\n      "rolls": 1,\n      "entries": [\n        {\n          "type": "minecraft:item",\n          "name": "minecraft:diamond",\n          "functions": [\n            { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 1, "max": 3 } }\n          ]\n        }\n      ]\n    }\n  ]\n}\n' },
+        { path: 'data/complete_pack/tags/item/my_items.json', type: 'tags', content: '{\n  "values": [\n    "minecraft:stone",\n    "minecraft:cobblestone",\n    "minecraft:diamond"\n  ]\n}\n' },
+        { path: 'data/complete_pack/predicates/always_true.json', type: 'predicates', content: '{\n  "condition": "minecraft:random_chance",\n  "chance": 1.0\n}\n' },
+        { path: 'data/complete_pack/item_modifiers/set_count.json', type: 'item_modifiers', content: '{\n  "function": "minecraft:set_count",\n  "count": {\n    "type": "minecraft:uniform",\n    "min": 1,\n    "max": 3\n  }\n}\n' },
+        { path: 'data/complete_pack/chat_type/custom_chat.json', type: 'chat_type', content: '{\n  "chat_type": {\n    "display_name": { "translate": "chat.type.text" },\n    "parameters": ["text", "selector"]\n  }\n}\n' },
+        { path: 'data/complete_pack/jukebox_song/my_song.json', type: 'jukebox_song', content: '{\n  "jukebox_song": {\n    "comparator_output": 6,\n    "length_in_seconds": 180,\n    "sound_event": "minecraft:record.pigstep"\n  }\n}\n' },
+        { path: 'data/complete_pack/damage_types/freeze.json', type: 'damage_type', content: '{\n  "damage_type": {\n    "exhaustion": 0.1,\n    "message_id": "my_freeze",\n    "scaling": "never",\n    "effects": "freeze",\n    "death_message_type": "default"\n  }\n}\n' },
+        { path: 'data/complete_pack/trim_pattern/spire.json', type: 'trim_pattern', content: '{\n  "trim_pattern": {\n    "description": { "translate": "trim_pattern.minecraft.spire" },\n    "template_item": "minecraft:template_sentry"\n  }\n}\n' },
+        { path: 'data/complete_pack/trim_material/quartz.json', type: 'trim_material', content: '{\n  "trim_material": {\n    "description": { "translate": "trim_material.minecraft.quartz" },\n    "ingredient": "minecraft:quartz",\n    "item_model_index": 0.5\n  }\n}\n' },
+        { path: 'data/complete_pack/dimension_type/my_dim.json', type: 'dimension_type', content: '{\n  "name": "my_dim",\n  "ultrawarm": false,\n  "natural": true,\n  "coordinate_scale": 1.0,\n  "has_skylight": true,\n  "has_ceiling": false,\n  "ambient_light": 0.0,\n  "bed_works": true,\n  "respawn_anchor_works": true,\n  "has_raids": true,\n  "logical_height": 256,\n  "min_y": 0,\n  "max_y": 256,\n  "infiniburn": "#minecraft:infiniburn_overworld",\n  "effects": "minecraft:overworld"\n}\n' },
+        { path: 'data/complete_pack/dimension/my_dim.json', type: 'dimension', content: '{\n  "type": "minecraft:overworld",\n  "generator": {\n    "type": "minecraft:noise",\n    "seed": 0,\n    "settings": "minecraft:overworld",\n    "biome_source": {\n      "type": "minecraft:fixed",\n      "biome": "minecraft:plains"\n    }\n  }\n}\n' },
+        { path: 'data/complete_pack/worldgen/configured_feature/my_tree.json', type: 'worldgen', content: '{\n  "type": "minecraft:tree",\n  "config": {\n    "minimum_size": { "type": "minecraft:two_layers_feature_size", "limit": 1, "lower_size": 0, "upper_size": 1 },\n    "trunk_provider": { "type": "minecraft:simple_state_provider", "state": { "Name": "minecraft:oak_log" } },\n    "foliage_provider": { "type": "minecraft:simple_state_provider", "state": { "Name": "minecraft:oak_leaves" } },\n    "trunk_height": 5,\n    "foliage_height": 3,\n    "foliage_radius": 2\n  }\n}\n' },
+        { path: 'data/complete_pack/worldgen/placed_feature/my_tree.json', type: 'worldgen', content: '{\n  "feature": "complete_pack:my_tree",\n  "placement": [\n    { "type": "minecraft:count", "count": 2 },\n    { "type": "minecraft:in_square" },\n    { "type": "minecraft:surface_water_depth_filter", "max_water_depth": 0 },\n    { "type": "minecraft:heightmap", "heightmap": "WORLD_SURFACE_WG" },\n    { "type": "minecraft:block_predicate_filter", "predicate": { "type": "minecraft:matching_blocks", "blocks": [ "minecraft:grass_block" ] } }\n  ]\n}\n' }
       ]
     }
   };
@@ -342,6 +478,16 @@
     if (/\/dimension(_type)?\//.test(path)) return /\/dimension_type\//.test(path) ? 'dimension_type' : 'dimension';
     if (/\/worldgen\//.test(path)) return 'worldgen';
     if (/\/structures\//.test(path)) return 'structures';
+    if (/\/smithing_trim\//.test(path)) return 'smithing_trim';
+    if (/\/smithing_transform\//.test(path)) return 'smithing_transform';
+    if (/\/chat_type\//.test(path)) return 'chat_type';
+    if (/\/jukebox_song\//.test(path)) return 'jukebox_song';
+    if (/\/trim_pattern\//.test(path)) return 'trim_pattern';
+    if (/\/trim_material\//.test(path)) return 'trim_material';
+    if (/\/damage_type\//.test(path)) return 'damage_type';
+    if (/\/painting_variant\//.test(path)) return 'painting_variant';
+    if (/\/wolf_variant\//.test(path)) return 'wolf_variant';
+    if (/\/instrument\//.test(path)) return 'instrument';
     return 'unknown';
   }
 
@@ -762,6 +908,16 @@
     if (name.indexOf('dimension') !== -1) return 'dimension';
     if (name.indexOf('worldgen') !== -1 || name.indexOf('configured_feature') !== -1 || name.indexOf('placed_feature') !== -1) return 'worldgen';
     if (name.indexOf('structure') !== -1) return 'structures';
+    if (name.indexOf('smithing_trim') !== -1 || name.indexOf('trim') !== -1) return 'smithing_trim';
+    if (name.indexOf('smithing_transform') !== -1) return 'smithing_transform';
+    if (name.indexOf('chat_type') !== -1 || name.indexOf('chat') !== -1) return 'chat_type';
+    if (name.indexOf('jukebox') !== -1) return 'jukebox_song';
+    if (name.indexOf('trim_pattern') !== -1) return 'trim_pattern';
+    if (name.indexOf('trim_material') !== -1) return 'trim_material';
+    if (name.indexOf('damage_type') !== -1) return 'damage_type';
+    if (name.indexOf('painting') !== -1) return 'painting_variant';
+    if (name.indexOf('wolf') !== -1) return 'wolf_variant';
+    if (name.indexOf('instrument') !== -1) return 'instrument';
     return 'functions';
   }
 
@@ -820,6 +976,26 @@
       renderSimpleDimension(body, content);
     } else if (entry.type === 'worldgen') {
       renderSimpleWorldgen(body, content);
+    } else if (entry.type === 'smithing_trim') {
+      renderSimpleSmithingTrim(body, content);
+    } else if (entry.type === 'smithing_transform') {
+      renderSimpleSmithingTransform(body, content);
+    } else if (entry.type === 'chat_type') {
+      renderSimpleChatType(body, content);
+    } else if (entry.type === 'jukebox_song') {
+      renderSimpleJukeboxSong(body, content);
+    } else if (entry.type === 'trim_pattern') {
+      renderSimpleTrimPattern(body, content);
+    } else if (entry.type === 'trim_material') {
+      renderSimpleTrimMaterial(body, content);
+    } else if (entry.type === 'damage_type') {
+      renderSimpleDamageType(body, content);
+    } else if (entry.type === 'painting_variant') {
+      renderSimplePaintingVariant(body, content);
+    } else if (entry.type === 'wolf_variant') {
+      renderSimpleWolfVariant(body, content);
+    } else if (entry.type === 'instrument') {
+      renderSimpleInstrument(body, content);
     } else {
       body.innerHTML = '<div class=\"tpd-field\"><label>Simple editing is not supported for this file type yet. Use Code mode.</label></div>';
     }
@@ -1171,6 +1347,245 @@
       out.config = { raw: notes };
     }
     return JSON.stringify(out, null, 2);
+  }
+
+  function renderSimpleSmelting(body, content) {
+    var data = tryParseJson(content) || {};
+    var ingredient = data.ingredient && data.ingredient.item ? data.ingredient.item : 'minecraft:porkchop';
+    var result = data.result || 'minecraft:cooked_porkchop';
+    var cookingtime = data.cookingtime || 200;
+    var experience = data.experience || 0.35;
+    body.innerHTML =
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Recipe type</label><select id=\"tpd-simple-smelt-type\"><option value=\"minecraft:cooking\">Cooking (Furnace)</option><option value=\"minecraft:blasting\">Blasting</option><option value=\"minecraft:smoking\">Smoking</option></select></div>' +
+        '<div class=\"tpd-field\"><label>Ingredient item</label><input id=\"tpd-simple-smelt-ing\" value=\"' + escHtml(ingredient) + '\"></div>' +
+      '</div>' +
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Result item</label><input id=\"tpd-simple-smelt-result\" value=\"' + escHtml(result) + '\"></div>' +
+        '<div class=\"tpd-field\"><label>Cook time (ticks)</label><input id=\"tpd-simple-smelt-time\" type=\"number\" value=\"' + cookingtime + '\"></div>' +
+        '<div class=\"tpd-field\"><label>Experience</label><input id=\"tpd-simple-smelt-xp\" type=\"number\" step=\"0.01\" value=\"' + experience + '\"></div>' +
+      '</div>';
+    bindSimpleInput('tpd-simple-smelt-type', data, function () { return buildSmelting(); });
+    bindSimpleInput('tpd-simple-smelt-ing', data, function () { return buildSmelting(); });
+    bindSimpleInput('tpd-simple-smelt-result', data, function () { return buildSmelting(); });
+    bindSimpleInput('tpd-simple-smelt-time', data, function () { return buildSmelting(); });
+    bindSimpleInput('tpd-simple-smelt-xp', data, function () { return buildSmelting(); });
+  }
+
+  function buildSmelting() {
+    var type = $('tpd-simple-smelt-type') ? $('tpd-simple-smelt-type').value : 'minecraft:cooking';
+    var ing = $('tpd-simple-smelt-ing') ? $('tpd-simple-smelt-ing').value : 'minecraft:porkchop';
+    var result = $('tpd-simple-smelt-result') ? $('tpd-simple-smelt-result').value : 'minecraft:cooked_porkchop';
+    var time = $('tpd-simple-smelt-time') ? parseInt($('tpd-simple-smelt-time').value, 10) || 200 : 200;
+    var xp = $('tpd-simple-smelt-xp') ? parseFloat($('tpd-simple-smelt-xp').value) || 0.35 : 0.35;
+    return JSON.stringify({ type: type, ingredient: { item: ing }, result: result, cookingtime: time, experience: xp }, null, 2);
+  }
+
+  function renderSimpleSmithingTrim(body, content) {
+    var data = tryParseJson(content) || {};
+    body.innerHTML =
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Template</label><input id=\"tpd-simple-trim-tmpl\" value=\"' + escHtml(data.template || 'minecraft:template_sentry') + '\"></div>' +
+        '<div class=\"tpd-field\"><label>Base armor</label><input id=\"tpd-simple-trim-base\" value=\"' + escHtml(data.base || 'minecraft:netherite_chestplate') + '\"></div>' +
+      '</div>' +
+      '<div class=\"tpd-field\"><label>Trim material</label><input id=\"tpd-simple-trim-mat\" value=\"' + escHtml(data.trim || 'minecraft:quartz') + '\"></div>';
+    bindSimpleInput('tpd-simple-trim-tmpl', data, function () { return buildSmithingTrim(); });
+    bindSimpleInput('tpd-simple-trim-base', data, function () { return buildSmithingTrim(); });
+    bindSimpleInput('tpd-simple-trim-mat', data, function () { return buildSmithingTrim(); });
+  }
+
+  function buildSmithingTrim() {
+    var tmpl = $('tpd-simple-trim-tmpl') ? $('tpd-simple-trim-tmpl').value : 'minecraft:template_sentry';
+    var base = $('tpd-simple-trim-base') ? $('tpd-simple-trim-base').value : 'minecraft:netherite_chestplate';
+    var trim = $('tpd-simple-trim-mat') ? $('tpd-simple-trim-mat').value : 'minecraft:quartz';
+    return JSON.stringify({ type: 'minecraft:smithing_trim', template: tmpl, base: base, trim: trim }, null, 2);
+  }
+
+  function renderSimpleSmithingTransform(body, content) {
+    var data = tryParseJson(content) || {};
+    body.innerHTML =
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Template</label><input id=\"tpd-simple-stran-tmpl\" value=\"' + escHtml(data.template || 'minecraft:template_sentry') + '\"></div>' +
+        '<div class=\"tpd-field\"><label>Base item</label><input id=\"tpd-simple-stran-base\" value=\"' + escHtml(data.base || 'minecraft:netherite_sword') + '\"></div>' +
+      '</div>' +
+      '<div class=\"tpd-field\"><label>Addition item</label><input id=\"tpd-simple-stran-add\" value=\"' + escHtml(data.addition || 'minecraft:netherite_ingot') + '\"></div>';
+    bindSimpleInput('tpd-simple-stran-tmpl', data, function () { return buildSmithingTransform(); });
+    bindSimpleInput('tpd-simple-stran-base', data, function () { return buildSmithingTransform(); });
+    bindSimpleInput('tpd-simple-stran-add', data, function () { return buildSmithingTransform(); });
+  }
+
+  function buildSmithingTransform() {
+    var tmpl = $('tpd-simple-stran-tmpl') ? $('tpd-simple-stran-tmpl').value : 'minecraft:template_sentry';
+    var base = $('tpd-simple-stran-base') ? $('tpd-simple-stran-base').value : 'minecraft:netherite_sword';
+    var add = $('tpd-simple-stran-add') ? $('tpd-simple-stran-add').value : 'minecraft:netherite_ingot';
+    return JSON.stringify({ type: 'minecraft:smithing_transform', template: tmpl, base: base, addition: add }, null, 2);
+  }
+
+  function renderSimpleChatType(body, content) {
+    var data = tryParseJson(content) || {};
+    var chat = data.chat_type || {};
+    body.innerHTML =
+      '<div class=\"tpd-field\"><label>Display name translate</label><input id=\"tpd-simple-chat-display\" value=\"' + escHtml((chat.display_name && chat.display_name.translate) || 'chat.type.text') + '\"></div>' +
+      '<div class=\"tpd-field\"><label>Parameters (comma separated)</label><input id=\"tpd-simple-chat-params\" value=\"' + escHtml((chat.parameters || []).join(', ')) + '\"></div>';
+    bindSimpleInput('tpd-simple-chat-display', data, function () { return buildChatType(); });
+    bindSimpleInput('tpd-simple-chat-params', data, function () { return buildChatType(); });
+  }
+
+  function buildChatType() {
+    var display = $('tpd-simple-chat-display') ? $('tpd-simple-chat-display').value : 'chat.type.text';
+    var paramsRaw = $('tpd-simple-chat-params') ? $('tpd-simple-chat-params').value : '';
+    var params = paramsRaw.split(',').map(function (p) { return p.trim(); }).filter(function (p) { return p.length > 0; });
+    return JSON.stringify({ chat_type: { display_name: { translate: display }, parameters: params } }, null, 2);
+  }
+
+  function renderSimpleJukeboxSong(body, content) {
+    var data = tryParseJson(content) || {};
+    var song = data.jukebox_song || {};
+    body.innerHTML =
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Sound event</label><input id=\"tpd-simple-juke-sound\" value=\"' + escHtml(song.sound_event || 'minecraft:record.pigstep') + '\"></div>' +
+        '<div class=\"tpd-field\"><label>Comparator output</label><input id=\"tpd-simple-juke-comp\" type=\"number\" value=\"' + (song.comparator_output || 6) + '\"></div>' +
+      '</div>' +
+      '<div class=\"tpd-field\"><label>Length in seconds</label><input id=\"tpd-simple-juke-len\" type=\"number\" value=\"' + (song.length_in_seconds || 180) + '\"></div>';
+    bindSimpleInput('tpd-simple-juke-sound', data, function () { return buildJukeboxSong(); });
+    bindSimpleInput('tpd-simple-juke-comp', data, function () { return buildJukeboxSong(); });
+    bindSimpleInput('tpd-simple-juke-len', data, function () { return buildJukeboxSong(); });
+  }
+
+  function buildJukeboxSong() {
+    var sound = $('tpd-simple-juke-sound') ? $('tpd-simple-juke-sound').value : 'minecraft:record.pigstep';
+    var comp = $('tpd-simple-juke-comp') ? parseInt($('tpd-simple-juke-comp').value, 10) || 6 : 6;
+    var len = $('tpd-simple-juke-len') ? parseInt($('tpd-simple-juke-len').value, 10) || 180 : 180;
+    return JSON.stringify({ jukebox_song: { comparator_output: comp, length_in_seconds: len, sound_event: sound } }, null, 2);
+  }
+
+  function renderSimpleTrimPattern(body, content) {
+    var data = tryParseJson(content) || {};
+    var trim = data.trim_pattern || {};
+    body.innerHTML =
+      '<div class=\"tpd-field\"><label>Description translate</label><input id=\"tpd-simple-trimp-desc\" value=\"' + escHtml((trim.description && trim.description.translate) || 'trim_pattern.minecraft.spire') + '\"></div>' +
+      '<div class=\"tpd-field\"><label>Template item</label><input id=\"tpd-simple-trimp-tmpl\" value=\"' + escHtml(trim.template_item || 'minecraft:template_sentry') + '\"></div>';
+    bindSimpleInput('tpd-simple-trimp-desc', data, function () { return buildTrimPattern(); });
+    bindSimpleInput('tpd-simple-trimp-tmpl', data, function () { return buildTrimPattern(); });
+  }
+
+  function buildTrimPattern() {
+    var desc = $('tpd-simple-trimp-desc') ? $('tpd-simple-trimp-desc').value : 'trim_pattern.minecraft.spire';
+    var tmpl = $('tpd-simple-trimp-tmpl') ? $('tpd-simple-trimp-tmpl').value : 'minecraft:template_sentry';
+    return JSON.stringify({ trim_pattern: { description: { translate: desc }, template_item: tmpl } }, null, 2);
+  }
+
+  function renderSimpleTrimMaterial(body, content) {
+    var data = tryParseJson(content) || {};
+    var mat = data.trim_material || {};
+    body.innerHTML =
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Description translate</label><input id=\"tpd-simple-trimm-desc\" value=\"' + escHtml((mat.description && mat.description.translate) || 'trim_material.minecraft.quartz') + '\"></div>' +
+        '<div class=\"tpd-field\"><label>Ingredient item</label><input id=\"tpd-simple-trimm-ing\" value=\"' + escHtml(mat.ingredient || 'minecraft:quartz') + '\"></div>' +
+      '</div>' +
+      '<div class=\"tpd-field\"><label>Item model index</label><input id=\"tpd-simple-trimm-idx\" type=\"number\" step=\"0.1\" value=\"' + (mat.item_model_index || 0.5) + '\"></div>';
+    bindSimpleInput('tpd-simple-trimm-desc', data, function () { return buildTrimMaterial(); });
+    bindSimpleInput('tpd-simple-trimm-ing', data, function () { return buildTrimMaterial(); });
+    bindSimpleInput('tpd-simple-trimm-idx', data, function () { return buildTrimMaterial(); });
+  }
+
+  function buildTrimMaterial() {
+    var desc = $('tpd-simple-trimm-desc') ? $('tpd-simple-trimm-desc').value : 'trim_material.minecraft.quartz';
+    var ing = $('tpd-simple-trimm-ing') ? $('tpd-simple-trimm-ing').value : 'minecraft:quartz';
+    var idx = $('tpd-simple-trimm-idx') ? parseFloat($('tpd-simple-trimm-idx').value) || 0.5 : 0.5;
+    return JSON.stringify({ trim_material: { description: { translate: desc }, ingredient: ing, item_model_index: idx } }, null, 2);
+  }
+
+  function renderSimpleDamageType(body, content) {
+    var data = tryParseJson(content) || {};
+    var dt = data.damage_type || {};
+    body.innerHTML =
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Message ID</label><input id=\"tpd-simple-dmg-id\" value=\"' + escHtml(dt.message_id || 'my_damage') + '\"></div>' +
+        '<div class=\"tpd-field\"><label>Scaling</label><select id=\"tpd-simple-dmg-scale\"><option value=\"never\">Never</option><option value=\"always\">Always</option><option value=\"until_kill\">Until Kill</option></select></div>' +
+      '</div>' +
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Effects</label><select id=\"tpd-simple-dmg-fx\"><option value=\"hurt\">Hurt</option><option value=\"freeze\">Freeze</option></select></div>' +
+        '<div class=\"tpd-field\"><label>Death message</label><select id=\"tpd-simple-dmg-death\"><option value=\"default\">Default</option><option value=\"fall_variants\">Fall Variants</option></select></div>' +
+      '</div>' +
+      '<div class=\"tpd-field\"><label>Exhaustion</label><input id=\"tpd-simple-dmg-exh\" type=\"number\" step=\"0.01\" value=\"' + (dt.exhaustion || 0.1) + '\"></div>';
+    bindSimpleInput('tpd-simple-dmg-id', data, function () { return buildDamageType(); });
+    bindSimpleInput('tpd-simple-dmg-scale', data, function () { return buildDamageType(); });
+    bindSimpleInput('tpd-simple-dmg-fx', data, function () { return buildDamageType(); });
+    bindSimpleInput('tpd-simple-dmg-death', data, function () { return buildDamageType(); });
+    bindSimpleInput('tpd-simple-dmg-exh', data, function () { return buildDamageType(); });
+  }
+
+  function buildDamageType() {
+    var id = $('tpd-simple-dmg-id') ? $('tpd-simple-dmg-id').value : 'my_damage';
+    var scale = $('tpd-simple-dmg-scale') ? $('tpd-simple-dmg-scale').value : 'never';
+    var fx = $('tpd-simple-dmg-fx') ? $('tpd-simple-dmg-fx').value : 'hurt';
+    var death = $('tpd-simple-dmg-death') ? $('tpd-simple-dmg-death').value : 'default';
+    var exh = $('tpd-simple-dmg-exh') ? parseFloat($('tpd-simple-dmg-exh').value) || 0.1 : 0.1;
+    return JSON.stringify({ damage_type: { exhaustion: exh, message_id: id, scaling: scale, effects: fx, death_message_type: death } }, null, 2);
+  }
+
+  function renderSimplePaintingVariant(body, content) {
+    var data = tryParseJson(content) || {};
+    var pv = data.painting_variant || {};
+    body.innerHTML =
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Asset ID</label><input id=\"tpd-simple-paint-asset\" value=\"' + escHtml(pv.asset_id || 'minecraft:backyard') + '\"></div>' +
+        '<div class=\"tpd-field\"><label>Width</label><input id=\"tpd-simple-paint-w\" type=\"number\" value=\"' + (pv.width || 2) + '\"></div>' +
+      '</div>' +
+      '<div class=\"tpd-field\"><label>Height</label><input id=\"tpd-simple-paint-h\" type=\"number\" value=\"' + (pv.height || 1) + '\"></div>';
+    bindSimpleInput('tpd-simple-paint-asset', data, function () { return buildPaintingVariant(); });
+    bindSimpleInput('tpd-simple-paint-w', data, function () { return buildPaintingVariant(); });
+    bindSimpleInput('tpd-simple-paint-h', data, function () { return buildPaintingVariant(); });
+  }
+
+  function buildPaintingVariant() {
+    var asset = $('tpd-simple-paint-asset') ? $('tpd-simple-paint-asset').value : 'minecraft:backyard';
+    var w = $('tpd-simple-paint-w') ? parseInt($('tpd-simple-paint-w').value, 10) || 2 : 2;
+    var h = $('tpd-simple-paint-h') ? parseInt($('tpd-simple-paint-h').value, 10) || 1 : 1;
+    return JSON.stringify({ painting_variant: { asset_id: asset, width: w, height: h } }, null, 2);
+  }
+
+  function renderSimpleWolfVariant(body, content) {
+    var data = tryParseJson(content) || {};
+    var wv = data.wolf_variant || {};
+    body.innerHTML =
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Asset name</label><input id=\"tpd-simple-wolf-asset\" value=\"' + escHtml(wv.asset_name || 'pale') + '\"></div>' +
+        '<div class=\"tpd-field\"><label>Tame texture</label><input id=\"tpd-simple-wolf-tame\" value=\"' + escHtml(wv.tame_texture || 'minecraft:entity/wolf/tame/pale') + '\"></div>' +
+      '</div>' +
+      '<div class=\"tpd-field\"><label>Wild texture</label><input id=\"tpd-simple-wolf-wild\" value=\"' + escHtml(wv.wild_texture || 'minecraft:entity/wolf/wild/pale') + '\"></div>';
+    bindSimpleInput('tpd-simple-wolf-asset', data, function () { return buildWolfVariant(); });
+    bindSimpleInput('tpd-simple-wolf-tame', data, function () { return buildWolfVariant(); });
+    bindSimpleInput('tpd-simple-wolf-wild', data, function () { return buildWolfVariant(); });
+  }
+
+  function buildWolfVariant() {
+    var asset = $('tpd-simple-wolf-asset') ? $('tpd-simple-wolf-asset').value : 'pale';
+    var tame = $('tpd-simple-wolf-tame') ? $('tpd-simple-wolf-tame').value : 'minecraft:entity/wolf/tame/pale';
+    var wild = $('tpd-simple-wolf-wild') ? $('tpd-simple-wolf-wild').value : 'minecraft:entity/wolf/wild/pale';
+    return JSON.stringify({ wolf_variant: { asset_name: asset, tame_texture: tame, wild_texture: wild } }, null, 2);
+  }
+
+  function renderSimpleInstrument(body, content) {
+    var data = tryParseJson(content) || {};
+    var ins = data.instrument || {};
+    body.innerHTML =
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Sound event</label><input id=\"tpd-simple-ins-sound\" value=\"' + escHtml(ins.sound_event || 'minecraft:block.note_block.pling') + '\"></div>' +
+        '<div class=\"tpd-field\"><label>Duration</label><input id=\"tpd-simple-ins-dur\" type=\"number\" step=\"0.1\" value=\"' + (ins.use_duration || 0.5) + '\"></div>' +
+      '</div>' +
+      '<div class=\"tpd-field\"><label>Range</label><input id=\"tpd-simple-ins-range\" type=\"number\" step=\"0.5\" value=\"' + (ins.range || 16) + '\"></div>';
+    bindSimpleInput('tpd-simple-ins-sound', data, function () { return buildInstrument(); });
+    bindSimpleInput('tpd-simple-ins-dur', data, function () { return buildInstrument(); });
+    bindSimpleInput('tpd-simple-ins-range', data, function () { return buildInstrument(); });
+  }
+
+  function buildInstrument() {
+    var sound = $('tpd-simple-ins-sound') ? $('tpd-simple-ins-sound').value : 'minecraft:block.note_block.pling';
+    var dur = $('tpd-simple-ins-dur') ? parseFloat($('tpd-simple-ins-dur').value) || 0.5 : 0.5;
+    var range = $('tpd-simple-ins-range') ? parseFloat($('tpd-simple-ins-range').value) || 16 : 16;
+    return JSON.stringify({ instrument: { sound_event: sound, use_duration: dur, range: range } }, null, 2);
   }
 
   function bindSimpleInput(id, data, cb) {
