@@ -5,6 +5,9 @@
 .smap-field{min-width:0}
 .smap-field label{display:block;font-size:.8rem;color:var(--text-dim);margin-bottom:.25rem}
 .smap-field input,.smap-field select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:.55rem .6rem;font-size:16px;box-sizing:border-box}
+.smap-toggles{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.smap-toggle{display:inline-flex;align-items:center;gap:.3rem;font-size:.82rem;color:var(--text);cursor:pointer;user-select:none}
+.smap-toggle input{accent-color:var(--accent)}
 .smap-actions{display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end}
 .smap-actions .btn{flex:1 1 auto;min-width:120px}
 .smap-status{margin:.25rem 0 1rem;font-size:.85rem;padding:.55rem .8rem;border-radius:8px;border:1px solid var(--border)}
@@ -16,9 +19,14 @@
 .smap-canvas-wrap{position:relative;width:100%;height:70vh;min-height:320px;overflow:hidden;cursor:grab;touch-action:none}
 .smap-canvas-wrap:active{cursor:grabbing}
 #smap-canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
+#smap-overlay-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;image-rendering:pixelated}
 .smap-overlay{position:absolute;top:0;left:0;right:0;padding:.6rem .8rem;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
 .smap-coords{background:rgba(0,0,0,.55);color:#fff;padding:.35rem .6rem;border-radius:6px;font-size:.82rem;font-family:'Courier New',Consolas,monospace;pointer-events:auto;backdrop-filter:blur(4px)}
 .smap-zoom-controls{display:flex;gap:.4rem;pointer-events:auto}
+
+.smap-minimap{position:absolute;bottom:12px;right:12px;width:160px;height:160px;background:rgba(0,0,0,.65);border:2px solid var(--border);border-radius:8px;overflow:hidden;backdrop-filter:blur(4px)}
+#smap-minimap-canvas{width:100%;height:100%;image-rendering:pixelated;display:block}
+.smap-minimap-viewport{position:absolute;top:0;left:0;border:2px solid #ff0;background:rgba(255,255,0,.1);pointer-events:none;box-sizing:border-box}
 
 .smap-legend{margin-top:1rem;background:var(--bg-elev);border:1px solid var(--border);border-radius:10px;padding:.7rem}
 .smap-legend-title{font-size:.78rem;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem}

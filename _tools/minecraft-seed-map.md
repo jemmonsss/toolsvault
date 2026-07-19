@@ -17,7 +17,7 @@ icon: "&#128506;"
 
 <div class="tui smap">
   <h1>Minecraft Seed Map</h1>
-  <p class="sub">Enter a seed to explore biomes, structures, and terrain. Pan and zoom the map to investigate your world.</p>
+  <p class="sub">Enter a seed to explore biomes, structures, slime chunks, and terrain. Pan and zoom the map to investigate your world.</p>
 
   <div class="smap-bar">
     <div class="smap-field">
@@ -61,6 +61,14 @@ icon: "&#128506;"
         <option value="32">32x (farthest)</option>
       </select>
     </div>
+    <div class="smap-field">
+      <label>&nbsp;</label>
+      <div class="smap-toggles">
+        <label class="smap-toggle"><input type="checkbox" id="smap-structures" checked> Structures</label>
+        <label class="smap-toggle"><input type="checkbox" id="smap-slime"> Slime chunks</label>
+        <label class="smap-toggle"><input type="checkbox" id="smap-grid"> Grid</label>
+      </div>
+    </div>
     <div class="smap-actions">
       <button class="btn btn-primary" id="smap-generate" type="button">Generate Map</button>
       <button class="btn btn-secondary" id="smap-random" type="button">Random Seed</button>
@@ -73,6 +81,7 @@ icon: "&#128506;"
   <div class="smap-wrap">
     <div class="smap-canvas-wrap" id="smap-canvas-wrap">
       <canvas id="smap-canvas"></canvas>
+      <canvas id="smap-overlay-canvas"></canvas>
       <div class="smap-overlay" id="smap-overlay">
         <div class="smap-coords" id="smap-coords">X: 0 Z: 0</div>
         <div class="smap-zoom-controls">
@@ -80,6 +89,10 @@ icon: "&#128506;"
           <button class="btn btn-secondary smap-sm" id="smap-zoom-out" type="button">−</button>
           <button class="btn btn-secondary smap-sm" id="smap-reset" type="button">Reset</button>
         </div>
+      </div>
+      <div class="smap-minimap" id="smap-minimap">
+        <canvas id="smap-minimap-canvas"></canvas>
+        <div class="smap-minimap-viewport" id="smap-minimap-viewport"></div>
       </div>
     </div>
   </div>
@@ -89,6 +102,8 @@ icon: "&#128506;"
     <div class="smap-legend-items" id="smap-legend-items"></div>
     <div class="smap-legend-title" style="margin-top:.75rem">Structures</div>
     <div class="smap-legend-items" id="smap-struct-legend"></div>
+    <div class="smap-legend-title" style="margin-top:.75rem">Hover info</div>
+    <div class="smap-legend-items" id="smap-info">Click or hover the map to see coordinates and biome.</div>
   </div>
 </div>
 

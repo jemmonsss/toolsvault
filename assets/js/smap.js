@@ -1,13 +1,18 @@
 /* Minecraft Seed Map — client-side interactive seed explorer.
  * Renders a biome/structure map on a canvas with pan, zoom, and download.
- * Biome placement is approximated using layered seeded pseudo-noise.
+ * Biome placement uses layered seeded pseudo-noise for better distribution.
  */
 (function () {
   'use strict';
 
   var canvas = document.getElementById('smap-canvas');
   var ctx = canvas.getContext('2d');
+  var overlayCanvas = document.getElementById('smap-overlay-canvas');
+  var overlayCtx = overlayCanvas.getContext('2d');
   var wrap = document.getElementById('smap-canvas-wrap');
+  var minimapCanvas = document.getElementById('smap-minimap-canvas');
+  var minimapCtx = minimapCanvas.getContext('2d');
+  var minimapViewport = document.getElementById('smap-minimap-viewport');
 
   var state = {
     seed: 123456789,
@@ -24,7 +29,10 @@
     dragOffsetY: 0,
     mapData: null,
     structures: [],
-    imageBitmap: null
+    showStructures: true,
+    showSlime: false,
+    showGrid: false,
+    hoveredStructure: null
   };
 
   var STRUCTURE_COLORS = {
@@ -36,7 +44,10 @@
     woodland_mansion: '#27ae60',
     nether_fortress: '#c0392b',
     bastion: '#d35400',
-    end_city: '#1abc9c'
+    end_city: '#1abc9c',
+    outpost: '#e67e22',
+    pillager: '#e67e22',
+    treasure: '#f39c12'
   };
 
   var BIOME_COLORS = {
@@ -151,7 +162,7 @@
     );
   }
 
-  function fbm(x, y, z, seed, octaves) {
+  function fbm(x, y, z, seed, octaves, persistence, lacunarity) {
     var value = 0;
     var amplitude = 1;
     var frequency = 1;
@@ -159,13 +170,13 @@
     for (var i = 0; i < octaves; i++) {
       value += amplitude * perlin(x * frequency, y * frequency, z * frequency, seed);
       maxValue += amplitude;
-      amplitude *= 0.5;
-      frequency *= 2;
+      amplitude *= persistence || 0.5;
+      frequency *= lacunarity || 2;
     }
     return value / maxValue;
   }
 
-  function getBiome(temp, humidity) {
+  function getBiome(temp, humidity, elevation) {
     if (temp < 0.15) {
       if (humidity < 0.5) return 'minecraft:snowy_plains';
       if (humidity < 0.75) return 'minecraft:ice_spikes';
@@ -207,26 +218,23 @@
   function generateBiomeData(cx, cz, width, height, scale, seed, dimension) {
     var data = new Uint8ClampedArray(width * height * 4);
     var invScale = 1 / Math.max(1, scale);
-    var seed2 = seed * 65535;
     for (var y = 0; y < height; y++) {
       for (var x = 0; x < width; x++) {
         var worldX = (cx + x) * invScale;
         var worldZ = (cz + y) * invScale;
         var temp, humidity;
         if (dimension === 'nether') {
-          temp = 0.9 + fbm(worldX * 0.05, 0, worldZ * 0.05, seed, 3) * 0.2;
-          humidity = fbm(worldX * 0.05 + 100, 0, worldZ * 0.05 + 100, seed, 3) * 0.6 + 0.2;
-          temp = Math.max(0, Math.min(1, temp));
-          humidity = Math.max(0, Math.min(1, humidity));
+          temp = 0.9 + fbm(worldX * 0.05, 0, worldZ * 0.05, seed, 3, 0.5, 2) * 0.2;
+          humidity = fbm(worldX * 0.05 + 100, 0, worldZ * 0.05 + 100, seed, 3, 0.5, 2) * 0.6 + 0.2;
         } else if (dimension === 'end') {
-          temp = 0.5 + fbm(worldX * 0.02, 0, worldZ * 0.02, seed, 2) * 0.1;
-          humidity = 0.3 + fbm(worldX * 0.02 + 50, 0, worldZ * 0.02 + 50, seed, 2) * 0.1;
+          temp = 0.5 + fbm(worldX * 0.02, 0, worldZ * 0.02, seed, 2, 0.5, 2) * 0.1;
+          humidity = 0.3 + fbm(worldX * 0.02 + 50, 0, worldZ * 0.02 + 50, seed, 2, 0.5, 2) * 0.1;
         } else {
-          temp = fbm(worldX * 0.003, 0, worldZ * 0.003, seed, 4) * 0.5 + 0.25;
-          humidity = fbm(worldX * 0.003 + 1000, 0, worldZ * 0.003 + 1000, seed, 4) * 0.5 + 0.25;
-          temp = Math.max(0, Math.min(1, temp));
-          humidity = Math.max(0, Math.min(1, humidity));
+          temp = fbm(worldX * 0.003, 0, worldZ * 0.003, seed, 4, 0.5, 2) * 0.5 + 0.25;
+          humidity = fbm(worldX * 0.003 + 1000, 0, worldZ * 0.003 + 1000, seed, 4, 0.5, 2) * 0.5 + 0.25;
         }
+        temp = Math.max(0, Math.min(1, temp));
+        humidity = Math.max(0, Math.min(1, humidity));
         var biome = getBiome(temp, humidity);
         var color = getBiomeColor(biome);
         var idx = (y * width + x) * 4;
@@ -236,7 +244,14 @@
         data[idx + 3] = 255;
       }
     }
-    return { data: data, width: width, height: height, biomeMap: null };
+    return { data: data, width: width, height: height };
+  }
+
+  function isSlimeChunk(chunkX, chunkZ, seed) {
+    var h = seed + chunkX * chunkX * 4987142 + chunkX * 5947611 + chunkZ * chunkZ * 4392871 + chunkZ * 38971113;
+    h = (h ^ (h >> 13)) * 1274126177;
+    h = h ^ (h >> 16);
+    return ((h >> 16) & 0x7FFFFFFF) % 10 === 0;
   }
 
   function generateStructures(cx, cz, width, height, scale, seed, dimension) {
@@ -260,6 +275,8 @@
             structures.push({ type: 'woodland_mansion', x: x * invScale + rand() * 32, z: z * invScale + rand() * 32 });
           } else if (r < 0.28) {
             structures.push({ type: 'stronghold', x: x * invScale + rand() * 32, z: z * invScale + rand() * 32 });
+          } else if (r < 0.30) {
+            structures.push({ type: 'outpost', x: x * invScale + rand() * 16, z: z * invScale + rand() * 16 });
           }
         }
       }
@@ -302,6 +319,13 @@
     canvas.style.height = height + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
+    overlayCanvas.width = width * dpr;
+    overlayCanvas.height = height * dpr;
+    overlayCanvas.style.width = width + 'px';
+    overlayCanvas.style.height = height + 'px';
+    overlayCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    overlayCtx.clearRect(0, 0, width, height);
+
     var viewW = width * scale;
     var viewH = height * scale;
     var cx = Math.floor(state.offsetX - viewW / 2);
@@ -319,25 +343,103 @@
       for (var i = 0; i < src.length; i++) imgData.data[i] = src[i];
       ctx.putImageData(imgData, 0, 0);
 
-      ctx.globalAlpha = 0.9;
-      structures.forEach(function (s) {
-        var sx = (s.x - cx) / scale;
-        var sz = (s.z - cz) / scale;
-        if (sx < -10 || sx > width + 10 || sz < -10 || sz > height + 10) return;
-        var color = STRUCTURE_COLORS[s.type] || '#ffffff';
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.arc(sx, sz, 3, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      });
-      ctx.globalAlpha = 1;
-
+      if (state.showGrid) drawGrid(cx, cz, width, height, scale);
+      if (state.showStructures) drawStructures(structures, cx, cz, width, height, scale);
+      if (state.showSlime && state.dimension === 'overworld') drawSlimeChunks(cx, cz, width, height, scale, seed);
       updateLegend(structures);
+      renderMinimap();
       showStatus('Ready — seed: ' + seed, 'ok');
     }, 10);
+  }
+
+  function drawGrid(cx, cz, width, height, scale) {
+    overlayCtx.strokeStyle = 'rgba(0,0,0,0.2)';
+    overlayCtx.lineWidth = 1;
+    var chunkSize = 16 * scale;
+    var startX = ((cx % 16) * scale) % chunkSize;
+    var startZ = ((cz % 16) * scale) % chunkSize;
+    for (var x = startX; x < width; x += chunkSize) {
+      overlayCtx.beginPath();
+      overlayCtx.moveTo(x, 0);
+      overlayCtx.lineTo(x, height);
+      overlayCtx.stroke();
+    }
+    for (var z = startZ; z < height; z += chunkSize) {
+      overlayCtx.beginPath();
+      overlayCtx.moveTo(0, z);
+      overlayCtx.lineTo(width, z);
+      overlayCtx.stroke();
+    }
+  }
+
+  function drawStructures(structures, cx, cz, width, height, scale) {
+    ctx.globalAlpha = 0.9;
+    structures.forEach(function (s) {
+      var sx = (s.x - cx) / scale;
+      var sz = (s.z - cz) / scale;
+      if (sx < -10 || sx > width + 10 || sz < -10 || sz > height + 10) return;
+      var color = STRUCTURE_COLORS[s.type] || '#ffffff';
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(sx, sz, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  function drawSlimeChunks(cx, cz, width, height, scale, seed) {
+    overlayCtx.globalAlpha = 0.3;
+    var invScale = 1 / Math.max(1, scale);
+    for (var z = cz; z < cz + height * invScale; z += 16) {
+      for (var x = cx; x < cx + width * invScale; x += 16) {
+        if (isSlimeChunk(Math.floor(x / 16), Math.floor(z / 16), seed)) {
+          var sx = (x - cx) / scale;
+          var sz = (z - cz) / scale;
+          var sw = Math.max(2, 16 / scale);
+          overlayCtx.fillStyle = '#00ff00';
+          overlayCtx.fillRect(sx, sz, sw, sw);
+        }
+      }
+    }
+    overlayCtx.globalAlpha = 1;
+  }
+
+  function renderMinimap() {
+    if (!minimapCanvas || !state.mapData) return;
+    var mmSize = 160;
+    minimapCanvas.width = mmSize;
+    minimapCanvas.height = mmSize;
+    var tempCanvas = document.createElement('canvas');
+    tempCanvas.width = state.mapData.width;
+    tempCanvas.height = state.mapData.height;
+    var tempCtx = tempCanvas.getContext('2d');
+    var imgData = tempCtx.createImageData(state.mapData.width, state.mapData.height);
+    var src = state.mapData.data;
+    for (var i = 0; i < src.length; i++) imgData.data[i] = src[i];
+    tempCtx.putImageData(imgData, 0, 0);
+    minimapCtx.drawImage(tempCanvas, 0, 0, mmSize, mmSize);
+    updateMinimapViewport();
+  }
+
+  function updateMinimapViewport() {
+    if (!minimapViewport || !wrap) return;
+    var rect = wrap.getBoundingClientRect();
+    var scale = parseInt(state.scale, 10) || 4;
+    var viewW = rect.width * scale;
+    var viewH = rect.height * scale;
+    var totalW = state.mapData ? state.mapData.width * scale : viewW * 4;
+    var totalH = state.mapData ? state.mapData.height * scale : viewH * 4;
+    var mmSize = 160;
+    var vpW = Math.max(8, (rect.width / totalW) * mmSize);
+    var vpH = Math.max(8, (rect.height / totalH) * mmSize);
+    var vpX = Math.max(0, Math.min(mmSize - vpW, ((state.offsetX - viewW / 2) / totalW) * mmSize));
+    var vpY = Math.max(0, Math.min(mmSize - vpH, ((state.offsetY - viewH / 2) / totalH) * mmSize));
+    minimapViewport.style.width = vpW + 'px';
+    minimapViewport.style.height = vpH + 'px';
+    minimapViewport.style.transform = 'translate(' + vpX + 'px,' + vpY + 'px)';
   }
 
   function hashStringSeed(str) {
@@ -353,8 +455,8 @@
   function updateLegend(structures) {
     var items = document.getElementById('smap-legend-items');
     var structLegend = document.getElementById('smap-struct-legend');
-    items.innerHTML = '';
-    structLegend.innerHTML = '';
+    if (items) items.innerHTML = '';
+    if (structLegend) structLegend.innerHTML = '';
     var seen = {};
     structures.forEach(function (s) {
       if (!seen[s.type]) {
@@ -363,10 +465,10 @@
         var item = document.createElement('div');
         item.className = 'smap-legend-item';
         item.innerHTML = '<span class="smap-swatch" style="background:' + color + '"></span>' + s.type.replace(/_/g, ' ');
-        structLegend.appendChild(item);
+        if (structLegend) structLegend.appendChild(item);
       }
     });
-    if (structLegend.children.length === 0) {
+    if (structLegend && structLegend.children.length === 0) {
       structLegend.innerHTML = '<span class="smap-legend-item">No structures in this view</span>';
     }
   }
@@ -390,11 +492,57 @@
     return { x: Math.floor(worldX), z: Math.floor(worldZ) };
   }
 
+  function getBiomeAt(worldX, worldZ) {
+    if (!state.mapData) return null;
+    var scale = parseInt(state.scale, 10) || 4;
+    var rect = wrap.getBoundingClientRect();
+    var viewW = rect.width * scale;
+    var viewH = rect.height * scale;
+    var cx = Math.floor(state.offsetX - viewW / 2);
+    var cz = Math.floor(state.offsetY - viewH / 2);
+    var px = Math.floor((worldX - cx) / scale);
+    var pz = Math.floor((worldZ - cz) / scale);
+    if (px < 0 || pz < 0 || px >= state.mapData.width || pz >= state.mapData.height) return null;
+    var idx = (pz * state.mapData.width + px) * 4;
+    var r = state.mapData.data[idx];
+    var g = state.mapData.data[idx + 1];
+    var b = state.mapData.data[idx + 2];
+    var hex = '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+    var biome = Object.keys(BIOME_COLORS).find(function (k) { return BIOME_COLORS[k] === hex; });
+    return biome || 'minecraft:unknown';
+  }
+
+  function findNearestStructure(worldX, worldZ) {
+    if (!state.structures.length) return null;
+    var nearest = null;
+    var minDist = Infinity;
+    state.structures.forEach(function (s) {
+      var dx = s.x - worldX;
+      var dz = s.z - worldZ;
+      var dist = Math.sqrt(dx * dx + dz * dz);
+      if (dist < minDist && dist < 200) {
+        minDist = dist;
+        nearest = s;
+      }
+    });
+    return nearest;
+  }
+
   function updateCoords(e) {
     var coords = document.getElementById('smap-coords');
     if (!coords) return;
     var w = screenToWorld(e.clientX, e.clientY);
     coords.textContent = 'X: ' + w.x + '  Z: ' + w.z;
+    var info = document.getElementById('smap-info');
+    if (info) {
+      var biome = getBiomeAt(w.x, w.z);
+      var struct = findNearestStructure(w.x, w.z);
+      var text = 'X: ' + w.x + ' Z: ' + w.z + (biome ? ' | Biome: ' + biome.replace('minecraft:', '') : '');
+      if (struct) {
+        text += ' | Nearby: ' + struct.type.replace(/_/g, ' ') + ' (' + Math.round(Math.sqrt((struct.x - w.x) ** 2 + (struct.z - w.z) ** 2)) + ' blocks)';
+      }
+      info.textContent = text;
+    }
   }
 
   wrap.addEventListener('pointerdown', function (e) {
@@ -497,6 +645,30 @@
   document.getElementById('smap-zoom-in').addEventListener('click', zoomIn);
   document.getElementById('smap-zoom-out').addEventListener('click', zoomOut);
   document.getElementById('smap-reset').addEventListener('click', resetView);
+
+  var structuresToggle = document.getElementById('smap-structures');
+  if (structuresToggle) {
+    structuresToggle.addEventListener('change', function () {
+      state.showStructures = this.checked;
+      renderMap();
+    });
+  }
+
+  var slimeToggle = document.getElementById('smap-slime');
+  if (slimeToggle) {
+    slimeToggle.addEventListener('change', function () {
+      state.showSlime = this.checked;
+      renderMap();
+    });
+  }
+
+  var gridToggle = document.getElementById('smap-grid');
+  if (gridToggle) {
+    gridToggle.addEventListener('change', function () {
+      state.showGrid = this.checked;
+      renderMap();
+    });
+  }
 
   document.getElementById('smap-seed').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') document.getElementById('smap-generate').click();
