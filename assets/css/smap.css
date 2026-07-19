@@ -1,0 +1,38 @@
+/* Minecraft Seed Map — scoped styles. Mobile-first. */
+
+.smap{max-width:1400px;margin:0 auto;overflow-x:hidden}
+.smap-bar{display:flex;flex-direction:column;gap:.75rem;margin-bottom:1rem}
+.smap-field{min-width:0}
+.smap-field label{display:block;font-size:.8rem;color:var(--text-dim);margin-bottom:.25rem}
+.smap-field input,.smap-field select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:.55rem .6rem;font-size:16px;box-sizing:border-box}
+.smap-actions{display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end}
+.smap-actions .btn{flex:1 1 auto;min-width:120px}
+.smap-status{margin:.25rem 0 1rem;font-size:.85rem;padding:.55rem .8rem;border-radius:8px;border:1px solid var(--border)}
+.smap-status[hidden]{display:none}
+.smap-status.ok{background:var(--accent-ring);color:var(--text);border-color:var(--accent)}
+.smap-status.err{background:rgba(239,68,68,.12);color:var(--danger);border-color:var(--danger)}
+
+.smap-wrap{position:relative;background:var(--bg-elev);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.smap-canvas-wrap{position:relative;width:100%;height:70vh;min-height:320px;overflow:hidden;cursor:grab;touch-action:none}
+.smap-canvas-wrap:active{cursor:grabbing}
+#smap-canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
+.smap-overlay{position:absolute;top:0;left:0;right:0;padding:.6rem .8rem;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
+.smap-coords{background:rgba(0,0,0,.55);color:#fff;padding:.35rem .6rem;border-radius:6px;font-size:.82rem;font-family:'Courier New',Consolas,monospace;pointer-events:auto;backdrop-filter:blur(4px)}
+.smap-zoom-controls{display:flex;gap:.4rem;pointer-events:auto}
+
+.smap-legend{margin-top:1rem;background:var(--bg-elev);border:1px solid var(--border);border-radius:10px;padding:.7rem}
+.smap-legend-title{font-size:.78rem;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem}
+.smap-legend-items{display:flex;flex-wrap:wrap;gap:.4rem .8rem;align-items:center}
+.smap-legend-item{display:inline-flex;align-items:center;gap:.35rem;font-size:.82rem;color:var(--text)}
+.smap-swatch{width:14px;height:14px;border-radius:3px;border:1px solid var(--border);display:inline-block;flex:0 0 auto}
+.smap-struct-icon{width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;font-size:.75rem;flex:0 0 auto}
+
+@media (min-width:640px){
+  .smap-bar{flex-direction:row;flex-wrap:wrap;align-items:flex-end}
+  .smap-field{flex:0 0 auto;min-width:150px}
+  .smap-field-grow{flex:1 1 240px}
+  .smap-actions{flex:0 0 auto;margin-left:auto}
+}
+@media (min-width:1024px){
+  .smap-canvas-wrap{height:75vh;min-height:480px}
+}
