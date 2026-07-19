@@ -115,11 +115,12 @@ icon: "&#128190;"
         </div>
 
         <div class="tpd-dropzone" id="tpd-drop">
-          <p>Drop a <strong>.json</strong> or <strong>.mcfunction</strong> here, or
+          <p>Drop files here, or
             <button class="btn btn-secondary tpd-sm" id="tpd-upload-btn">Upload file</button>
-            <input type="file" id="tpd-upload" accept=".json,.mcfunction,text/plain,application/json" hidden>
+            <input type="file" id="tpd-upload" accept="*/*" hidden>
+            <input type="file" id="tpd-add-file-input" accept="*/*" hidden>
           </p>
-          <p class="tpd-hint" style="margin-top:.5rem">Files are parsed as text and added to the datapack tree.</p>
+          <p class="tpd-hint" style="margin-top:.5rem">Accepts JSON, .mcfunction, audio (.ogg), and any other datapack file.</p>
         </div>
       </div>
     </div>
@@ -129,6 +130,7 @@ icon: "&#128190;"
   <section class="panel" id="tab-files">
     <div class="tpd-filebar">
       <button class="btn btn-secondary" id="tpd-new-blank">+ New file</button>
+      <button class="btn btn-secondary" id="tpd-add-file">Add file...</button>
       <button class="btn btn-secondary" id="tpd-load-template-files">Load template</button>
       <span class="tpd-count" id="tpd-file-count">0 files</span>
     </div>

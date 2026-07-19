@@ -91,6 +91,10 @@
     instrument: {
       ext: '.json',
       content: '{\n  "instrument": {\n    "sound_event": "minecraft:block.note_block.pling",\n    "use_duration": 0.5,\n    "range": 16.0\n  }\n}\n'
+    },
+    file: {
+      ext: '',
+      content: ''
     }
   };
 
@@ -115,7 +119,8 @@
     { label: 'Damage types', key: 'damage_type' },
     { label: 'Painting variants', key: 'painting_variant' },
     { label: 'Wolf variants', key: 'wolf_variant' },
-    { label: 'Instruments', key: 'instrument' }
+    { label: 'Instruments', key: 'instrument' },
+    { label: 'File (any)', key: 'file' }
   ];
 
   var PACK_TEMPLATES = {
@@ -339,11 +344,23 @@
 
   function serializeProject() {
     if (selectedPath && project.files.has(selectedPath)) {
-      project.files.get(selectedPath).content = editor.value;
+      var entry = project.files.get(selectedPath);
+      if (entry.blob) {
+        entry.content = arrayBufferToBase64(entry.blob);
+      } else {
+        entry.content = editor.value;
+      }
     }
     var filesArr = [];
     project.files.forEach(function (entry, path) {
-      filesArr.push({ path: path, name: entry.name, type: entry.type, content: entry.content });
+      var obj = { path: path, name: entry.name, type: entry.type };
+      if (entry.blob) {
+        obj.content = arrayBufferToBase64(entry.blob);
+        obj.blob = true;
+      } else {
+        obj.content = entry.content || '';
+      }
+      filesArr.push(obj);
     });
     return {
       version: SAVE_VERSION,
@@ -369,7 +386,21 @@
     var tasks = [];
     obj.files.forEach(function (f) {
       tasks.push(function () {
-        project.files.set(f.path, { name: f.name || f.path.split('/').pop(), type: f.type || guessType(f.path), content: f.content || '' });
+        var entry = {
+          name: f.name || f.path.split('/').pop(),
+          type: f.type || guessType(f.path),
+          content: f.blob ? '' : (f.content || '')
+        };
+        if (f.blob && f.content) {
+          try {
+            entry.blob = base64ToArrayBuffer(f.content);
+          } catch (e) {
+            entry.content = f.content || '';
+          }
+        } else {
+          entry.content = f.content || '';
+        }
+        project.files.set(f.path, entry);
       });
     });
     return Promise.all(tasks.map(function (t) { try { t(); } catch (e) {} return Promise.resolve(); }));
@@ -488,7 +519,7 @@
     if (/\/painting_variant\//.test(path)) return 'painting_variant';
     if (/\/wolf_variant\//.test(path)) return 'wolf_variant';
     if (/\/instrument\//.test(path)) return 'instrument';
-    return 'unknown';
+    return 'file';
   }
 
   function sanitizeName(s) {
@@ -501,6 +532,25 @@
 
   function fileNameFromPath(path) {
     return path.replace(/^.*\//, '');
+  }
+
+  function isLikelyBinary(name) {
+    name = (name || '').toLowerCase();
+    return /\.(ogg|wav|mp3|nbt|bin|png|jpg|jpeg|gif|webp|zip|rar|7z|tar|gz)$/.test(name);
+  }
+
+  function arrayBufferToBase64(buffer) {
+    var bytes = new Uint8Array(buffer);
+    var binary = '';
+    for (var i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  }
+
+  function base64ToArrayBuffer(base64) {
+    var binary = atob(base64);
+    var bytes = new Uint8Array(binary.length);
+    for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes.buffer;
   }
 
   function autoResizeEditor() {
@@ -531,7 +581,11 @@
       menu.appendChild(groupLabel);
       var item = document.createElement('div');
       item.className = 'tpd-new-item';
-      item.innerHTML = '<span>New ' + g.label.toLowerCase().slice(0, -1) + '</span><span class="tpd-new-ext">' + TEMPLATES[g.key].ext + '</span>';
+      if (g.key === 'file') {
+        item.innerHTML = '<span>Add file...</span><span class=\"tpd-new-ext\">any</span>';
+      } else {
+        item.innerHTML = '<span>New ' + g.label.toLowerCase().slice(0, -1) + '</span><span class="tpd-new-ext">' + TEMPLATES[g.key].ext + '</span>';
+      }
       item.addEventListener('click', function () {
         createNewFile(g.key, ns);
         menu.remove();
@@ -546,6 +600,10 @@
   }
 
   function createNewFile(typeKey, ns) {
+    if (typeKey === 'file') {
+      $('tpd-add-file-input').click();
+      return;
+    }
     var tmpl = TEMPLATES[typeKey];
     if (!tmpl) return;
     var ext = tmpl.ext;
@@ -667,13 +725,21 @@
 
   function selectFile(path) {
     if (selectedPath && project.files.has(selectedPath)) {
-      project.files.get(selectedPath).content = editor.value;
+      var prev = project.files.get(selectedPath);
+      if (!prev.blob) {
+        prev.content = editor.value;
+      }
     }
     selectedPath = path;
     var entry = project.files.get(path);
     if (entry) {
-      editor.value = entry.content;
-      editor.disabled = false;
+      if (entry.blob) {
+        editor.value = '[Binary file]\nSize: ' + entry.blob.byteLength + ' bytes\n\nThis file cannot be edited as text.\nUse Export to download the .zip, or delete and re-upload if needed.';
+        editor.disabled = true;
+      } else {
+        editor.value = entry.content;
+        editor.disabled = false;
+      }
     } else {
       editor.value = '';
       editor.disabled = true;
@@ -737,6 +803,10 @@
     }
     var content = editor.value;
     var entry = project.files.get(selectedPath);
+    if (entry.blob) {
+      if (validity) { validity.textContent = 'Binary file'; validity.className = 'tpd-validity'; }
+      return;
+    }
     var result;
     if (entry.type === 'functions') {
       result = validateMcfunction(content);
@@ -806,7 +876,11 @@
       head.appendChild(name); head.appendChild(type);
       var content = document.createElement('div');
       content.className = 'tpd-preview-content';
-      content.textContent = entry.content || '(empty)';
+      if (entry.blob) {
+        content.textContent = '[Binary file] ' + entry.blob.byteLength + ' bytes';
+      } else {
+        content.textContent = entry.content || '(empty)';
+      }
       item.appendChild(head); item.appendChild(content);
       list.appendChild(item);
     });
@@ -838,7 +912,11 @@
       var metaStr = JSON.stringify(meta, null, 2);
       files.push({ name: 'pack.mcmeta', data: textToBytes(metaStr) });
       project.files.forEach(function (entry, path) {
-        files.push({ name: path, data: textToBytes(entry.content || '') });
+        if (entry.blob) {
+          files.push({ name: path, data: new Uint8Array(entry.blob) });
+        } else {
+          files.push({ name: path, data: textToBytes(entry.content || '') });
+        }
       });
       var zip = TpcZip.createZip(files);
       var url = URL.createObjectURL(zip);
@@ -879,6 +957,11 @@
         } else if (/\.json$/.test(rel)) {
           var type = guessTypeFromName(rel);
           path = 'data/' + ns + '/' + type + '/' + base + '.json';
+        } else if (isLikelyBinary(rel)) {
+          var binType = guessTypeFromName(rel);
+          if (binType === 'functions') binType = '';
+          var binExt = rel.replace(/^.*\./, '.');
+          path = 'data/' + ns + (binType ? '/' + binType : '') + '/' + base + binExt;
         } else {
           path = 'data/' + ns + '/functions/' + base + '.txt';
         }
@@ -886,7 +969,12 @@
       try {
         var text = await readFileAsText(f);
         var type = guessType(path);
-        project.files.set(path, { name: fileNameFromPath(path), type: type, content: text });
+        if (isLikelyBinary(f.name) && !(type === 'functions' || type === 'worldgen' || type === 'dimension' || type === 'dimension_type')) {
+          var buffer = await readFileAsArrayBuffer(f);
+          project.files.set(path, { name: fileNameFromPath(path), type: type, content: '', blob: buffer });
+        } else {
+          project.files.set(path, { name: fileNameFromPath(path), type: type, content: text });
+        }
       } catch (e) {
         showMsg('Could not load ' + f.name, false);
       }
@@ -894,6 +982,15 @@
     buildTree(); renderFileList(); renderPreview(); renderMeta();
     if (!selectedPath && project.files.size > 0) selectFile(Array.from(project.files.keys())[0]);
     showMsg('Imported ' + fileList.length + ' file(s).', true);
+  }
+
+  function readFileAsArrayBuffer(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () { resolve(reader.result); };
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(file);
+    });
   }
 
   function guessTypeFromName(name) {
@@ -918,7 +1015,7 @@
     if (name.indexOf('painting') !== -1) return 'painting_variant';
     if (name.indexOf('wolf') !== -1) return 'wolf_variant';
     if (name.indexOf('instrument') !== -1) return 'instrument';
-    return 'functions';
+    return 'file';
   }
 
   function readFileAsText(file) {
@@ -1704,8 +1801,11 @@
       if (saveDebounce) clearTimeout(saveDebounce);
       saveDebounce = setTimeout(function () {
         if (selectedPath && project.files.has(selectedPath)) {
-          project.files.get(selectedPath).content = editor.value;
-          renderPreview();
+          var entry = project.files.get(selectedPath);
+          if (!entry.blob) {
+            entry.content = editor.value;
+            renderPreview();
+          }
         }
       }, 300);
       validateCurrent();
@@ -1754,6 +1854,14 @@
     // Upload
     $('tpd-upload-btn').addEventListener('click', function () { $('tpd-upload').click(); });
     $('tpd-upload').addEventListener('change', function () { handleFiles(this.files); this.value = ''; });
+    var addFileBtn = $('tpd-add-file');
+    if (addFileBtn) {
+      addFileBtn.addEventListener('click', function () { $('tpd-add-file-input').click(); });
+    }
+    var addFileInput = $('tpd-add-file-input');
+    if (addFileInput) {
+      addFileInput.addEventListener('change', function () { handleFiles(this.files); this.value = ''; });
+    }
     var dz = $('tpd-drop');
     ['dragenter', 'dragover'].forEach(function (ev) {
       dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add('drag'); });
