@@ -558,12 +558,38 @@
     sctx.putImageData(od, 0, 0);
     return src;
   }
-  function upscaleCanvas(src, targetW) {
+  // Edge-aware smoothing (HQ2x-style): blends each pixel toward SIMILAR
+  // neighbors only, smoothing gradients for more detail while keeping hard
+  // edges crisp. Makes upscales look refined instead of blocky.
+  function smoothPass(src, passes) {
+    var cur = src;
+    for (var p = 0; p < (passes || 1); p++) {
+      var w = cur.width, h = cur.height;
+      var sctx = cur.getContext('2d');
+      var sd = sctx.getImageData(0, 0, w, h).data;
+      var od = sctx.createImageData(w, h);
+      var od_ = od.data; od_.set(sd);
+      function px(x, y) { if (x<0||y<0||x>=w||y>=h) return null; var i=(y*w+x)*4; return [sd[i],sd[i+1],sd[i+2],sd[i+3]]; }
+      function dist(a,b){ return Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1])+Math.abs(a[2]-b[2])+Math.abs(a[3]-b[3]); }
+      for (var y=0;y<h;y++) for (var x=0;x<w;x++) {
+        var E=px(x,y); if(!E||E[3]===0) continue;
+        var N=px(x,y-1),S=px(x,y+1),Wp=px(x-1,y),Ep=px(x+1,y);
+        var tot=0,r=0,g=0,b=0,a=0,cnt=0;
+        [N,S,Wp,Ep].forEach(function(n){ if(!n||n[3]===0) return; var d=dist(E,n); if(d>120) return; var wt=1/(1+d*d); r+=n[0]*wt;g+=n[1]*wt;b+=n[2]*wt;a+=n[3]*wt;tot+=wt;cnt++; });
+        if(cnt>=2&&tot>0){ var di=(y*w+x)*4; od_[di]=Math.round(E[0]*0.6+(r/tot)*0.4); od_[di+1]=Math.round(E[1]*0.6+(g/tot)*0.4); od_[di+2]=Math.round(E[2]*0.6+(b/tot)*0.4); od_[di+3]=Math.round(E[3]*0.6+(a/tot)*0.4); }
+      }
+      sctx.putImageData(od,0,0);
+    }
+    return cur;
+  }
+  function upscaleCanvas(src, targetW, smooth) {
     var cur = src;
     while (cur.width < targetW && cur.width < 1024) {
       cur = epxPass(cur);
       cur = epxRefine(cur);
+      if (smooth) cur = smoothPass(cur, 1);
     }
+    if (smooth) cur = smoothPass(cur, 1);
     return cur;
   }
 
@@ -870,12 +896,13 @@
       if (!selectedSlot) { showMsg('Select a texture slot first.', false); return; }
       if (canvas.width >= 512) { showMsg('Already at 512x512 max.', false); return; }
       pushUndo();
-      var up = upscaleCanvas(canvas, Math.min(1024, canvas.width * 2));
+      var smooth = document.getElementById('tpc-smooth').checked;
+      var up = upscaleCanvas(canvas, Math.min(1024, canvas.width * 2), smooth);
       resetCanvas(up.width, up.height);
       prepCtx(); ctx.imageSmoothingEnabled = false; ctx.drawImage(up, 0, 0);
       $('tpc-res').value = String(canvas.width);
       afterEdit();
-      showMsg('Upscaled to ' + canvas.width + 'x' + canvas.height + ' (edge-preserving).', true);
+      showMsg('Upscaled to ' + canvas.width + 'x' + canvas.height + (smooth ? ' (smoothed).' : ' (edge-preserving).'), true);
     });
     $('tpc-color').addEventListener('input', function () { currentColor = this.value; addRecent(this.value); });
     $('tpc-undo').addEventListener('click', undo);

@@ -97,6 +97,7 @@ icon: "&#127959;"
 </label>
 <label class="tpc-inline"><input type="checkbox" id="tpc-grid" checked> Grid</label>
 <button class="btn btn-secondary tpc-sm" id="tpc-upscale" type="button" title="Upscale 2x (rule-based, edge-preserving)">⬆ Upscale 2×</button>
+<label class="tpc-inline"><input type="checkbox" id="tpc-smooth" checked> Smooth</label>
             <button class="btn btn-secondary tpc-sm" id="tpc-undo" title="Undo (Ctrl+Z)">↶</button>
             <button class="btn btn-secondary tpc-sm" id="tpc-redo" title="Redo (Ctrl+Y)">↷</button>
             <button class="btn btn-secondary tpc-sm" id="tpc-clear">Clear</button>
