@@ -125,6 +125,7 @@
   var selectedPath = null;
   var inited = false;
   var saveDebounce = null;
+  var simpleMode = false;
 
   /* ---------- Element refs ---------- */
   var $ = function (id) { return document.getElementById(id); };
@@ -457,6 +458,7 @@
     validateCurrent();
     refreshTreeFlags();
     editor.focus();
+    if (simpleMode) renderSimpleForm();
   }
 
   function updateEditorHeader() {
@@ -693,6 +695,292 @@
     });
   }
 
+  /* ---------- Simple mode ---------- */
+  function toggleSimpleMode() {
+    simpleMode = !simpleMode;
+    var btn = $('tpd-mode-toggle');
+    var simpleEl = $('tpd-simple');
+    var editorEl = $('tpd-editor');
+    if (btn) btn.textContent = 'Simple mode: ' + (simpleMode ? 'on' : 'off');
+    if (simpleEl) simpleEl.hidden = !simpleMode;
+    if (simpleMode) {
+      if (editorEl) editorEl.style.display = 'none';
+      renderSimpleForm();
+    } else {
+      if (editorEl) editorEl.style.display = '';
+    }
+  }
+
+  function renderSimpleForm() {
+    var body = $('tpd-simple-body');
+    if (!body) return;
+    body.innerHTML = '';
+    if (!selectedPath || !project.files.has(selectedPath)) {
+      body.innerHTML = '<div class=\"tpd-field\"><label>No file selected</label></div>';
+      return;
+    }
+    var entry = project.files.get(selectedPath);
+    var content = editor.value || entry.content || '';
+    if (entry.type === 'functions') {
+      renderSimpleFunctions(body, content);
+    } else if (entry.type === 'recipes') {
+      renderSimpleRecipe(body, content);
+    } else if (entry.type === 'advancements') {
+      renderSimpleAdvancement(body, content);
+    } else if (entry.type === 'loot_tables') {
+      renderSimpleLootTable(body, content);
+    } else if (entry.type === 'tags') {
+      renderSimpleTag(body, content);
+    } else if (entry.type === 'item_modifiers') {
+      renderSimpleItemModifier(body, content);
+    } else if (entry.type === 'predicates') {
+      renderSimplePredicate(body, content);
+    } else {
+      body.innerHTML = '<div class=\"tpd-field\"><label>Simple editing is not supported for this file type yet. Use Code mode.</label></div>';
+    }
+  }
+
+  function renderSimpleFunctions(body, content) {
+    body.innerHTML = '<div class=\"tpd-field\"><label>Commands (one per line)</label><textarea id=\"tpd-simple-cmds\">' + escHtml(content) + '</textarea></div>';
+    bindSimpleInput('tpd-simple-cmds', content);
+  }
+
+  function renderSimpleRecipe(body, content) {
+    var data = tryParseJson(content) || {};
+    var type = data.type || 'minecraft:crafting_shaped';
+    var pattern = Array.isArray(data.pattern) ? data.pattern.join('\n') : '###\n # \n # ';
+    var key = data.key || {};
+    var result = data.result || {};
+    var resultItem = result.item || 'minecraft:stone';
+    var resultCount = result.count || 1;
+    body.innerHTML =
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Type</label><select id=\"tpd-simple-recipe-type\"><option value=\"minecraft:crafting_shaped\">Shaped</option><option value=\"minecraft:crafting_shapeless\">Shapeless</option><option value=\"minecraft:stonecutting\">Stonecutting</option><option value=\"minecraft:smithing\">Smithing</option></select></div>' +
+        '<div class=\"tpd-field\"><label>Result item</label><input id=\"tpd-simple-recipe-result\" value=\"' + escHtml(resultItem) + '\"></div>' +
+        '<div class=\"tpd-field\"><label>Count</label><input id=\"tpd-simple-recipe-count\" type=\"number\" min=\"1\" max=\"64\" value=\"' + resultCount + '\"></div>' +
+      '</div>' +
+      '<div class=\"tpd-field\"><label>Pattern (3 lines, use # for key placeholders)</label><textarea id=\"tpd-simple-recipe-pattern\">' + escHtml(pattern) + '</textarea></div>' +
+      '<div class=\"tpd-field\"><label>Key (one per line, format: symbol=item_id)</label><textarea id=\"tpd-simple-recipe-key\">' + escHtml(formatRecipeKey(key)) + '</textarea></div>';
+    bindSimpleInput('tpd-simple-recipe-type', data, function () { return buildRecipe(); });
+    bindSimpleInput('tpd-simple-recipe-result', data, function () { return buildRecipe(); });
+    bindSimpleInput('tpd-simple-recipe-count', data, function () { return buildRecipe(); });
+    bindSimpleInput('tpd-simple-recipe-pattern', data, function () { return buildRecipe(); });
+    bindSimpleInput('tpd-simple-recipe-key', data, function () { return buildRecipe(); });
+  }
+
+  function formatRecipeKey(key) {
+    var lines = [];
+    Object.keys(key).forEach(function (k) {
+      var item = key[k] && key[k].item ? key[k].item : 'minecraft:stone';
+      lines.push(k + '=' + item);
+    });
+    return lines.join('\n');
+  }
+
+  function buildRecipe() {
+    var type = $('tpd-simple-recipe-type') ? $('tpd-simple-recipe-type').value : 'minecraft:crafting_shaped';
+    var resultItem = $('tpd-simple-recipe-result') ? $('tpd-simple-recipe-result').value : 'minecraft:stone';
+    var resultCount = $('tpd-simple-recipe-count') ? parseInt($('tpd-simple-recipe-count').value, 10) || 1 : 1;
+    var patternRaw = $('tpd-simple-recipe-pattern') ? $('tpd-simple-recipe-pattern').value : '';
+    var keyRaw = $('tpd-simple-recipe-key') ? $('tpd-simple-recipe-key').value : '';
+    var pattern = patternRaw.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+    var key = {};
+    keyRaw.split('\n').forEach(function (line) {
+      line = line.trim();
+      if (!line) return;
+      var parts = line.split('=');
+      if (parts.length >= 2) key[parts[0].trim()] = { item: parts[1].trim() };
+    });
+    var out = { type: type, result: { item: resultItem, count: resultCount } };
+    if (type === 'minecraft:crafting_shaped' || type === 'minecraft:smithing') {
+      out.pattern = pattern;
+      out.key = key;
+    } else if (type === 'minecraft:crafting_shapeless') {
+      out.ingredients = [];
+      Object.keys(key).forEach(function (k) {
+        out.ingredients.push({ item: key[k].item });
+      });
+    }
+    return JSON.stringify(out, null, 2);
+  }
+
+  function renderSimpleAdvancement(body, content) {
+    var data = tryParseJson(content) || {};
+    var display = data.display || {};
+    var criteria = data.criteria || {};
+    var firstKey = Object.keys(criteria)[0] || 'example';
+    var firstCriteria = criteria[firstKey] || { trigger: 'minecraft:impossible' };
+    body.innerHTML =
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Title</label><input id=\"tpd-simple-adv-title\" value=\"' + escHtml(display.title || '') + '\"></div>' +
+        '<div class=\"tpd-field\"><label>Description</label><input id=\"tpd-simple-adv-desc\" value=\"' + escHtml(display.description || '') + '\"></div>' +
+      '</div>' +
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Icon item</label><input id=\"tpd-simple-adv-icon\" value=\"' + escHtml((display.icon && display.icon.item) || 'minecraft:stone') + '\"></div>' +
+        '<div class=\"tpd-field\"><label>Frame</label><select id=\"tpd-simple-adv-frame\"><option value=\"task\">Task</option><option value=\"challenge\">Challenge</option><option value=\"goal\">Goal</option></select></div>' +
+      '</div>' +
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Trigger</label><select id=\"tpd-simple-adv-trigger\"><option value=\"minecraft:impossible\">Impossible</option><option value=\"minecraft:recipe_crafted\">Recipe Crafted</option><option value=\"minecraft:inventory_changed\">Inventory Changed</option><option value=\"minecraft:player_killed_entity\">Player Killed Entity</option><option value=\"minecraft:entity_killed_player\">Entity Killed Player</option></select></div>' +
+        '<div class=\"tpd-field\"><label>Background (optional)</label><input id=\"tpd-simple-adv-bg\" value=\"' + escHtml(display.background || '') + '\"></div>' +
+      '</div>';
+    if (display.frame) $('tpd-simple-adv-frame').value = display.frame;
+    if (firstCriteria.trigger) $('tpd-simple-adv-trigger').value = firstCriteria.trigger;
+    bindSimpleInput('tpd-simple-adv-title', data, function () { return buildAdvancement(); });
+    bindSimpleInput('tpd-simple-adv-desc', data, function () { return buildAdvancement(); });
+    bindSimpleInput('tpd-simple-adv-icon', data, function () { return buildAdvancement(); });
+    bindSimpleInput('tpd-simple-adv-frame', data, function () { return buildAdvancement(); });
+    bindSimpleInput('tpd-simple-adv-trigger', data, function () { return buildAdvancement(); });
+    bindSimpleInput('tpd-simple-adv-bg', data, function () { return buildAdvancement(); });
+  }
+
+  function buildAdvancement() {
+    var title = $('tpd-simple-adv-title') ? $('tpd-simple-adv-title').value : '';
+    var desc = $('tpd-simple-adv-desc') ? $('tpd-simple-adv-desc').value : '';
+    var icon = $('tpd-simple-adv-icon') ? $('tpd-simple-adv-icon').value : 'minecraft:stone';
+    var frame = $('tpd-simple-adv-frame') ? $('tpd-simple-adv-frame').value : 'task';
+    var trigger = $('tpd-simple-adv-trigger') ? $('tpd-simple-adv-trigger').value : 'minecraft:impossible';
+    var bg = $('tpd-simple-adv-bg') ? $('tpd-simple-adv-bg').value : '';
+    var out = {
+      display: { title: title, description: desc, icon: { item: icon }, frame: frame, show_toast: true, announce_to_chat: true },
+      criteria: { triggered: { trigger: trigger } }
+    };
+    if (bg) out.display.background = bg;
+    return JSON.stringify(out, null, 2);
+  }
+
+  function renderSimpleLootTable(body, content) {
+    var data = tryParseJson(content) || {};
+    var pool = (data.pools && data.pools[0]) || {};
+    var entries = Array.isArray(pool.entries) ? pool.entries : [];
+    var entry = entries[0] || {};
+    var functions = entry.functions || [];
+    var func = functions[0] || {};
+    body.innerHTML =
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Entry type</label><select id=\"tpd-simple-loot-type\"><option value=\"minecraft:item\">Item</option><option value=\"minecraft:empty\">Empty</option><option value=\"minecraft:tag\">Tag</option><option value=\"minecraft:loot_table\">Loot Table</option></select></div>' +
+        '<div class=\"tpd-field\"><label>Item / target</label><input id=\"tpd-simple-loot-name\" value=\"' + escHtml(entry.name || 'minecraft:stone') + '\"></div>' +
+        '<div class=\"tpd-field\"><label>Weight</label><input id=\"tpd-simple-loot-weight\" type=\"number\" value=\"' + (entry.weight || 1) + '\"></div>' +
+      '</div>' +
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Function</label><select id=\"tpd-simple-loot-func\"><option value=\"\">None</option><option value=\"minecraft:set_count\">Set Count</option><option value=\"minecraft:set_damage\">Set Damage</option><option value=\"minecraft:enchant_randomly\">Enchant Randomly</option><option value=\"minecraft:looting_enchant\">Looting Enchant</option></select></div>' +
+        '<div class=\"tpd-field\"><label>Min</label><input id=\"tpd-simple-loot-min\" type=\"number\" value=\"' + (func.count ? (typeof func.count === 'object' ? (func.count.min || 1) : func.count) : 1) + '\"></div>' +
+        '<div class=\"tpd-field\"><label>Max</label><input id=\"tpd-simple-loot-max\" type=\"number\" value=\"' + (func.count ? (typeof func.count === 'object' ? (func.count.max || 1) : func.count) : 1) + '\"></div>' +
+      '</div>';
+    bindSimpleInput('tpd-simple-loot-type', data, function () { return buildLootTable(); });
+    bindSimpleInput('tpd-simple-loot-name', data, function () { return buildLootTable(); });
+    bindSimpleInput('tpd-simple-loot-weight', data, function () { return buildLootTable(); });
+    bindSimpleInput('tpd-simple-loot-func', data, function () { return buildLootTable(); });
+    bindSimpleInput('tpd-simple-loot-min', data, function () { return buildLootTable(); });
+    bindSimpleInput('tpd-simple-loot-max', data, function () { return buildLootTable(); });
+  }
+
+  function buildLootTable() {
+    var type = $('tpd-simple-loot-type') ? $('tpd-simple-loot-type').value : 'minecraft:item';
+    var name = $('tpd-simple-loot-name') ? $('tpd-simple-loot-name').value : 'minecraft:stone';
+    var weight = $('tpd-simple-loot-weight') ? parseInt($('tpd-simple-loot-weight').value, 10) || 1 : 1;
+    var func = $('tpd-simple-loot-func') ? $('tpd-simple-loot-func').value : '';
+    var min = $('tpd-simple-loot-min') ? parseInt($('tpd-simple-loot-min').value, 10) || 1 : 1;
+    var max = $('tpd-simple-loot-max') ? parseInt($('tpd-simple-loot-max').value, 10) || 1 : 1;
+    var entry = { type: type, name: name, weight: weight };
+    if (func) {
+      entry.functions = [];
+      var f = { function: func };
+      if (func === 'minecraft:set_count') f.count = { type: 'minecraft:uniform', min: min, max: max };
+      if (func === 'minecraft:set_damage') f.damage = { type: 'minecraft:uniform', min: min/100, max: max/100 };
+      entry.functions.push(f);
+    }
+    var out = { pools: [{ rolls: 1, entries: [entry] }] };
+    return JSON.stringify(out, null, 2);
+  }
+
+  function renderSimpleTag(body, content) {
+    var data = tryParseJson(content) || {};
+    var values = Array.isArray(data.values) ? data.values : [];
+    body.innerHTML =
+      '<div class=\"tpd-field\"><label>Values (one per line, e.g. minecraft:diamond)</label><textarea id=\"tpd-simple-tag-values\">' + escHtml(values.join('\n')) + '</textarea></div>';
+    bindSimpleInput('tpd-simple-tag-values', data, function () { return buildTag(); });
+  }
+
+  function buildTag() {
+    var raw = $('tpd-simple-tag-values') ? $('tpd-simple-tag-values').value : '';
+    var values = raw.split('\n').map(function (l) { return l.trim(); }).filter(function (l) { return l.length > 0; });
+    return JSON.stringify({ values: values }, null, 2);
+  }
+
+  function renderSimpleItemModifier(body, content) {
+    var data = tryParseJson(content) || {};
+    var func = data.function || 'minecraft:set_count';
+    var count = data.count || 1;
+    body.innerHTML =
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Function</label><select id=\"tpd-simple-im-func\"><option value=\"minecraft:set_count\">Set Count</option><option value=\"minecraft:set_damage\">Set Damage</option><option value=\"minecraft:enchant_randomly\">Enchant Randomly</option><option value=\"minecraft:set_attributes\">Set Attributes</option></select></div>' +
+        '<div class=\"tpd-field\"><label>Value</label><input id=\"tpd-simple-im-value\" type=\"number\" value=\"' + (typeof count === 'object' ? (count.min || 1) : count) + '\"></div>' +
+        '<div class=\"tpd-field\"><label>Max (for range)</label><input id=\"tpd-simple-im-max\" type=\"number\" value=\"' + (typeof count === 'object' ? (count.max || 1) : count) + '\"></div>' +
+      '</div>';
+    bindSimpleInput('tpd-simple-im-func', data, function () { return buildItemModifier(); });
+    bindSimpleInput('tpd-simple-im-value', data, function () { return buildItemModifier(); });
+    bindSimpleInput('tpd-simple-im-max', data, function () { return buildItemModifier(); });
+  }
+
+  function buildItemModifier() {
+    var func = $('tpd-simple-im-func') ? $('tpd-simple-im-func').value : 'minecraft:set_count';
+    var val = $('tpd-simple-im-value') ? parseInt($('tpd-simple-im-value').value, 10) || 1 : 1;
+    var max = $('tpd-simple-im-max') ? parseInt($('tpd-simple-im-max').value, 10) || val : val;
+    var out = { function: func };
+    if (func === 'minecraft:set_count') out.count = { type: 'minecraft:uniform', min: val, max: max };
+    if (func === 'minecraft:set_damage') out.damage = { type: 'minecraft:uniform', min: Math.max(0, val/100), max: Math.max(0, max/100) };
+    return JSON.stringify(out, null, 2);
+  }
+
+  function renderSimplePredicate(body, content) {
+    var data = tryParseJson(content) || {};
+    var condition = data.condition || 'minecraft:entity_properties';
+    body.innerHTML =
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Condition</label><select id=\"tpd-simple-pred-cond\"><option value=\"minecraft:entity_properties\">Entity Properties</option><option value=\"minecraft:location_check\">Location Check</option><option value=\"minecraft:random_chance\">Random Chance</option><option value=\"minecraft:match_tool\">Match Tool</option></select></div>' +
+        '<div class=\"tpd-field\"><label>Entity / target</label><input id=\"tpd-simple-pred-entity\" value=\"' + escHtml(data.entity || 'this') + '\"></div>' +
+      '</div>' +
+      '<div class=\"tpd-field\"><label>Biome (for location_check)</label><input id=\"tpd-simple-pred-biome\" value=\"' + escHtml((data.predicate && data.predicate.location && data.predicate.location.biome) || 'minecraft:plains') + '\"></div>';
+    bindSimpleInput('tpd-simple-pred-cond', data, function () { return buildPredicate(); });
+    bindSimpleInput('tpd-simple-pred-entity', data, function () { return buildPredicate(); });
+    bindSimpleInput('tpd-simple-pred-biome', data, function () { return buildPredicate(); });
+  }
+
+  function buildPredicate() {
+    var cond = $('tpd-simple-pred-cond') ? $('tpd-simple-pred-cond').value : 'minecraft:entity_properties';
+    var entity = $('tpd-simple-pred-entity') ? $('tpd-simple-pred-entity').value : 'this';
+    var biome = $('tpd-simple-pred-biome') ? $('tpd-simple-pred-biome').value : 'minecraft:plains';
+    var out = { condition: cond, entity: entity };
+    if (cond === 'minecraft:entity_properties') {
+      out.predicate = { location: { biome: biome } };
+    } else if (cond === 'minecraft:location_check') {
+      out.predicate = { location: { biome: biome } };
+    }
+    return JSON.stringify(out, null, 2);
+  }
+
+  function bindSimpleInput(id, data, cb) {
+    var el = $('tpd-simple-' + id.replace('tpd-simple-', ''));
+    if (!el) return;
+    el.addEventListener('input', function () {
+      if (selectedPath && project.files.has(selectedPath)) {
+        var generated = cb ? cb() : el.value;
+        project.files.get(selectedPath).content = generated;
+        editor.value = generated;
+        validateCurrent();
+        renderPreview();
+      }
+    });
+  }
+
+  function escHtml(s) {
+    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function tryParseJson(str) {
+    try { return JSON.parse(str); } catch (e) { return {}; }
+  }
+
   /* ---------- Wire up UI ---------- */
   function activateTab(name) {
     document.querySelectorAll('.tpd .tab').forEach(function (t) {
@@ -753,6 +1041,10 @@
       updateEditorHeader(); validateCurrent();
       refreshTreeFlags(); renderFileList(); renderPreview(); renderMeta();
       showMsg('Deleted file.', true);
+    });
+
+    $('tpd-mode-toggle').addEventListener('click', function () {
+      toggleSimpleMode();
     });
 
     $('tpd-validate').addEventListener('click', function () {

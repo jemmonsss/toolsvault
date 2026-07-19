@@ -96,6 +96,7 @@ icon: "&#128190;"
             <button class="btn btn-secondary tpd-sm" id="tpd-validate" type="button" title="Validate the current file">Validate</button>
             <button class="btn btn-secondary tpd-sm" id="tpd-pretty" type="button" title="Pretty-print JSON">Pretty print</button>
             <button class="btn btn-secondary tpd-sm" id="tpd-delete-file" type="button" title="Delete the current file">Delete</button>
+            <button class="btn btn-secondary tpd-sm" id="tpd-mode-toggle" type="button" title="Switch between Code and Simple mode">Simple mode: off</button>
             <span class="tpd-validity" id="tpd-validity"></span>
           </div>
         </div>
@@ -106,6 +107,10 @@ icon: "&#128190;"
               <span class="tpd-editor-filename" id="tpd-editor-filename">No file selected</span>
             </div>
             <textarea id="tpd-editor" class="tpd-editor" spellcheck="false" placeholder="Select a file or create a new one to start editing…"></textarea>
+          </div>
+          <div class="tpd-simple" id="tpd-simple" hidden>
+            <div class="tpd-simple-header">Simple editor — fill in the fields and the code updates automatically.</div>
+            <div class="tpd-simple-body" id="tpd-simple-body"></div>
           </div>
         </div>
 
