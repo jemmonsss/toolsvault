@@ -107,6 +107,72 @@
         { path: 'data/advancement_rewards/advancements/craft_diamond.json', type: 'advancements', content: '{\n  "display": {\n    "title": "Diamond Crafter",\n    "description": "Craft a diamond",\n    "icon": { "item": "minecraft:diamond" },\n    "frame": "task",\n    "announce_to_chat": true,\n    "show_toast": true\n  },\n  "criteria": {\n    "crafted_diamond": {\n      "trigger": "minecraft:recipe_crafted",\n      "conditions": {\n        "recipe_id": "minecraft:diamond"\n      }\n    }\n  },\n  "rewards": {\n    "function": "advancement_rewards:give_reward"\n  }\n}\n' },
         { path: 'data/advancement_rewards/functions/give_reward.mcfunction', type: 'functions', content: '# Reward function\ngive @s minecraft:golden_apple 1\nadvancement revoke @s only advancement_rewards:craft_diamond\n' }
       ]
+    },
+    custom_dimension: {
+      name: 'Custom Dimension',
+      description: 'Adds a new dimension type and dimension JSON (requires worldgen folder).',
+      files: [
+        { path: 'data/custom_dim/dimension_type/my_dimension.json', type: 'dimension_type', content: '{\n  "name": "my_dimension",\n  "ultrawarm": false,\n  "natural": true,\n  "coordinate_scale": 1.0,\n  "has_skylight": true,\n  "has_ceiling": false,\n  "ambient_light": 0.0,\n  "bed_works": true,\n  "respawn_anchor_works": true,\n  "has_raids": true,\n  "logical_height": 256,\n  "min_y": 0,\n  "max_y": 256,\n  "infiniburn": "#minecraft:infiniburn_overworld",\n  "effects": "minecraft:overworld"\n}\n' },
+        { path: 'data/custom_dim/dimension/my_dimension.json', type: 'dimension', content: '{\n  "type": "minecraft:overworld",\n  "generator": {\n    "type": "minecraft:noise",\n    "seed": 0,\n    "settings": "minecraft:overworld",\n    "biome_source": {\n      "type": "minecraft:fixed",\n      "biome": "minecraft:plains"\n    }\n  }\n}\n' }
+      ]
+    },
+    custom_biome: {
+      name: 'Custom Biome (Worldgen)',
+      description: 'Adds a basic configured_feature, placed_feature, and biome for world generation.',
+      files: [
+        { path: 'data/custom_biome/worldgen/configured_feature/my_tree.json', type: 'worldgen', content: '{\n  "type": "minecraft:tree",\n  "config": {\n    "minimum_size": {\n      "type": "minecraft:two_layers_feature_size",\n      "limit": 1,\n      "lower_size": 0,\n      "upper_size": 1\n    },\n    "trunk_provider": {\n      "type": "minecraft:simple_state_provider",\n      "state": { "Name": "minecraft:oak_log" }\n    },\n    "foliage_provider": {\n      "type": "minecraft:simple_state_provider",\n      "state": { "Name": "minecraft:oak_leaves" }\n    },\n    "trunk_height": 5,\n    "foliage_height": 3,\n    "foliage_radius": 2\n  }\n}\n' },
+        { path: 'data/custom_biome/worldgen/placed_feature/my_tree.json', type: 'worldgen', content: '{\n  "feature": "custom_biome:my_tree",\n  "placement": [\n    { "type": "minecraft:count", "count": 2 },\n    { "type": "minecraft:in_square" },\n    { "type": "minecraft:surface_water_depth_filter", "max_water_depth": 0 },\n    { "type": "minecraft:heightmap", "heightmap": "WORLD_SURFACE_WG" },\n    { "type": "minecraft:block_predicate_filter", "predicate": { "type": "minecraft:matching_blocks", "blocks": [ "minecraft:grass_block" ] } }\n  ]\n}\n' }
+      ]
+    },
+    custom_item: {
+      name: 'Custom Item Pack',
+      description: 'Adds a recipe, loot table entry, and item tag for a custom item.',
+      files: [
+        { path: 'data/custom_item/recipes/my_item.json', type: 'recipes', content: '{\n  "type": "minecraft:crafting_shaped",\n  "pattern": ["###", "###", "###"],\n  "key": {\n    "#": { "item": "minecraft:diamond" }\n  },\n  "result": {\n    "item": "minecraft:netherite_ingot",\n    "count": 1\n  }\n}\n' },
+        { path: 'data/custom_item/loot_tables/chests/village_blacksmith.json', type: 'loot_tables', content: '{\n  "pools": [\n    {\n      "rolls": 1,\n      "entries": [\n        {\n          "type": "minecraft:item",\n          "name": "minecraft:emerald",\n          "weight": 1,\n          "functions": [\n            { "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 1, "max": 5 } }\n          ]\n        }\n      ]\n    }\n  ]\n}\n' },
+        { path: 'data/custom_item/tags/item/my_item_tag.json', type: 'tags', content: '{\n  "values": [\n    "minecraft:diamond",\n    "minecraft:emerald",\n    "minecraft:netherite_ingot"\n  ]\n}\n' }
+      ]
+    },
+    tag_pack: {
+      name: 'Tag Pack',
+      description: 'Shows item, block, function, entity_type, and fluid tags.',
+      files: [
+        { path: 'data/tag_pack/tags/item/my_gems.json', type: 'tags', content: '{\n  "values": [\n    "minecraft:diamond",\n    "minecraft:emerald",\n    "minecraft:lapis_lazuli"\n  ]\n}\n' },
+        { path: 'data/tag_pack/tags/block/my_ores.json', type: 'tags', content: '{\n  "values": [\n    "minecraft:coal_ore",\n    "minecraft:iron_ore",\n    "minecraft:gold_ore"\n  ]\n}\n' },
+        { path: 'data/tag_pack/tags/function/load.json', type: 'tags', content: '{\n  "values": [\n    "tag_pack:init"\n  ]\n}\n' },
+        { path: 'data/tag_pack/functions/init.mcfunction', type: 'functions', content: '# Initialize tag pack\ndatapack enable "self"\nsay Tag pack loaded!\n' }
+      ]
+    },
+    predicate_showcase: {
+      name: 'Predicate Showcase',
+      description: 'Shows entity_properties and location_check predicates used by advancements or loot tables.',
+      files: [
+        { path: 'data/pred_show/predicates/is_in_plains.json', type: 'predicates', content: '{\n  "condition": "minecraft:entity_properties",\n  "entity": "this",\n  "predicate": {\n    "location": {\n      "biome": "minecraft:plains",\n      "structure": "minecraft:village"\n    }\n  }\n}\n' },
+        { path: 'data/pred_show/predicates/random_drop.json', type: 'predicates', content: '{\n  "condition": "minecraft:random_chance",\n  "chance": 0.15\n}\n' }
+      ]
+    },
+    function_pack: {
+      name: 'Function Pack',
+      description: 'Multiple functions linked via tags and advancements.',
+      files: [
+        { path: 'data/func_pack/tags/function/load.json', type: 'tags', content: '{\n  "values": [\n    "func_pack:main"\n  ]\n}\n' },
+        { path: 'data/func_pack/functions/main.mcfunction', type: 'functions', content: '# Main load function\ndatapack enable "self"\nsay Function pack loaded!\nfunction func_pack:give_items\n' },
+        { path: 'data/func_pack/functions/give_items.mcfunction', type: 'functions', content: '# Give starter items\ngive @a minecraft:stone 64\ngive @a minecraft:oak_log 64\n' },
+        { path: 'data/func_pack/advancements/root.json', type: 'advancements', content: '{\n  "display": {\n    "title": "Function Pack",\n    "description": "Loaded the function pack",\n    "icon": { "item": "minecraft:knowledge_book" },\n    "frame": "task",\n    "show_toast": true,\n    "announce_to_chat": true\n  },\n  "criteria": {\n    "loaded": {\n      "trigger": "minecraft:tick"\n    }\n  }\n}\n' }
+      ]
+    },
+    full_pack: {
+      name: 'Full Starter Pack',
+      description: 'A complete starter pack with advancement, recipe, function, tag, predicate, and item modifier.',
+      files: [
+        { path: 'data/full_pack/tags/function/load.json', type: 'tags', content: '{\n  "values": [\n    "full_pack:on_load"\n  ]\n}\n' },
+        { path: 'data/full_pack/functions/on_load.mcfunction', type: 'functions', content: 'say Full pack loaded!\ngive @a minecraft:stone 1\n' },
+        { path: 'data/full_pack/advancements/first_join.json', type: 'advancements', content: '{\n  "display": {\n    "title": "Welcome",\n    "description": "Joined the world",\n    "icon": { "item": "minecraft:grass_block" },\n    "frame": "task",\n    "show_toast": true,\n    "announce_to_chat": true\n  },\n  "criteria": {\n    "joined": {\n      "trigger": "minecraft:tick"\n    }\n  }\n}\n' },
+        { path: 'data/full_pack/recipes/stone_recipe.json', type: 'recipes', content: '{\n  "type": "minecraft:crafting_shaped",\n  "pattern": ["## ", "## ", "   "],\n  "key": {\n    "#": { "item": "minecraft:cobblestone" }\n  },\n  "result": {\n    "item": "minecraft:stone",\n    "count": 2\n  }\n}\n' },
+        { path: 'data/full_pack/tags/item/starters.json', type: 'tags', content: '{\n  "values": [\n    "minecraft:stone",\n    "minecraft:cobblestone"\n  ]\n}\n' },
+        { path: 'data/full_pack/predicates/always_true.json', type: 'predicates', content: '{\n  "condition": "minecraft:random_chance",\n  "chance": 1.0\n}\n' },
+        { path: 'data/full_pack/item_modifiers/give_chance.json', type: 'item_modifiers', content: '{\n  "function": "minecraft:set_count",\n  "count": {\n    "type": "minecraft:uniform",\n    "min": 1,\n    "max": 3\n  }\n}\n' }
+      ]
     }
   };
 
@@ -198,13 +264,14 @@
     var raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) { showMsg('No saved project found in this browser.', false); return; }
     try {
-      applyProject(JSON.parse(raw)).then(function () {
-        selectedPath = null;
-        editor.value = '';
-        updateEditorHeader();
-        refreshTreeFlags(); renderFileList(); renderPreview(); renderMeta();
-        showMsg('Loaded saved project.', true);
-      }).catch(function (e) { showMsg('Could not load saved project: ' + e.message, false); });
+        applyProject(JSON.parse(raw)).then(function () {
+          selectedPath = null;
+          editor.value = '';
+          updateEditorHeader();
+          refreshTreeFlags(); renderFileList(); renderPreview(); renderMeta();
+          autoResizeEditor();
+          showMsg('Loaded saved project.', true);
+        }).catch(function (e) { showMsg('Could not load saved project: ' + e.message, false); });
     } catch (e) { showMsg('Saved project is corrupted.', false); }
   }
 
@@ -225,6 +292,7 @@
           editor.value = '';
           updateEditorHeader();
           refreshTreeFlags(); renderFileList(); renderPreview(); renderMeta();
+          autoResizeEditor();
           setSavedLabel(false);
           showMsg('Imported "' + (obj.name || 'project') + '".', true);
         }).catch(function (e) { showMsg('Import failed: ' + e.message, false); });
@@ -289,6 +357,14 @@
     return path.replace(/^.*\//, '');
   }
 
+  function autoResizeEditor() {
+    var el = $('tpd-editor');
+    if (!el) return;
+    el.style.height = 'auto';
+    var maxH = 600;
+    el.style.height = Math.min(el.scrollHeight, maxH) + 'px';
+  }
+
   /* ---------- New file menu ---------- */
   function showNewFileMenu() {
     var existing = $('tpd-new-menu');
@@ -338,6 +414,7 @@
     }
     project.files.set(path, { name: fileNameFromPath(path), type: typeKey, content: content });
     selectFile(path);
+    autoResizeEditor();
     refreshTreeFlags(); renderFileList(); renderPreview(); renderMeta();
     showMsg('Created ' + path, true);
   }
@@ -387,6 +464,7 @@
     updateEditorHeader(); validateCurrent();
     buildTree(); renderFileList(); renderPreview(); renderMeta();
     if (project.files.size > 0) selectFile(Array.from(project.files.keys())[0]);
+    autoResizeEditor();
     showMsg('Loaded template: ' + tmpl.name, true);
   }
 
@@ -458,6 +536,7 @@
     validateCurrent();
     refreshTreeFlags();
     editor.focus();
+    autoResizeEditor();
     if (simpleMode) renderSimpleForm();
   }
 
@@ -735,6 +814,12 @@
       renderSimpleItemModifier(body, content);
     } else if (entry.type === 'predicates') {
       renderSimplePredicate(body, content);
+    } else if (entry.type === 'dimension_type') {
+      renderSimpleDimensionType(body, content);
+    } else if (entry.type === 'dimension') {
+      renderSimpleDimension(body, content);
+    } else if (entry.type === 'worldgen') {
+      renderSimpleWorldgen(body, content);
     } else {
       body.innerHTML = '<div class=\"tpd-field\"><label>Simple editing is not supported for this file type yet. Use Code mode.</label></div>';
     }
@@ -959,6 +1044,135 @@
     return JSON.stringify(out, null, 2);
   }
 
+  function renderSimpleDimensionType(body, content) {
+    var data = tryParseJson(content) || {};
+    body.innerHTML =
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Name</label><input id=\"tpd-simple-dimtype-name\" value=\"' + escHtml(data.name || 'my_dimension') + '\"></div>' +
+        '<div class=\"tpd-field\"><label>Effects</label><select id=\"tpd-simple-dimtype-fx\"><option value=\"minecraft:overworld\">Overworld</option><option value=\"minecraft:the_nether\">Nether</option><option value=\"minecraft:the_end\">End</option></select></div>' +
+      '</div>' +
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Min Y</label><input id=\"tpd-simple-dimtype-miny\" type=\"number\" value=\"' + (data.min_y || 0) + '\"></div>' +
+        '<div class=\"tpd-field\"><label>Max Y</label><input id=\"tpd-simple-dimtype-maxy\" type=\"number\" value=\"' + (data.max_y || 256) + '\"></div>' +
+      '</div>' +
+      '<div class=\"tpd-field\"><label>Infiniburn</label><input id=\"tpd-simple-dimtype-inf\" value=\"' + escHtml(data.infiniburn || '#minecraft:infiniburn_overworld') + '\"></div>';
+    bindSimpleInput('tpd-simple-dimtype-name', data, function () { return buildDimensionType(); });
+    bindSimpleInput('tpd-simple-dimtype-fx', data, function () { return buildDimensionType(); });
+    bindSimpleInput('tpd-simple-dimtype-miny', data, function () { return buildDimensionType(); });
+    bindSimpleInput('tpd-simple-dimtype-maxy', data, function () { return buildDimensionType(); });
+    bindSimpleInput('tpd-simple-dimtype-inf', data, function () { return buildDimensionType(); });
+  }
+
+  function buildDimensionType() {
+    var name = $('tpd-simple-dimtype-name') ? $('tpd-simple-dimtype-name').value : 'my_dimension';
+    var fx = $('tpd-simple-dimtype-fx') ? $('tpd-simple-dimtype-fx').value : 'minecraft:overworld';
+    var minY = $('tpd-simple-dimtype-miny') ? parseInt($('tpd-simple-dimtype-miny').value, 10) || 0 : 0;
+    var maxY = $('tpd-simple-dimtype-maxy') ? parseInt($('tpd-simple-dimtype-maxy').value, 10) || 256 : 256;
+    var inf = $('tpd-simple-dimtype-inf') ? $('tpd-simple-dimtype-inf').value : '#minecraft:infiniburn_overworld';
+    var out = {
+      name: name,
+      ultrawarm: false,
+      natural: true,
+      coordinate_scale: 1.0,
+      has_skylight: true,
+      has_ceiling: false,
+      ambient_light: 0.0,
+      bed_works: true,
+      respawn_anchor_works: true,
+      has_raids: true,
+      logical_height: maxY,
+      min_y: minY,
+      max_y: maxY,
+      infiniburn: inf,
+      effects: fx
+    };
+    return JSON.stringify(out, null, 2);
+  }
+
+  function renderSimpleDimension(body, content) {
+    var data = tryParseJson(content) || {};
+    var gen = data.generator || {};
+    body.innerHTML =
+      '<div class=\"tpd-field\"><label>Dimension type</label><input id=\"tpd-simple-dim-type\" value=\"' + escHtml(data.type || 'minecraft:overworld') + '\"></div>' +
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Generator type</label><select id=\"tpd-simple-dim-gen\"><option value=\"minecraft:noise\">Noise</option><option value=\"minecraft:flat\">Flat</option><option value=\"minecraft:debug\">Debug</option></select></div>' +
+        '<div class=\"tpd-field\"><label>Seed</label><input id=\"tpd-simple-dim-seed\" type=\"number\" value=\"' + (gen.seed || 0) + '\"></div>' +
+      '</div>' +
+      '<div class=\"tpd-field\"><label>Biome source type</label><select id=\"tpd-simple-dim-biome\"><option value=\"minecraft:fixed\">Fixed</option><option value=\"minecraft:multi_noise\">Multi Noise</option><option value=\"minecraft:checkerboard\">Checkerboard</option></select></div>' +
+      '<div class=\"tpd-field\"><label>Fixed biome (if fixed)</label><input id=\"tpd-simple-dim-biome-fixed\" value=\"' + escHtml((gen.biome_source && gen.biome_source.biome) || 'minecraft:plains') + '\"></div>';
+    bindSimpleInput('tpd-simple-dim-type', data, function () { return buildDimension(); });
+    bindSimpleInput('tpd-simple-dim-gen', data, function () { return buildDimension(); });
+    bindSimpleInput('tpd-simple-dim-seed', data, function () { return buildDimension(); });
+    bindSimpleInput('tpd-simple-dim-biome', data, function () { return buildDimension(); });
+    bindSimpleInput('tpd-simple-dim-biome-fixed', data, function () { return buildDimension(); });
+  }
+
+  function buildDimension() {
+    var type = $('tpd-simple-dim-type') ? $('tpd-simple-dim-type').value : 'minecraft:overworld';
+    var genType = $('tpd-simple-dim-gen') ? $('tpd-simple-dim-gen').value : 'minecraft:noise';
+    var seed = $('tpd-simple-dim-seed') ? parseInt($('tpd-simple-dim-seed').value, 10) || 0 : 0;
+    var biomeType = $('tpd-simple-dim-biome') ? $('tpd-simple-dim-biome').value : 'minecraft:fixed';
+    var fixedBiome = $('tpd-simple-dim-biome-fixed') ? $('tpd-simple-dim-biome-fixed').value : 'minecraft:plains';
+    var biomeSource = { type: biomeType };
+    if (biomeType === 'minecraft:fixed') biomeSource.biome = fixedBiome;
+    var out = {
+      type: type,
+      generator: {
+        type: genType,
+        seed: seed,
+        settings: 'minecraft:overworld',
+        biome_source: biomeSource
+      }
+    };
+    return JSON.stringify(out, null, 2);
+  }
+
+  function renderSimpleWorldgen(body, content) {
+    var data = tryParseJson(content) || {};
+    var featureType = data.type || 'minecraft:tree';
+    body.innerHTML =
+      '<div class=\"tpd-row\">' +
+        '<div class=\"tpd-field\"><label>Feature type</label><select id=\"tpd-simple-wg-type\"><option value=\"minecraft:tree\">Tree</option><option value=\"minecraft:ore\">Ore</option><option value=\"minecraft:flower\">Flower</option><option value=\"minecraft:random_patch\">Random Patch</option></select></div>' +
+        '<div class=\"tpd-field\"><label>Target block</label><input id=\"tpd-simple-wg-target\" value=\"' + escHtml(data.config && data.config.trunk_provider && data.config.trunk_provider.state ? data.config.trunk_provider.state.Name : 'minecraft:oak_log') + '\"></div>' +
+      '</div>' +
+      '<div class=\"tpd-field\"><label>Notes / extra JSON</label><textarea id=\"tpd-simple-wg-notes\">Use simple fields above or paste custom JSON in the code editor.</textarea></div>';
+    bindSimpleInput('tpd-simple-wg-type', data, function () { return buildWorldgen(); });
+    bindSimpleInput('tpd-simple-wg-target', data, function () { return buildWorldgen(); });
+    bindSimpleInput('tpd-simple-wg-notes', data, function () { return buildWorldgen(); });
+  }
+
+  function buildWorldgen() {
+    var type = $('tpd-simple-wg-type') ? $('tpd-simple-wg-type').value : 'minecraft:tree';
+    var target = $('tpd-simple-wg-target') ? $('tpd-simple-wg-target').value : 'minecraft:oak_log';
+    var notes = $('tpd-simple-wg-notes') ? $('tpd-simple-wg-notes').value : '';
+    var out = { type: type };
+    if (type === 'minecraft:tree') {
+      out.config = {
+        minimum_size: { type: 'minecraft:two_layers_feature_size', limit: 1, lower_size: 0, upper_size: 1 },
+        trunk_provider: { type: 'minecraft:simple_state_provider', state: { Name: target } },
+        foliage_provider: { type: 'minecraft:simple_state_provider', state: { Name: target.replace('_log', '_leaves') } },
+        trunk_height: 5,
+        foliage_height: 3,
+        foliage_radius: 2
+      };
+    } else if (type === 'minecraft:ore') {
+      out = {
+        type: 'minecraft:ore',
+        config: {
+          target: {
+            target: { type: 'minecraft:replace', predicate: { type: 'minecraft:block', block: target } },
+            state: { Name: target }
+          },
+          size: 8,
+          discard_chance_on_air_exposure: 0
+        }
+      };
+    } else {
+      out.config = { raw: notes };
+    }
+    return JSON.stringify(out, null, 2);
+  }
+
   function bindSimpleInput(id, data, cb) {
     var el = $('tpd-simple-' + id.replace('tpd-simple-', ''));
     if (!el) return;
@@ -1080,6 +1294,7 @@
         }
       }, 300);
       validateCurrent();
+      autoResizeEditor();
     });
 
     // Metadata inputs
@@ -1161,6 +1376,7 @@
     renderPreview();
     renderMeta();
     try { checkSavedExists(); } catch (e) {}
+    autoResizeEditor();
     // Auto-select first file if any
     try {
       var first = project.files.size > 0 ? Array.from(project.files.keys())[0] : null;

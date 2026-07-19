@@ -52,7 +52,7 @@
 /* ---- Editor textarea ---- */
 .tpd-editor-wrap{background:var(--bg-elev);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;min-height:240px}
 .tpd-editor-header{padding:.5rem .7rem;border-bottom:1px solid var(--border);font-size:.82rem;color:var(--text-dim);display:flex;justify-content:space-between;align-items:center}
-.tpd-editor{flex:1;width:100%;min-height:320px;background:var(--bg);color:var(--text);border:none;outline:none;resize:vertical;padding:.7rem;font-family:'Courier New',Consolas,monospace;font-size:clamp(.85rem,1.2vw,1.05rem);line-height:1.6;tab-size:2;white-space:pre;overflow:auto;box-sizing:border-box}
+.tpd-editor{flex:1;width:100%;min-height:220px;max-height:600px;background:var(--bg);color:var(--text);border:none;outline:none;resize:none;padding:.7rem;font-family:'Courier New',Consolas,monospace;font-size:clamp(.85rem,1.2vw,1.05rem);line-height:1.6;tab-size:2;white-space:pre;overflow:auto;box-sizing:border-box}
 .tpd-hint{font-size:.78rem;color:var(--text-dim);margin:0;word-break:break-all}
 
 /* ---- Simple mode form ---- */
