@@ -466,6 +466,107 @@
     renderCanvas();
   }
 
+  // Resize the working canvas to a new resolution, preserving the existing art
+  // via nearest-neighbor (so hand-drawn pixels are not blurred).
+  function resizeCanvasKeepContent(newW, newH) {
+    var src = cloneCanvas(canvas);
+    resetCanvas(newW, newH);
+    prepCtx();
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(src, 0, 0, src.width, src.height, 0, 0, newW, newH);
+    renderCanvas();
+  }
+
+  /* ---------- Rule-based upscaling (EPX / Scale2x family) ----------
+   * Non-AI, edge-preserving. Each 2x pass expands every source pixel into a
+   * 2x2 block, filling the new edge pixels from the two diagonal neighbors
+   * when they agree, otherwise keeping the source pixel. This preserves hard
+   * edges and corners — ideal for Minecraft pixel art. A light refinement
+   * pass removes lone-pixel artifacts. Repeated passes go 16->32->64->... */
+  function colorEq(a, b) {
+    return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
+  }
+  function epxCorner(E, U, L, R, D) {
+    // E=center, U=up, L=left, R=right, D=down (RGBA arrays or null)
+    if (U && L && !R && !D && colorEq(U, L)) return U;
+    if (L && R && !U && !D && colorEq(L, R)) return L;
+    if (R && D && !U && !L && colorEq(R, D)) return R;
+    if (D && U && !L && !R && colorEq(D, U)) return D;
+    return E;
+  }
+  function epxPass(src) {
+    var sw = src.width, sh = src.height;
+    var sctx = src.getContext('2d');
+    var sd = sctx.getImageData(0, 0, sw, sh).data;
+    var dw = sw * 2, dh = sh * 2;
+    var out = document.createElement('canvas'); out.width = dw; out.height = dh;
+    var octx = out.getContext('2d');
+    var od = octx.createImageData(dw, dh);
+    var od_ = od.data;
+    function px(x, y) {
+      if (x < 0 || y < 0 || x >= sw || y >= sh) return null;
+      var i = (y * sw + x) * 4;
+      return [sd[i], sd[i + 1], sd[i + 2], sd[i + 3]];
+    }
+    for (var y = 0; y < sh; y++) {
+      for (var x = 0; x < sw; x++) {
+        var E = px(x, y), U = px(x, y - 1), Dn = px(x, y + 1), L = px(x - 1, y), R = px(x + 1, y);
+        var tl = epxCorner(E, U, L, R, Dn);
+        var tr = epxCorner(E, U, R, Dn, L);
+        var bl = epxCorner(E, Dn, L, R, U);
+        var br = epxCorner(E, Dn, R, L, U);
+        var cells = [[tl, tr], [bl, br]];
+        for (var cy = 0; cy < 2; cy++) {
+          for (var cx = 0; cx < 2; cx++) {
+            var col = cells[cy][cx] || E;
+            var di = ((y * 2 + cy) * dw + (x * 2 + cx)) * 4;
+            od_[di] = col[0]; od_[di + 1] = col[1]; od_[di + 2] = col[2]; od_[di + 3] = col[3];
+          }
+        }
+      }
+    }
+    octx.putImageData(od, 0, 0);
+    return out;
+  }
+  // One refinement pass: replace a pixel that differs from all 8 neighbors and
+  // whose neighbors all agree, with that majority color (removes lone specks).
+  function epxRefine(src) {
+    var w = src.width, h = src.height;
+    var sctx = src.getContext('2d');
+    var sd = sctx.getImageData(0, 0, w, h).data;
+    var od = sctx.createImageData(w, h);
+    var od_ = od.data;
+    od_.set(sd);
+    function px(x, y) {
+      if (x < 0 || y < 0 || x >= w || y >= h) return null;
+      var i = (y * w + x) * 4;
+      return [sd[i], sd[i + 1], sd[i + 2], sd[i + 3]];
+    }
+    for (var y = 0; y < h; y++) {
+      for (var x = 0; x < w; x++) {
+        var E = px(x, y);
+        var ns = [px(x-1,y-1),px(x,y-1),px(x+1,y-1),px(x-1,y),px(x+1,y),px(x-1,y+1),px(x,y+1),px(x+1,y+1)].filter(Boolean);
+        var diff = ns.filter(function (n) { return !colorEq(n, E); });
+        if (diff.length === 0) continue;            // already matches all neighbors
+        if (ns.length - diff.length >= 6) {         // surrounded by one color
+          var maj = ns[0];
+          var di = (y * w + x) * 4;
+          od_[di] = maj[0]; od_[di+1] = maj[1]; od_[di+2] = maj[2]; od_[di+3] = maj[3];
+        }
+      }
+    }
+    sctx.putImageData(od, 0, 0);
+    return src;
+  }
+  function upscaleCanvas(src, targetW) {
+    var cur = src;
+    while (cur.width < targetW && cur.width < 1024) {
+      cur = epxPass(cur);
+      cur = epxRefine(cur);
+    }
+    return cur;
+  }
+
   function cloneCanvas(src) {
     var c = document.createElement('canvas');
     c.width = src.width; c.height = src.height;
@@ -755,6 +856,27 @@
     $('tpc-brush').addEventListener('change', function () { brushSize = parseInt(this.value, 10); });
     $('tpc-zoom').addEventListener('input', function () { zoom = parseInt(this.value, 10); renderCanvas(); });
     $('tpc-grid').addEventListener('change', function () { showGrid = this.checked; renderCanvas(); });
+    // Resolution dropdown: resize the working canvas (preserve art).
+    $('tpc-res').addEventListener('change', function () {
+      var res = parseInt(this.value, 10) || 16;
+      if (!selectedSlot) { showMsg('Select a texture slot first.', false); this.value = String(canvas.width); return; }
+      if (res === canvas.width && res === canvas.height) return;
+      pushUndo(); resizeCanvasKeepContent(res, res); afterEdit();
+      $('tpc-res').value = String(canvas.width);
+      showMsg('Resized to ' + canvas.width + 'x' + canvas.height + '.', true);
+    });
+    // Rule-based upscale (EPX) one 2x pass; click again to go further.
+    $('tpc-upscale').addEventListener('click', function () {
+      if (!selectedSlot) { showMsg('Select a texture slot first.', false); return; }
+      if (canvas.width >= 512) { showMsg('Already at 512x512 max.', false); return; }
+      pushUndo();
+      var up = upscaleCanvas(canvas, Math.min(1024, canvas.width * 2));
+      resetCanvas(up.width, up.height);
+      prepCtx(); ctx.imageSmoothingEnabled = false; ctx.drawImage(up, 0, 0);
+      $('tpc-res').value = String(canvas.width);
+      afterEdit();
+      showMsg('Upscaled to ' + canvas.width + 'x' + canvas.height + ' (edge-preserving).', true);
+    });
     $('tpc-color').addEventListener('input', function () { currentColor = this.value; addRecent(this.value); });
     $('tpc-undo').addEventListener('click', undo);
     $('tpc-redo').addEventListener('click', redo);
@@ -831,7 +953,8 @@
       var name = prompt('Texture file name (e.g. custom_block):', 'custom_block');
       if (!name) return;
       var path = 'assets/minecraft/textures/' + sanitizeName(name) + '.png';
-      var c = document.createElement('canvas'); c.width = 16; c.height = 16;
+      var res = parseInt($('tpc-res').value, 10) || 16;
+      var c = document.createElement('canvas'); c.width = res; c.height = res;
       project.files.set(path, { canvas: c, name: path.split('/').pop() });
       refreshTreeFlags(); renderFileList(); renderPreview(); renderMeta(); renderIconOptions();
       showMsg('Created blank ' + path.split('/').pop(), true);

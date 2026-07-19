@@ -82,10 +82,21 @@ icon: "&#127959;"
             <label class="tpc-inline">Size
               <select id="tpc-brush"><option selected>1</option><option>2</option><option>3</option><option>4</option><option>6</option><option>8</option></select>
             </label>
-            <label class="tpc-inline">Zoom
-              <input type="range" id="tpc-zoom" min="4" max="32" value="16">
-            </label>
-            <label class="tpc-inline"><input type="checkbox" id="tpc-grid" checked> Grid</label>
+<label class="tpc-inline">Size (px)
+<select id="tpc-res">
+<option value="16" selected>16</option>
+<option value="32">32</option>
+<option value="64">64</option>
+<option value="128">128</option>
+<option value="256">256</option>
+<option value="512">512</option>
+</select>
+</label>
+<label class="tpc-inline">Zoom
+<input type="range" id="tpc-zoom" min="4" max="32" value="16">
+</label>
+<label class="tpc-inline"><input type="checkbox" id="tpc-grid" checked> Grid</label>
+<button class="btn btn-secondary tpc-sm" id="tpc-upscale" type="button" title="Upscale 2x (rule-based, edge-preserving)">⬆ Upscale 2×</button>
             <button class="btn btn-secondary tpc-sm" id="tpc-undo" title="Undo (Ctrl+Z)">↶</button>
             <button class="btn btn-secondary tpc-sm" id="tpc-redo" title="Redo (Ctrl+Y)">↷</button>
             <button class="btn btn-secondary tpc-sm" id="tpc-clear">Clear</button>
