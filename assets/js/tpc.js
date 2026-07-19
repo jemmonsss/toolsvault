@@ -270,17 +270,63 @@
     });
   }
 
-  /* ---------- Undo / Redo ---------- */
+  /* ---------- Undo / Redo ----------
+   * Snapshots are stored as self-contained CANVAS elements, not raw ImageData.
+   * This is essential because resize/upscale change the canvas dimensions; an
+   * ImageData snapshot would be tied to the old w×h and could not be restored
+   * onto a differently-sized canvas. A canvas snapshot carries its own size, so
+   * restore() can re-set canvas.width/height before drawing and the texture is
+   * reconstructed exactly — including resolution changes. */
+  var MAX_HISTORY = 40;
   function snapshot() {
-    try { return ctx.getImageData(0, 0, canvas.width, canvas.height); } catch (e) { return null; }
+    var c = document.createElement('canvas');
+    c.width = canvas.width; c.height = canvas.height;
+    try { c.getContext('2d').drawImage(canvas, 0, 0); return c; }
+    catch (e) { return null; }
   }
   function pushUndo() {
     var s = snapshot();
-    if (s) { undoStack.push(s); if (undoStack.length > 40) undoStack.shift(); redoStack = []; }
+    if (s) {
+      undoStack.push(s);
+      if (undoStack.length > MAX_HISTORY) undoStack.shift();
+      redoStack = [];
+    }
   }
-  function applyImageData(d) { if (d) ctx.putImageData(d, 0, 0); }
-  function undo() { if (undoStack.length) { redoStack.push(snapshot()); applyImageData(undoStack.pop()); afterEdit(); } }
-  function redo() { if (redoStack.length) { undoStack.push(snapshot()); applyImageData(redoStack.pop()); afterEdit(); } }
+  // Restore a canvas snapshot: match dimensions, draw it, refresh size-dependent UI.
+  function restore(snap) {
+    if (!snap) return;
+    if (canvas.width !== snap.width || canvas.height !== snap.height) {
+      canvas.width = snap.width; canvas.height = snap.height;
+      prepCtx();
+    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(snap, 0, 0);
+    // Keep the resolution dropdown and zoom in sync with the restored size.
+    var resSel = $('tpc-res');
+    if (resSel) resSel.value = String(canvas.width);
+    fitZoom();
+    requestAnimationFrame(fitZoom);
+    afterEdit();
+  }
+  // Paint a canvas snapshot onto the live canvas without changing dimensions
+  // (used for live line/rect preview where the size never changes).
+  function restoreTo(snap) {
+    if (!snap) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(snap, 0, 0);
+  }
+  function undo() {
+    if (undoStack.length) {
+      redoStack.push(snapshot());
+      restore(undoStack.pop());
+    }
+  }
+  function redo() {
+    if (redoStack.length) {
+      undoStack.push(snapshot());
+      restore(redoStack.pop());
+    }
+  }
 
   /* ---------- Render canvas at zoom (non-destructive grid overlay) ----------
    * The canvas DISPLAY size is set to an EXACT integer multiple of the texture
@@ -1079,7 +1125,7 @@
       if (currentTool === 'pencil') paintPixel(p.x, p.y, currentColor);
       else if (currentTool === 'eraser') erasePixel(p.x, p.y);
       else if ((currentTool === 'line' || currentTool === 'rect') && lastPt && shapeSnapshot) {
-        applyImageData(shapeSnapshot);
+        restoreTo(shapeSnapshot);
         if (currentTool === 'line') drawLine(lastPt.x, lastPt.y, p.x, p.y, currentColor);
         else drawRect(lastPt.x, lastPt.y, p.x, p.y, currentColor);
       }
@@ -1089,7 +1135,7 @@
       var p = eventToPixel(e);
       if (currentTool === 'line' || currentTool === 'rect') {
         if (lastPt && shapeSnapshot) {
-          applyImageData(shapeSnapshot);
+          restoreTo(shapeSnapshot);
           if (currentTool === 'line') drawLine(lastPt.x, lastPt.y, p.x, p.y, currentColor);
           else drawRect(lastPt.x, lastPt.y, p.x, p.y, currentColor);
         }
