@@ -105,26 +105,27 @@
 .tpd-tool .tpd-ico{width:20px;height:20px}
 
 /* =====================================================================
-   >= 640px : tablets — bring back side-by-side
+   >= 640px : tablets
    ===================================================================== */
 @media (min-width:640px){
   .tpd-bar{flex-direction:row;flex-wrap:wrap;align-items:flex-end}
   .tpd-field{flex:0 0 auto;min-width:150px}
   .tpd-field-grow{flex:1 1 240px}
-  .tpd-layout{display:grid;grid-template-columns:260px 1fr;gap:1rem;align-items:start}
-  .tpd-tree{max-height:560px}
-  .tpd-editor{min-height:420px}
   .tpd-filebar .btn{flex:0 0 auto}
   .tpd-count{flex-basis:auto;margin-left:auto}
   .tpd-export{display:grid;grid-template-columns:1fr 1fr}
   .tpd-export .btn{width:auto}
   .tpd-filelist{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+  .tpd .tab{flex:0 0 auto}
 }
 
 /* =====================================================================
-   >= 1024px : desktop
+   >= 1024px : desktop — reveal the persistent file sidebar
    ===================================================================== */
 @media (min-width:1024px){
+  .tpd-layout{display:grid;grid-template-columns:240px 1fr;gap:1rem;align-items:start}
+  .tpd-tree{max-height:560px}
+  .tpd-editor{min-height:420px}
   .tpd-filelist{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
 }
 
