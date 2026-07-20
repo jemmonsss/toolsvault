@@ -74,7 +74,7 @@ icon: "🧩"
     return bag.pop();
   }
   function spawn(){var k=next||nextPiece();next=nextPiece();var sh=SHAPES[k];cur={k:k,c:sh.c,m:sh.s[0],rot:0};curX=Math.floor((cols-sh.s[0][0].length)/2);curY=0;drawNext();if(collide(0,0))gameOver();}
-  function collide(dx,dy,m){m=m||cur.m;for(var y=0;y<m.length;y++)for(var x=0;x<m[y].length;x++){if(!m[y][x])continue;var nx=curX+x+dx,ny=curY+y+dy;if(nx<0||nx>=cols||ny>=rows||(ny>=0&&board[ny][nx]))return true;}return false;}
+  function collide(dx,dy,m,oy){m=m||cur.m;oy=(oy==null)?curY:oy;for(var y=0;y<m.length;y++)for(var x=0;x<m[y].length;x++){if(!m[y][x])continue;var nx=curX+x+dx,ny=oy+y+dy;if(nx<0||nx>=cols||ny>=rows||(ny>=0&&board[ny][nx]))return true;}return false;}
   function merge(){cur.m.forEach(function(r,y){r.forEach(function(v,x){if(v){board[curY+y][curX+x]=cur.c;}});});}
   function clearLines(){
     var cleared=0;
@@ -92,7 +92,7 @@ icon: "🧩"
     for(var i=0;i<kicks.length;i++){if(!collide(kicks[i][0],kicks[i][1],m)){cur.m=m;cur.rot=nr;curX+=kicks[i][0];curY+=kicks[i][1];return;}}
   }
   function hardDrop(){while(!collide(0,1))curY++;merge();clearLines();canHold=true;spawn();draw();}
-  function ghostY(){var gy=curY;while(!collide(0,1,cur.m))gy++;return gy;}
+  function ghostY(){var gy=curY;while(!collide(0,1,cur.m,gy))gy++;return gy;}
   function draw(){
     ctx.fillStyle=css('--bg-elev2');ctx.fillRect(0,0,canvas.width,canvas.height);
     for(var y=0;y<rows;y++)for(var x=0;x<cols;x++)if(board[y][x])drawCell(ctx,x,y,board[y][x]);
