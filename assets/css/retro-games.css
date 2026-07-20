@@ -1,0 +1,106 @@
+/* Shared styles for retro game tools on ToolsVault */
+.game-shell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: .5rem;
+}
+.game-hud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 640px;
+}
+.game-stat {
+  background: var(--bg-elev2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .4rem .8rem;
+  font-size: .85rem;
+  color: var(--text-dim);
+  min-width: 84px;
+  text-align: center;
+}
+.game-stat b {
+  display: block;
+  color: var(--text);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.game-canvas, .game-board {
+  background: var(--bg-elev2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  touch-action: none;
+  max-width: 100%;
+  image-rendering: pixelated;
+}
+.game-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  justify-content: center;
+}
+.game-overlay {
+  position: relative;
+  display: inline-block;
+}
+.game-overlay .overlay-msg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  align-items: center;
+  justify-content: center;
+  background: rgba(18,18,18,.78);
+  border-radius: 10px;
+  text-align: center;
+  padding: 1rem;
+}
+.game-overlay .overlay-msg[hidden] { display: none; }
+.game-hint {
+  color: var(--text-dim);
+  font-size: .85rem;
+  text-align: center;
+  max-width: 640px;
+}
+.retro-grid {
+  display: grid;
+  gap: 4px;
+  background: var(--bg-elev2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px;
+  margin: 0 auto;
+  user-select: none;
+}
+.retro-cell {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .12s ease, transform .06s ease;
+}
+.retro-cell:hover { background: var(--accent-soft); }
+.retro-cell:active { transform: scale(.96); }
+.retro-cell.revealed { background: var(--bg-elev); cursor: default; }
+.retro-cell.mine { background: var(--danger-bg); }
+.retro-cell.flag { color: var(--danger); }
+.retro-cell.win { background: var(--accent-soft); }
+.pad-btn {
+  width: 56px; height: 56px;
+  font-size: 1.4rem;
+  border-radius: 12px;
+}
+@media (max-width: 520px) {
+  .game-canvas, .game-board, .retro-grid { width: 100%; }
+}
