@@ -92,10 +92,33 @@
 }
 .retro-cell:hover { background: var(--accent-soft); }
 .retro-cell:active { transform: scale(.96); }
-.retro-cell.revealed { background: var(--bg-elev); cursor: default; }
-.retro-cell.mine { background: var(--danger-bg); }
-.retro-cell.flag { color: var(--danger); }
+/* Minesweeper cell states — hidden tiles clearly differ from revealed safe tiles */
+.retro-cell.hidden-tile {
+  background: linear-gradient(145deg, #2f2f3a, #23232c);
+  border-color: #3a3a48;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.05);
+}
+.retro-cell.revealed {
+  background: #1a1a20;
+  border-color: #2a2a33;
+  cursor: default;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.4);
+}
+.retro-cell.mine {
+  background: repeating-linear-gradient(45deg, #7f1d1d, #7f1d1d 6px, #991b1b 6px, #991b1b 12px);
+  border-color: #ef4444;
+}
+.retro-cell.flag { background: linear-gradient(145deg, #2f2f3a, #23232c); color: #f87171; }
 .retro-cell.win { background: var(--accent-soft); }
+.retro-cell.wrong { background: #7f1d1d; border-color: #ef4444; }
+.retro-cell.n1 { color: #60a5fa; }
+.retro-cell.n2 { color: #34d399; }
+.retro-cell.n3 { color: #f59e0b; }
+.retro-cell.n4 { color: #f87171; }
+.retro-cell.n5 { color: #c084fc; }
+.retro-cell.n6 { color: #22d3ee; }
+.retro-cell.n7 { color: #fda4af; }
+.retro-cell.n8 { color: #e2e8f0; }
 .pad-btn {
   width: 56px; height: 56px;
   font-size: 1.4rem;

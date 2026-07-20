@@ -88,10 +88,12 @@ icon: "💣"
     for(var y=0;y<rows;y++)for(var x=0;x<cols;x++){
       var c=grid[y][x],el=boardEl.children[y*cols+x];
       el.className='retro-cell';
+      el.style.color='';
       if(c.f&&!c.o){el.classList.add('flag');el.textContent='🚩';}
-      else if(!c.o){el.textContent='';}
-      else if(c.m){el.classList.add('mine');el.textContent='💣';}
-      else{el.classList.add('revealed');el.textContent=c.n?(c.n):'';if(c.n===1)el.style.color='#60a5fa';if(c.n===2)el.style.color='#34d399';if(c.n===3)el.style.color='#f59e0b';if(c.n>3)el.style.color='#f87171';}
+      else if(!c.o){el.classList.add('hidden-tile');el.textContent='';}
+      else if(c.m){el.classList.add('mine');el.textContent='💣';el.style.color='';}
+      else if(c.wrong){el.classList.add('wrong');el.textContent='💣';el.style.color='';}
+      else{el.classList.add('revealed');if(c.n)el.classList.add('n'+c.n);el.textContent=c.n?(c.n):'';}
     }
   }
   function reveal(x,y){
@@ -119,7 +121,10 @@ icon: "💣"
   }
   function lose(){
     over=true;clearInterval(timer);
-    for(var y=0;y<rows;y++)for(var x=0;x<cols;x++)if(grid[y][x].m)grid[y][x].o=true;
+    for(var y=0;y<rows;y++)for(var x=0;x<cols;x++){
+      if(grid[y][x].m)grid[y][x].o=true;
+      else if(grid[y][x].f)grid[y][x].wrong=true;
+    }
     paint();statusEl.textContent='Boom! Game over.';
   }
   function toggleFlag(x,y){

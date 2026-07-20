@@ -15,7 +15,7 @@ icon: "👾"
 <link rel="stylesheet" href="/assets/css/retro-games.css">
 <div class="tui">
   <h1>Space Invaders</h1>
-  <p class="sub">Move with ← → (or mouse), press Space to fire. Wipe out the fleet.</p>
+  <p class="sub">Move with ← → (or mouse/finger), Space to fire. Stop the fleet from reaching the ground.</p>
   <div class="game-shell">
     <div class="game-hud">
       <span class="game-stat">Score<b id="si-score">0</b></span>
@@ -23,7 +23,7 @@ icon: "👾"
       <span class="game-stat">Best<b id="si-best">0</b></span>
     </div>
     <div class="game-overlay">
-      <canvas id="si-canvas" class="game-canvas" width="440" height="360"></canvas>
+      <canvas id="si-canvas" class="game-canvas" width="440" height="400"></canvas>
       <div class="overlay-msg" id="si-overlay">
         <strong id="si-msg">Ready?</strong>
         <button class="btn btn-primary" onclick="siStart()">Play</button>
@@ -32,6 +32,7 @@ icon: "👾"
     <div class="game-controls">
       <button class="btn" onclick="siStart()">Restart</button>
     </div>
+    <p class="game-hint">Clear all aliens each wave — they speed up as their numbers fall.</p>
   </div>
 </div>
 <script>
@@ -40,57 +41,94 @@ icon: "👾"
   var scoreEl=document.getElementById('si-score'),waveEl=document.getElementById('si-wave'),bestEl=document.getElementById('si-best');
   var overlay=document.getElementById('si-overlay'),msgEl=document.getElementById('si-msg');
   var W=canvas.width,H=canvas.height,running=false,raf=null;
-  var player,bullets,invaders,invDir,invSpeed,score,best=0,wave,lastShot=0;
+  var player,shots,aliens,alienShots,invDir,invSpeed,dropDist,score,best=0,wave,lastShot=0,lastAlienShot=0;
   try{best=parseInt(localStorage.getItem('tv_si_best')||'0',10)||0;}catch(e){}
   bestEl.textContent=best;
   function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()||'#e0e0e0';}
+  // 8x8 alien sprite bitmaps (two frames)
+  var SPR=[
+    [[0,0,1,0,0,0,1,0],[0,0,0,1,0,1,0,0],[0,0,1,1,1,1,1,0],[0,1,1,0,1,0,1,1],[1,1,1,1,1,1,1,1],[1,0,1,1,1,1,0,1],[1,0,1,0,0,0,1,0],[0,0,0,1,1,0,0,0]],
+    [[0,0,1,0,0,0,1,0],[1,0,0,1,0,1,0,0],[1,0,1,1,1,1,1,0],[1,1,1,0,1,0,1,1],[1,1,1,1,1,1,1,1],[0,0,1,1,1,1,0,0],[0,0,1,0,0,0,1,0],[0,1,0,0,0,0,1,0]]
+  ];
   function build(){
-    player={x:W/2-15,w:30,h:12,y:H-20};
-    bullets=[];score=0;wave=1;invDir=1;invSpeed=0.5;
+    player={x:W/2-15,w:30,h:12,y:H-22};
+    shots=[];alienShots=[];score=0;wave=1;lastShot=0;lastAlienShot=0;
     scoreEl.textContent=0;waveEl.textContent=1;
     spawnWave();
   }
   function spawnWave(){
-    invaders=[];var cols=8,rows=4,bw=34,bh=22,gap=10,ox=20,oy=30;
-    for(var r=0;r<rows;r++)for(var c=0;c<cols;c++)invaders.push({x:ox+c*(bw+gap),y:oy+r*(bh+gap),w:bw,h:bh,alive:true});
-    invSpeed+=0.15;
+    aliens=[];var cols=11,rows=5,gap=8,bw=22,bh=16,ox=(W-cols*(bw+gap))/2,oy=40;
+    for(var r=0;r<rows;r++)for(var c=0;c<cols;c++){
+      aliens.push({x:ox+c*(bw+gap),y:oy+r*(bh+gap),w:bw,h:bh,row:r,alive:true,frame:0});
+    }
+    invDir=1;invSpeed=0.4+wave*0.12;dropDist=14;
   }
-  function aliveInv(){return invaders.filter(function(i){return i.alive;});}
+  function aliveAliens(){return aliens.filter(function(a){return a.alive;});}
+  function drawSprite(a,color){
+    var px=Math.floor(a.w/8),py=Math.floor(a.h/8),bm=SPR[a.frame];
+    ctx.fillStyle=color;
+    for(var r=0;r<8;r++)for(var c=0;c<8;c++)if(bm[r][c])ctx.fillRect(a.x+c*px,a.y+r*py,px,py);
+  }
   function loop(){
     if(!running)return;
-    var ai=aliveInv();
-    if(ai.length===0){wave++;waveEl.textContent=wave;spawnWave();}
-    var minX=Math.min.apply(null,ai.map(function(i){return i.x;})),maxX=Math.max.apply(null,ai.map(function(i){return i.x+i.w;}));
-    if(minX<=0||maxX>=W)invDir*=-1;
-    ai.forEach(function(i){i.x+=invDir*invSpeed;i.y+=0;});
-    if(ai.some(function(i){return i.y+i.h>=player.y;}))return end(false);
-    bullets.forEach(function(b){b.y-=6;});
-    bullets=bullets.filter(function(b){return b.y>-10;});
-    bullets.forEach(function(b){
-      ai.forEach(function(i){if(i.alive&&b.x>i.x&&b.x<i.x+i.w&&b.y>i.y&&b.y<i.y+i.h){i.alive=false;b.dead=true;score+=10;scoreEl.textContent=score;}});
+    var al=aliveAliens();
+    if(al.length===0){wave++;waveEl.textContent=wave;spawnWave();}
+    var minX=Math.min.apply(null,al.map(function(a){return a.x;})),maxX=Math.max.apply(null,al.map(function(a){return a.x+a.w;}));
+    var step=invSpeed+ (1-al.length/ (11*5))*1.2;
+    var hitEdge=false;
+    if(minX<=2){invDir=1;hitEdge=true;}
+    if(maxX>=W-2){invDir=-1;hitEdge=true;}
+    al.forEach(function(a){
+      a.x+=invDir*step;
+      if(hitEdge)a.y+=dropDist;
+      a.frame=(a.frame+1)%2;
+      if(a.y+a.h>=player.y)return end(false);
     });
-    bullets=bullets.filter(function(b){return !b.dead;});
+    if(hitEdge&&al.some(function(a){return a.y+a.h>=player.y;}))return end(false);
+    shots.forEach(function(s){s.y-=8;});
+    shots=shots.filter(function(s){return s.y>-10;});
+    alienShots.forEach(function(s){s.y+=5;});
+    alienShots=alienShots.filter(function(s){return s.y<H+10;});
+    shots.forEach(function(s){
+      al.forEach(function(a){if(a.alive&&s.x>a.x&&s.x<a.x+a.w&&s.y>a.y&&s.y<a.y+a.h){a.alive=false;s.dead=true;score+=(5*(6-a.row));scoreEl.textContent=score;}});
+    });
+    shots=shots.filter(function(s){return !s.dead;});
+    var now=Date.now();
+    if(now-lastAlienShot>700 && al.length){
+      lastAlienShot=now;
+      var shooter=al[Math.floor(Math.random()*al.length)];
+      alienShots.push({x:shooter.x+shooter.w/2,y:shooter.y+shooter.h});
+    }
+    alienShots.forEach(function(s){if(s.x>player.x&&s.x<player.x+player.w&&s.y>player.y&&s.y<player.y+player.h)return end(false);});
     draw();
     raf=requestAnimationFrame(loop);
   }
   function draw(){
     ctx.fillStyle=css('--bg-elev2');ctx.fillRect(0,0,W,H);
-    ctx.fillStyle='#34d399';invaders.forEach(function(i){if(i.alive)ctx.fillRect(i.x,i.y,i.w,i.h);});
+    var cols=['#f87171','#f59e0b','#facc15','#34d399','#22d3ee'];
+    aliveAliens().forEach(function(a){drawSprite(a,cols[a.row%cols.length]);});
     ctx.fillStyle='#60a5fa';ctx.fillRect(player.x,player.y,player.w,player.h);
-    ctx.fillStyle='#f59e0b';bullets.forEach(function(b){ctx.fillRect(b.x-2,b.y,4,10);});
+    ctx.fillStyle='#f59e0b';shots.forEach(function(s){ctx.fillRect(s.x-2,s.y,4,12);});
+    ctx.fillStyle='#ef4444';alienShots.forEach(function(s){ctx.fillRect(s.x-2,s.y,4,12);});
   }
-  function end(win){running=false;cancelAnimationFrame(raf);if(score>best){best=score;bestEl.textContent=best;try{localStorage.setItem('tv_si_best',best);}catch(e){}}msgEl.textContent=win?('You won! Score '+score):('Game Over — Score '+score);overlay.hidden=false;}
+  function end(win){
+    running=false;cancelAnimationFrame(raf);
+    if(score>best){best=score;bestEl.textContent=best;try{localStorage.setItem('tv_si_best',best);}catch(e){}}
+    msgEl.textContent=win?('You won! Score '+score):('Game Over — Score '+score);
+    overlay.hidden=false;
+  }
   window.siStart=function(){build();overlay.hidden=true;running=true;if(raf)cancelAnimationFrame(raf);loop();};
-  function fire(){var now=Date.now();if(now-lastShot<250)return;lastShot=now;bullets.push({x:player.x+player.w/2,y:player.y});}
+  function fire(){var now=Date.now();if(now-lastShot<280)return;lastShot=now;shots.push({x:player.x+player.w/2,y:player.y});}
+  function moveTo(clientX,rect){player.x=Math.max(0,Math.min(W-player.w,(clientX-rect.left)*(W/rect.width)-player.w/2));}
   document.addEventListener('keydown',function(e){
     if(!running)return;
-    if(e.key==='ArrowLeft')player.x=Math.max(0,player.x-18);
-    else if(e.key==='ArrowRight')player.x=Math.min(W-player.w,player.x+18);
+    if(e.key==='ArrowLeft')player.x=Math.max(0,player.x-20);
+    else if(e.key==='ArrowRight')player.x=Math.min(W-player.w,player.x+20);
     else if(e.key===' '){fire();e.preventDefault();}
   });
-  canvas.addEventListener('mousemove',function(e){var r=canvas.getBoundingClientRect();player.x=Math.max(0,Math.min(W-player.w,(e.clientX-r.left)*(W/r.width)-player.w/2));});
+  canvas.addEventListener('mousemove',function(e){if(!running)return;moveTo(e.clientX,canvas.getBoundingClientRect());});
   canvas.addEventListener('click',function(){if(running)fire();});
-  canvas.addEventListener('touchmove',function(e){var r=canvas.getBoundingClientRect();player.x=Math.max(0,Math.min(W-player.w,(e.touches[0].clientX-r.left)*(W/r.width)-player.w/2));e.preventDefault();},{passive:false});
+  canvas.addEventListener('touchmove',function(e){if(!running)return;moveTo(e.touches[0].clientX,canvas.getBoundingClientRect());e.preventDefault();},{passive:false});
   canvas.addEventListener('touchstart',function(){if(running)fire();},{passive:true});
   build();draw();
 })();
