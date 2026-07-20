@@ -11,7 +11,8 @@
     <link rel="preload" href="/assets/fonts/inter-500.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/fonts/inter-700.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}" fetchpriority="high">
+    <link rel="preload" href="{{ '/assets/css/main.css' | relative_url }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}"></noscript>
     <link rel="alternate" type="application/rss+xml" title="{{ site.title | escape }}" href="{{ '/' | absolute_url }}feed.xml">
     <script>document.documentElement.setAttribute('data-theme','dark');</script>
     {% seo %}

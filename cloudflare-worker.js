@@ -37,11 +37,25 @@ async function handleRequest(request) {
   }
 
   const target = 'https://' + ORIGIN_HOST + targetPath + url.search
-  return fetch(target, {
+  const response = await fetch(target, {
     method: request.method,
     headers: request.headers,
     body: request.body,
     redirect: 'follow',
     cf: { resolveOverride: RESOLVE }
+  })
+
+  const cacheable = url.pathname.match(/\.(css|woff2|js|png|jpg|jpeg|gif|svg|ico|webp|avif)$/i)
+  const cacheControl = cacheable
+    ? 'public, max-age=31536000, immutable'
+    : 'public, max-age=3600, must-revalidate'
+
+  const headers = new Headers(response.headers)
+  headers.set('Cache-Control', cacheControl)
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
   })
 }
