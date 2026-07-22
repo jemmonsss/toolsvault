@@ -1,0 +1,138 @@
+/* Minecraft Content Pack Maker — MOBILE-FIRST scoped styles.
+ * Reuses the site's CSS variables for full theme parity. */
+
+/* ---- Layout ---- */
+.tpm{max-width:1400px;margin:0 auto;overflow-x:hidden}
+
+/* ---- Metadata bar ---- */
+.tpm-bar{display:flex;flex-direction:column;gap:.75rem;margin-bottom:1rem}
+.tpm-field{min-width:0}
+.tpm-field label{display:block;font-size:.8rem;color:var(--text-dim);margin-bottom:.25rem}
+.tpm-inline{display:inline-flex;align-items:center;gap:.35rem;font-size:.82rem;color:var(--text-dim)}
+
+/* ---- Status toast ---- */
+.tpm-status{margin:.25rem 0 1rem;font-size:.85rem;padding:.55rem .8rem;border-radius:8px;border:1px solid var(--border)}
+.tpm-status[hidden]{display:none}
+.tpm-status.ok{background:var(--accent-ring);color:var(--text);border-color:var(--accent)}
+.tpm-status.err{background:rgba(239,68,68,.12);color:var(--danger);border-color:var(--danger)}
+
+/* ---- Editor layout ---- */
+.tpm-layout{display:flex;flex-direction:column;gap:1rem}
+.tpm-tree{background:var(--bg-elev);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;max-height:240px}
+.tpm-tree-head{padding:.5rem;border-bottom:1px solid var(--border)}
+.tpm-tree-head input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:.55rem .6rem;font-size:16px;box-sizing:border-box}
+.tpm-tree-body{overflow:auto;padding:.35rem;-webkit-overflow-scrolling:touch}
+.tpm-cat{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--text-dim);padding:.5rem .4rem .2rem;font-weight:600}
+.tpm-node{display:flex;align-items:center;gap:.4rem;padding:.5rem .45rem;border-radius:6px;cursor:pointer;font-size:.9rem;color:var(--text);border:1px solid transparent}
+.tpm-node:hover{background:var(--border)}
+.tpm-node.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tpm-node .tpm-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:0 0 auto;opacity:0}
+.tpm-node.has .tpm-dot{opacity:1}
+.tpm-node .tpm-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tpm-cat-toggle{cursor:pointer;user-select:none}
+.tpm-cat-toggle:hover{color:var(--text)}
+.tpm-caret{display:inline-block;width:1em;color:var(--accent);font-size:.85em}
+.tpm-group-body{padding-bottom:.15rem}
+.tpm-loading{padding:.6rem .8rem;color:var(--text-dim);font-size:.85rem;font-style:italic}
+.tpm-group .tpm-node{padding-left:.8rem}
+.tpm-section{padding:.3rem .4rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);font-weight:700}
+.tpm-main{min-width:0}
+
+/* ---- Toolbar ---- */
+.tpm-toolbar{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:space-between;align-items:center;margin-bottom:.6rem}
+.tpm-tools{display:flex;gap:.4rem;flex-wrap:wrap}
+.tpm-tool-opts{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.tpm-tool-opts select,.tpm-tool-opts input[type=range]{background:var(--bg-elev);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:.3rem}
+.tpm-tool-opts input[type=range]{width:120px}
+.tpm-sm{padding:.5rem .7rem;font-size:.85rem}
+.tpm-validity{font-size:.82rem;color:var(--text-dim)}
+.tpm-validity.ok{color:#4ade80}
+.tpm-validity.err{color:var(--danger)}
+
+/* ---- Item icon preview ---- */
+.tpm-icon-preview{width:64px;height:64px;image-rendering:pixelated;border-radius:6px;border:1px solid var(--border);background:#fff;display:block}
+.tpm-texture-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:.5rem}
+.tpm-texture-card{background:var(--bg-elev);border:1px solid var(--border);border-radius:8px;padding:.4rem;text-align:center;cursor:pointer}
+.tpm-texture-card:hover{border-color:var(--accent)}
+.tpm-texture-card.active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-ring)}
+.tpm-texture-card img{width:100%;aspect-ratio:1;image-rendering:pixelated;border-radius:4px;background:#fff}
+.tpm-texture-card .tpm-fname{font-size:.68rem;color:var(--text-dim);margin-top:.2rem;word-break:break-all}
+
+/* ---- Recipe grid preview ---- */
+.tpm-recipe-preview{display:inline-grid;gap:2px;padding:8px;background:var(--bg-elev);border:1px solid var(--border);border-radius:8px}
+.tpm-recipe-cell{width:32px;height:32px;background:var(--bg);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--text-dim)}
+
+/* ---- Dropzone ---- */
+.tpm-dropzone{margin-top:.25rem;padding:1rem;border:1px dashed var(--border2);border-radius:10px;text-align:center;color:var(--text-dim);font-size:.9rem}
+.tpm-dropzone.drag{border-color:var(--accent);background:var(--accent-ring);color:var(--text)}
+
+/* ---- Files tab ---- */
+.tpm-filebar{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin-bottom:.75rem}
+.tpm-filebar .btn{flex:1 1 auto}
+.tpm-count{flex-basis:100%;font-size:.82rem;color:var(--text-dim)}
+.tpm-filelist{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:.6rem}
+.tpm-filecard{background:var(--bg-elev);border:1px solid var(--border);border-radius:8px;padding:.5rem;text-align:center;position:relative;display:flex;flex-direction:column;align-items:center;gap:.3rem}
+.tpm-filecard .tpm-fname{font-size:.7rem;color:var(--text-dim);word-break:break-all;line-height:1.2;text-align:center}
+.tpm-filecard .tpm-type{font-size:.65rem;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.tpm-filecard .tpm-del{position:absolute;top:3px;right:3px;background:var(--danger);color:#fff;border:none;border-radius:4px;width:24px;height:24px;cursor:pointer;font-size:.8rem;line-height:1}
+.tpm-empty{color:var(--text-dim);font-size:.9rem;padding:1rem 0}
+
+/* ---- Preview tab ---- */
+.tpm-preview-list{display:flex;flex-direction:column;gap:.6rem}
+.tpm-preview-item{background:var(--bg-elev);border:1px solid var(--border);border-radius:10px;padding:.7rem}
+.tpm-preview-item .tpm-prev-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem}
+.tpm-preview-item .tpm-fname{font-size:.82rem;color:var(--text);font-weight:600;word-break:break-all}
+.tpm-preview-item .tpm-type{font-size:.72rem;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.tpm-preview-item .tpm-preview-content{font-family:'Courier New',Consolas,monospace;font-size:.82rem;white-space:pre-wrap;word-break:break-word;max-height:240px;overflow:auto;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:.5rem;margin-top:.3rem}
+
+/* ---- Export tab ---- */
+.tpm-export{display:flex;flex-direction:column;gap:1.25rem}
+.tpm-export-col h3{margin-bottom:.5rem}
+.tpm-export .btn{width:100%;margin-bottom:.5rem}
+.tpm-muted{color:var(--text-dim);font-size:.88rem;margin-bottom:.75rem}
+.tpm-json{background:var(--bg-elev);border:1px solid var(--border);border-radius:8px;padding:.75rem;font-family:'Courier New',Consolas,monospace;font-size:.82rem;white-space:pre-wrap;word-break:break-word;max-height:320px;overflow:auto;color:var(--text)}
+.tpm code{background:var(--bg-elev);border:1px solid var(--border);border-radius:4px;padding:.05rem .3rem;font-size:.82em}
+
+/* ---- Save / load bar ---- */
+.tpm-savebar{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem}
+.tpm-savebar .btn{flex:0 0 auto}
+.tpm-saved{font-size:.82rem;color:var(--accent);margin-left:.25rem}
+
+/* ---- Simple form ---- */
+.tpm-simple{background:var(--bg-elev);border:1px solid var(--border);border-top:1px solid var(--border);border-radius:0 0 10px 10px;padding:.7rem}
+.tpm-simple[hidden]{display:none}
+.tpm-simple-header{font-size:.78rem;color:var(--text-dim);margin-bottom:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.tpm-simple-body{display:flex;flex-direction:column;gap:.55rem}
+.tpm-row{display:flex;gap:.5rem;flex-wrap:wrap}
+.tpm-row > .tpm-field{flex:1 1 140px}
+
+/* ---- Tab system ---- */
+.tpm .tab{flex:0 0 auto}
+.tpm .panel{display:none}
+.tpm .panel.active{display:block}
+
+/* =====================================================================
+   >= 640px : tablets
+   ===================================================================== */
+@media (min-width:640px){
+  .tpm-bar{flex-direction:row;flex-wrap:wrap;align-items:flex-end}
+  .tpm-field{flex:0 0 auto;min-width:150px}
+  .tpm-field-grow{flex:1 1 240px}
+  .tpm-filebar .btn{flex:0 0 auto}
+  .tpm-count{flex-basis:auto;margin-left:auto}
+  .tpm-export{display:grid;grid-template-columns:1fr 1fr}
+  .tpm-export .btn{width:auto}
+  .tpm-filelist{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+}
+
+/* =====================================================================
+   >= 1024px : desktop — persistent sidebar
+   ===================================================================== */
+@media (min-width:1024px){
+  .tpm-layout{display:grid;grid-template-columns:260px 1fr;gap:1rem;align-items:start}
+  .tpm-tree{max-height:560px}
+}
+
+/* Respect reduced-motion */
+@media (prefers-reduced-motion:reduce){
+}
