@@ -1015,7 +1015,9 @@
         var img = await fileToCanvas(f);
         var c = document.createElement('canvas');
         c.width = img.width; c.height = img.height;
-        c.getContext('2d').drawImage(img, 0, 0);
+        var ictx = c.getContext('2d');
+        ictx.imageSmoothingEnabled = false;
+        ictx.drawImage(img, 0, 0);
         project.files.set(path, { canvas: c, name: path.split('/').pop() });
         added++;
       } catch (e) {}
@@ -1053,7 +1055,6 @@
       });
     }
     document.querySelectorAll('.tpc .tab').forEach(function (tab) {
-      tab.addEventListener('click', function () { activateTab(tab.dataset.tab); });
       tab.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activateTab(tab.dataset.tab); }
       });
@@ -1172,9 +1173,10 @@
       var path = 'assets/minecraft/textures/' + sanitizeName(name) + '.png';
       var res = parseInt($('tpc-res').value, 10) || 16;
       var c = document.createElement('canvas'); c.width = res; c.height = res;
+      c.getContext('2d').imageSmoothingEnabled = false;
       project.files.set(path, { canvas: c, name: path.split('/').pop() });
-      refreshTreeFlags(); renderFileList(); renderPreview(); renderMeta(); renderIconOptions();
-      showMsg('Created blank ' + path.split('/').pop(), true);
+      selectSlot(path);
+      showMsg('Created blank ' + path.split('/').pop() + '.', true);
     });
 
     // Metadata inputs
@@ -1193,10 +1195,16 @@
         n.style.display = show ? '' : 'none';
       });
       document.querySelectorAll('.tpc-cat').forEach(function (cat) {
-        // Hide a category header if none of its sibling nodes are visible.
         var sib = cat.nextElementSibling; var visible = false;
         while (sib && sib.classList.contains('tpc-node')) { if (sib.style.display !== 'none') visible = true; sib = sib.nextElementSibling; }
         cat.style.display = visible ? '' : 'none';
+      });
+      // Also hide group wrappers / bodies whose nodes are all filtered out.
+      document.querySelectorAll('.tpc-group').forEach(function (g) {
+        var anyVisible = false;
+        var nodes = g.querySelectorAll('.tpc-node');
+        for (var i = 0; i < nodes.length; i++) { if (nodes[i].style.display !== 'none') { anyVisible = true; break; } }
+        g.style.display = anyVisible ? '' : 'none';
       });
     });
 
