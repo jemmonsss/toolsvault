@@ -106,6 +106,18 @@
 .tpm-row{display:flex;gap:.5rem;flex-wrap:wrap}
 .tpm-row > .tpm-field{flex:1 1 140px}
 
+/* ---- Inline creation/template forms ---- */
+.tpm-embed-wrap{margin-top:.5rem}
+.tpm-form{background:var(--bg-elev);border:1px solid var(--border);border-radius:10px;padding:.75rem;margin-bottom:.5rem}
+.tpm-form[hidden]{display:none}
+.tpm-form-row{display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end}
+.tpm-form-row .tpm-field{flex:1 1 160px}
+.tpm-form-actions{display:flex;gap:.4rem;align-items:center;flex-shrink:0}
+.tpm-template-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.5rem}
+.tpm-template-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.6rem .7rem;cursor:pointer;font-size:.85rem;color:var(--text);text-align:center;transition:border-color .2s ease,transform .15s ease}
+.tpm-template-card:hover{border-color:var(--accent);transform:translateY(-1px)}
+.tpm-template-card.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
 /* ---- Tab system ---- */
 .tpm .tab{flex:0 0 auto}
 .tpm .panel{display:none}

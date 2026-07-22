@@ -728,23 +728,63 @@
     });
 
     // New / Delete / Templates
-    $('tpm-new-content').addEventListener('click', function () {
-      var name = prompt('Content name (e.g. my_sword):', 'custom_item');
-      if (!name) return;
-      createContent('items', name);
-    });
+    var newForm = $('tpm-new-form');
+    var newName = $('tpm-new-name');
+    var newType = $('tpm-new-type');
+    function openNewForm() {
+      if (newForm) { newForm.hidden = false; $('tpm-template-form').hidden = true; newName.focus(); }
+    }
+    function closeNewForm() {
+      if (newForm) newForm.hidden = true;
+    }
+    $('tpm-new-content').addEventListener('click', openNewForm);
+    if ($('tpm-new-confirm')) {
+      $('tpm-new-confirm').addEventListener('click', function () {
+        var name = (newName.value || '').trim();
+        if (!name) { showMsg('Enter a name.', false); return; }
+        createContent(newType.value, name);
+        newName.value = '';
+        closeNewForm();
+      });
+    }
+    if ($('tpm-new-cancel')) {
+      $('tpm-new-cancel').addEventListener('click', closeNewForm);
+    }
     $('tpm-delete-content').addEventListener('click', function () {
       if (!selectedId) return;
       if (!window.confirm('Delete this content?')) return;
       deleteContent(selectedId);
     });
+
+    // Templates inline picker
+    var templateForm = $('tpm-template-form');
+    var templateGrid = $('tpm-template-grid');
+    function openTemplatePicker() {
+      if (!templateGrid) return;
+      templateGrid.innerHTML = '';
+      Object.keys(PACK_TEMPLATES).forEach(function (key) {
+        var card = document.createElement('button');
+        card.className = 'tpm-template-card';
+        card.type = 'button';
+        card.textContent = PACK_TEMPLATES[key];
+        card.dataset.template = key;
+        card.addEventListener('click', function () {
+          applyTemplate(key);
+          if (templateForm) templateForm.hidden = true;
+        });
+        templateGrid.appendChild(card);
+      });
+      if (templateForm) { templateForm.hidden = false; newForm.hidden = true; }
+    }
+    function closeTemplatePicker() {
+      if (templateForm) templateForm.hidden = true;
+    }
     var templateBtn = $('tpm-load-template');
     if (templateBtn) {
-      templateBtn.addEventListener('click', function () {
-        var choice = prompt('Template: custom_item, tool_pack, food_pack, recipe_pack, loot_table_pack, advancement_pack, function_pack, complete_pack');
-        if (!choice) return;
-        applyTemplate(choice);
-      });
+      templateBtn.addEventListener('click', openTemplatePicker);
+    }
+    if ($('tpm-template-close')) {
+      $('tpm-template-close').addEventListener('click', closeTemplatePicker);
     }
 
     // Mode toggle

@@ -90,6 +90,42 @@ icon: "&#128736;"
           </div>
         </div>
 
+        <div class="tpm-embed-wrap" id="tpm-embed-wrap">
+          <!-- Inline new-content form (shown by + New) -->
+          <div class="tpm-form" id="tpm-new-form" hidden>
+            <div class="tpm-form-row">
+              <div class="tpm-field">
+                <label for="tpm-new-name">Name</label>
+                <input type="text" id="tpm-new-name" value="custom_item" maxlength="64">
+              </div>
+              <div class="tpm-field">
+                <label for="tpm-new-type">Type</label>
+                <select id="tpm-new-type">
+                  <option value="items">Item</option>
+                  <option value="recipes">Recipe</option>
+                  <option value="loot_tables">Loot Table</option>
+                  <option value="advancements">Advancement</option>
+                  <option value="predicates">Predicate</option>
+                  <option value="functions">Function</option>
+                  <option value="tags">Tag</option>
+                </select>
+              </div>
+              <div class="tpm-form-actions">
+                <button class="btn btn-primary tpm-sm" id="tpm-new-confirm" type="button">Create</button>
+                <button class="btn btn-secondary tpm-sm" id="tpm-new-cancel" type="button">Cancel</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Inline template picker (shown by Templates) -->
+          <div class="tpm-form" id="tpm-template-form" hidden>
+            <div class="tpm-template-grid" id="tpm-template-grid"></div>
+            <div class="tpm-form-actions">
+              <button class="btn btn-secondary tpm-sm" id="tpm-template-close" type="button">Close</button>
+            </div>
+          </div>
+        </div>
+
         <div class="tpm-editor-wrap" id="tpm-editor-wrap">
           <div class="tpm-editor-header" id="tpm-editor-header">
             <span class="tpm-editor-filename" id="tpm-editor-filename">No content selected</span>
