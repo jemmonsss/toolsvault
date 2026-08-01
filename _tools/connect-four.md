@@ -33,7 +33,11 @@ icon: "🔵"
 (function(){
   var boardEl=document.getElementById('cf-board'),statusEl=document.getElementById('cf-status');
   var wEl=document.getElementById('cf-w'),lEl=document.getElementById('cf-l'),dEl=document.getElementById('cf-d');
-  var cols=7,rows=6,grid,turn,over,rec=JSON.parse(localStorage.getItem('tv_cf')||'{"w":0,"l":0,"d":0}');
+  function loadRecord(){
+    try{return JSON.parse(localStorage.getItem('tv_cf')||'{"w":0,"l":0,"d":0}');}
+    catch(e){return {w:0,l:0,d:0};}
+  }
+  var cols=7,rows=6,grid,turn,over,rec=loadRecord();
   wEl.textContent=rec.w;lEl.textContent=rec.l;dEl.textContent=rec.d;
   function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
   function paint(){
@@ -44,8 +48,8 @@ icon: "🔵"
       d.dataset.c=c;boardEl.appendChild(d);
     }
   }
-  function drop(c){
-    for(var r=rows-1;r>=0;r--){if(grid[r][c]===''){grid[r][c]='R';return r;}}
+  function drop(c,p){
+    for(var r=rows-1;r>=0;r--){if(grid[r][c]===''){grid[r][c]=p;return r;}}
     return -1;
   }
   function win(b,p){
@@ -58,21 +62,31 @@ icon: "🔵"
     return false;
   }
   function full(){return grid.every(function(row){return row.every(function(c){return c!=='';});});}
+  function isWinningDrop(c,p){
+    for(var r=rows-1;r>=0;r--){
+      if(grid[r][c]===''){
+        grid[r][c]=p;
+        var winning=win(grid,p);
+        grid[r][c]='';
+        return winning;
+      }
+    }
+    return false;
+  }
   function aiMove(){
-    for(var c=0;c<cols;c++){var r=dropSim(c,'Y');if(r>=0&&win(grid,'Y')){return c;}}
-    for(var c=0;c<cols;c++){var rs=dropSim(c,'R');if(rs>=0&&win(grid,'R')){return c;}}
+    for(var c=0;c<cols;c++){if(isWinningDrop(c,'Y'))return c;}
+    for(var c2=0;c2<cols;c2++){if(isWinningDrop(c2,'R'))return c2;}
     var mid=[3,2,4,1,5,0,6];
     for(var i=0;i<mid.length;i++){if(grid[0][mid[i]]==='')return mid[i];}
     return 0;
   }
-  function dropSim(c,p){for(var r=rows-1;r>=0;r--){if(grid[r][c]===''){grid[r][c]=p;var ok=r;return ok;}}return -1;}
   function after(){
     if(win(grid,'R')){over=true;rec.w++;statusEl.textContent='You win! 🎉';save();paint();return;}
     if(full()){over=true;rec.d++;statusEl.textContent="It's a draw.";save();paint();return;}
     turn='Y';statusEl.textContent='Computer thinking...';paint();
     setTimeout(function(){
       if(over)return;
-      var c=aiMove();drop(c);
+      var c=aiMove();drop(c,'Y');
       if(win(grid,'Y')){over=true;rec.l++;statusEl.textContent='Computer wins.';save();paint();return;}
       if(full()){over=true;rec.d++;statusEl.textContent="It's a draw.";save();paint();return;}
       turn='R';statusEl.textContent='Your move!';paint();
@@ -80,7 +94,7 @@ icon: "🔵"
   }
   function save(){try{localStorage.setItem('tv_cf',JSON.stringify(rec));}catch(e){}wEl.textContent=rec.w;lEl.textContent=rec.l;dEl.textContent=rec.d;}
   window.cfNew=function(){grid=[];for(var r=0;r<rows;r++){grid[r]=Array(cols).fill('');}over=false;turn='R';statusEl.textContent='Your move!';paint();};
-  boardEl.addEventListener('click',function(e){var c=e.target.dataset.c;if(c==null||over||turn!=='R'||grid[0][c]!=='')return;drop(+c);after();});
-  cfNew();
+  boardEl.addEventListener('click',function(e){var c=e.target.dataset.c;if(c==null||over||turn!=='R'||grid[0][c]!=='')return;drop(+c,'R');after();});
+  window.cfNew();
 })();
 </script>

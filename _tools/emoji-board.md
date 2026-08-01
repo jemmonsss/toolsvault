@@ -17,7 +17,6 @@ category: "Color & Design"
   <div id="kao" class="emoji-grid" style="grid-template-columns:repeat(auto-fill,minmax(120px,1fr))"></div>
   <div id="msg" class="msg"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 var E=['😀','😂','🥰','😎','🤔','🥳','😴','🤯','🔥','⭐','✅','❌','⚡','💡','🚀','💡','🐛','🛠️','📦','📈','💻','🧠','👍','👀','🎉','🌟','💜','🔒','🔑','📝','⚙️','🧪','📚','🐳','🌈','☕','🍕','🎯','🧩','🪄'];
 var K=['(•‿•)','(◕‿◕)','(＾▽＾)','(╯°□°）╯','ಠ_ಠ','(•_•)','(>_<)','(◡‿◡)','ヽ(°〇°)ﾉ','（≧▽≦）','(´･_･`)','(¬‿¬)','(づ｡◕‿‿◕｡)づ','(ﾉ◕ヮ◕)ﾉ','¯\\_(ツ)_/¯'];

@@ -26,16 +26,16 @@ async function check(){
   if(!server){result.textContent='Enter a server address';result.style.color='var(--danger)';return;}
   result.textContent='Checking...';result.style.color='var(--text)';
   try{
-    const res=await fetch('https://api.mcsrvstat.us/2/'+encodeURIComponent(server));
+    const res=await fetch('https://api.mcsrvstat.us/3/'+encodeURIComponent(server));
     if(!res.ok)throw new Error('Server not found or offline');
     const data=await res.json();
     let html='<div style="display:flex;flex-direction:column;gap:.75rem">';
-    html+='<div class="kv"><span>Address</span><span>'+server+'</span></div>';
-    html+='<div class="kv"><span>Status</span><span style="color:#22c55e">'+(data.online?'Online':'Offline')+'</span></div>';
+    html+='<div class="kv"><span>Address</span><span>'+escapeHtml(server)+'</span></div>';
+    html+='<div class="kv"><span>Status</span><span style="color:'+(data.online?'#22c55e':'var(--danger)')+'">'+(data.online?'Online':'Offline')+'</span></div>';
     if(data.players)html+='<div class="kv"><span>Players</span><span>'+(data.players.online||0)+' / '+(data.players.max||0)+'</span></div>';
-    if(data.version)html+='<div class="kv"><span>Version</span><span>'+(data.version||'Unknown')+'</span></div>';
-    if(data.motd&&data.motd.clean)html+='<div class="kv"><span>MOTD</span><span style="white-space:pre-wrap">'+data.motd.clean.join('\n')+'</span></div>';
-    if(data.icon)html+='<div class="kv"><span>Icon</span><span><img src="'+data.icon+'" style="width:64px;height:64px;image-rendering:pixelated;border:1px solid var(--border);border-radius:4px"></span></div>';
+    if(data.version)html+='<div class="kv"><span>Version</span><span>'+escapeHtml(data.version||'Unknown')+'</span></div>';
+    if(data.motd&&data.motd.clean)html+='<div class="kv"><span>MOTD</span><span style="white-space:pre-wrap">'+escapeHtml(data.motd.clean.join('\n'))+'</span></div>';
+    var icon=safeHttpUrl(data.icon,true);if(icon)html+='<div class="kv"><span>Icon</span><span><img src="'+escapeHtml(icon)+'" style="width:64px;height:64px;image-rendering:pixelated;border:1px solid var(--border);border-radius:4px"></span></div>';
     html+='</div>';
     result.innerHTML=html;result.style.color='var(--text)';
   }catch(e){
@@ -45,11 +45,11 @@ async function check(){
       if(!res2.ok)throw new Error('Fallback failed');
       const data=await res2.json();
       let html='<div style="display:flex;flex-direction:column;gap:.75rem">';
-      html+='<div class="kv"><span>Address</span><span>'+server+'</span></div>';
-      html+='<div class="kv"><span>Status</span><span style="color:#22c55e">'+(data.online?'Online':'Offline')+'</span></div>';
+      html+='<div class="kv"><span>Address</span><span>'+escapeHtml(server)+'</span></div>';
+      html+='<div class="kv"><span>Status</span><span style="color:'+(data.online?'#22c55e':'var(--danger)')+'">'+(data.online?'Online':'Offline')+'</span></div>';
       if(data.players)html+='<div class="kv"><span>Players</span><span>'+(data.players.online||0)+' / '+(data.players.max||0)+'</span></div>';
-      if(data.version)html+='<div class="kv"><span>Version</span><span>'+(data.version.name||data.version||'Unknown')+'</span></div>';
-      if(data.motd)html+='<div class="kv"><span>MOTD</span><span style="white-space:pre-wrap">'+(data.motd||'')+'</span></div>';
+      if(data.version)html+='<div class="kv"><span>Version</span><span>'+escapeHtml(data.version.name||data.version||'Unknown')+'</span></div>';
+      if(data.motd)html+='<div class="kv"><span>MOTD</span><span style="white-space:pre-wrap">'+escapeHtml(data.motd||'')+'</span></div>';
       html+='</div>';
       result.innerHTML=html;result.style.color='var(--text)';
     }catch(fe){

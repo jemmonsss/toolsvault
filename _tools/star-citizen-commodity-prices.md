@@ -34,8 +34,8 @@ async function search(){
     let html='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">';
     html+='<tr style="background:var(--bg-elev2)"><th style="text-align:left;padding:.5rem;border-bottom:1px solid var(--border)">Name</th><th style="text-align:left;padding:.5rem;border-bottom:1px solid var(--border)">Category</th><th style="text-align:right;padding:.5rem;border-bottom:1px solid var(--border)">Base Price</th><th style="text-align:right;padding:.5rem;border-bottom:1px solid var(--border)">SCU</th></tr>';
     items.forEach(function(c){
-      html+='<tr><td style="padding:.5rem;border-bottom:1px solid var(--border)">'+(c.name||'')+'</td>';
-      html+='<td style="padding:.5rem;border-bottom:1px solid var(--border);color:var(--text-dim)">'+(c.category||'')+'</td>';
+      html+='<tr><td style="padding:.5rem;border-bottom:1px solid var(--border)">'+escapeHtml(c.name||'')+'</td>';
+      html+='<td style="padding:.5rem;border-bottom:1px solid var(--border);color:var(--text-dim)">'+escapeHtml(c.category||'')+'</td>';
       html+='<td style="padding:.5rem;border-bottom:1px solid var(--border);text-align:right">'+(c.price||0).toLocaleString()+'</td>';
       html+='<td style="padding:.5rem;border-bottom:1px solid var(--border);text-align:right">'+(c.scu||0)+'</td></tr>';
     });
@@ -53,8 +53,8 @@ async function search(){
       let html='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">';
       html+='<tr style="background:var(--bg-elev2)"><th style="text-align:left;padding:.5rem;border-bottom:1px solid var(--border)">Name</th><th style="text-align:left;padding:.5rem;border-bottom:1px solid var(--border)">Category</th><th style="text-align:right;padding:.5rem;border-bottom:1px solid var(--border)">Base Price</th><th style="text-align:right;padding:.5rem;border-bottom:1px solid var(--border)">SCU</th></tr>';
       items.forEach(function(c){
-        html+='<tr><td style="padding:.5rem;border-bottom:1px solid var(--border)">'+(c.name||'')+'</td>';
-        html+='<td style="padding:.5rem;border-bottom:1px solid var(--border);color:var(--text-dim)">'+(c.category||'')+'</td>';
+        html+='<tr><td style="padding:.5rem;border-bottom:1px solid var(--border)">'+escapeHtml(c.name||'')+'</td>';
+        html+='<td style="padding:.5rem;border-bottom:1px solid var(--border);color:var(--text-dim)">'+escapeHtml(c.category||'')+'</td>';
         html+='<td style="padding:.5rem;border-bottom:1px solid var(--border);text-align:right">'+(c.price||0).toLocaleString()+'</td>';
         html+='<td style="padding:.5rem;border-bottom:1px solid var(--border);text-align:right">'+(c.scu||0)+'</td></tr>';
       });

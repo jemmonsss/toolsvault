@@ -41,7 +41,8 @@ icon: "💣"
   var minesEl=document.getElementById('ms-mines'),flagsEl=document.getElementById('ms-flags'),timeEl=document.getElementById('ms-time'),bestEl=document.getElementById('ms-best');
   var statusEl=document.getElementById('ms-status'),diffEl=document.getElementById('ms-diff');
   var grid,cols,rows,mines,revealed,flags,over,timer,t,first;
-  try{var b=JSON.parse(localStorage.getItem('tv_ms_best')||'{}');if(b[diffEl.value])bestEl.textContent=b[diffEl.value];}catch(e){}
+  function loadBest(){try{var v=JSON.parse(localStorage.getItem('tv_ms_best')||'{}');return v&&typeof v==='object'?v:{};}catch(e){return {};}}
+  var initialBest=loadBest();if(initialBest[diffEl.value])bestEl.textContent=initialBest[diffEl.value];
   function cfg(){
     var d=diffEl.value;
     if(d==='easy')return{c:9,r:9,m:10};
@@ -113,7 +114,7 @@ icon: "💣"
     paint();
     if(revealed===rows*cols-mines){
       over=true;clearInterval(timer);
-      var key=diffEl.value,b=JSON.parse(localStorage.getItem('tv_ms_best')||'{}');
+      var key=diffEl.value,b=loadBest();
       if(!b[key]||t<b[key]){b[key]=t;try{localStorage.setItem('tv_ms_best',JSON.stringify(b));}catch(e){}}
       bestEl.textContent=b[diffEl.value]||t;
       statusEl.textContent='You cleared it in '+t+'s! 🎉';

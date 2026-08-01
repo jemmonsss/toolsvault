@@ -56,6 +56,7 @@ featured: true
         <button class="btn btn-secondary" onclick="copyPassword()">Copy to Clipboard</button>
     </div>
 </div>
+<div id="password-msg" class="msg"></div>
 
 <style>
 .tool-container { max-width: 700px; margin: 0 auto; }
@@ -97,10 +98,12 @@ function generatePassword() {
     if (useSymbols) chars += CHARS.symbols;
     if (excludeSimilar) chars = chars.split('').filter(c => !SIMILAR.includes(c)).join('');
     if (!chars) { document.getElementById('password-output').value = ''; return; }
-    const array = new Uint32Array(length);
-    crypto.getRandomValues(array);
+    if (!requireSecureRandom('password-msg')) return;
     let password = '';
-    for (let i = 0; i < length; i++) password += chars[array[i] % chars.length];
+    try {
+        for (let i = 0; i < length; i++) password += chars[secureRandomInt(chars.length)];
+    } catch (e) { err('password-msg', e.message); return; }
+    showMsg('password-msg', '', '');
     document.getElementById('password-output').value = password;
     updateStrength(password);
 }
@@ -122,7 +125,7 @@ function updateStrength(password) {
 }
 function copyPassword() {
     const input = document.getElementById('password-output');
-    input.select(); document.execCommand('copy');
+    copyText(input.value);
 }
 window.addEventListener('DOMContentLoaded', generatePassword);
 </script>

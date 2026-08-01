@@ -147,7 +147,12 @@
   }
 
   function storageAvailable() {
-    try { return 'localStorage' in window && window.localStorage !== null; } catch (e) { return false; }
+    try {
+      var k = '__toolsvault_storage_test__';
+      window.localStorage.setItem(k, '1');
+      window.localStorage.removeItem(k);
+      return true;
+    } catch (e) { return false; }
   }
   function saveProject() {
     if (!storageAvailable()) { showMsg('Local storage is not available.', false); return; }
@@ -170,8 +175,8 @@
   }
   function deleteSavedProject() {
     if (!storageAvailable()) return;
-    localStorage.removeItem(STORAGE_KEY);
-    showMsg('Saved project deleted.', true);
+    try { localStorage.removeItem(STORAGE_KEY); showMsg('Saved project deleted.', true); }
+    catch (e) { showMsg('Delete failed: ' + e.message, false); }
   }
   function exportProjectFile() {
     var data = serializeProject();

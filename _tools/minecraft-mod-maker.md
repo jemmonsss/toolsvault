@@ -1,6 +1,6 @@
 ---
 title: "Minecraft Content Pack Maker"
-link: "/tools/minecraft-content-pack-maker/"
+link: "/tools/minecraft-mod-maker/"
 description: "Design custom items, recipes, loot tables, advancements, and more. Export a complete datapack + resource pack zip — entirely in your browser."
 tags:
   - minecraft

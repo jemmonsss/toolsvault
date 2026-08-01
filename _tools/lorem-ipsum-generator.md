@@ -70,8 +70,22 @@ function generateLorem() {
     document.getElementById('lorem-output').textContent = text.trim();
 }
 function copyLorem() {
-    const el = document.getElementById('lorem-output');
-    el.select(); document.execCommand('copy');
+    const text = document.getElementById('lorem-output').textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).catch(function(){ fallbackCopy(text); });
+    } else {
+        fallbackCopy(text);
+    }
+}
+function fallbackCopy(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    textarea.remove();
 }
 window.addEventListener('DOMContentLoaded', generateLorem);
 </script>

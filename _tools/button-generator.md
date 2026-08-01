@@ -24,11 +24,10 @@ category: "Generators"
   <label>HTML</label><div id="b-html" class="result"></div>
   <label>CSS</label><div id="b-css" class="result"></div>
 </div>
-<script src="{{ '/assets/js/tools.js' | relative_url }}" defer></script>
 <script>
 function gen(){var label=byId('blabel').value,bg=byId('bbg').value,fg=byId('bfg').value,rad=byId('brad').value,pad=byId('bpad').value;
   var css='.btn {\n  background: '+bg+';\n  color: '+fg+';\n  border: none;\n  border-radius: '+rad+'px;\n  padding: '+pad+'px '+(pad*2)+'px;\n  font-size: 1rem;\n  font-weight: 600;\n  cursor: pointer;\n}';
-  byId('b-prev').innerHTML='<style>'+css+'</style><button class="btn">'+label+'</button>';
+  byId('b-prev').innerHTML='<style>'+css+'</style><button class="btn">'+escapeHtml(label)+'</button>';
   byId('b-css').textContent=css;
   byId('b-html').textContent='<button class="btn">'+label+'</button>';
 }

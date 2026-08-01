@@ -93,7 +93,7 @@ description: "A curated vault of developer tools and resources"
 document.getElementById('tool-search')?.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
         var q = this.value.trim();
-        if (q) window.location.href = '/tools/';
+        if (q) window.location.href = '/tools/?q=' + encodeURIComponent(q);
     }
 });
 </script>

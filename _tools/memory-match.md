@@ -39,7 +39,11 @@ icon: "🃏"
   var boardEl=document.getElementById('mm-board'),movesEl=document.getElementById('mm-moves'),pairsEl=document.getElementById('mm-pairs'),bestEl=document.getElementById('mm-best'),statusEl=document.getElementById('mm-status'),diffEl=document.getElementById('mm-diff');
   var emojis=['🍎','🍌','🍇','🍉','🍓','🍒','🥝','🍑','🍍','🥥','🍋','🥭','🫐','🍊','🥑','🌽'];
   var cards,first,lock,moves,pairs;
-  try{var b=JSON.parse(localStorage.getItem('tv_mm_best')||'{}');if(b[diffEl.value]!=null)bestEl.textContent=b[diffEl.value];}catch(e){}
+  function loadBest(){
+    try{return JSON.parse(localStorage.getItem('tv_mm_best')||'{}');}
+    catch(e){return {};}
+  }
+  var initialBest=loadBest();if(initialBest[diffEl.value]!=null)bestEl.textContent=initialBest[diffEl.value];
   window.mmNew=function(){
     var n=+diffEl.value,total=n*2;
     var pool=emojis.slice(0,n);var deck=[];
@@ -55,7 +59,7 @@ icon: "🃏"
       d.dataset.i=i;d.textContent='❓';boardEl.appendChild(d);
     });
   };
-  function paint(){cards.forEach(function(c,i){var el=boardEl.children[i];el.className='retro-cell'+(c.up||c.mat<0?' revealed':'');if(c.matched)el.classList.add('win');el.textContent=c.up||c.matched?c.face:'❓';});}
+  function paint(){cards.forEach(function(c,i){var el=boardEl.children[i];el.className='retro-cell'+(c.up||c.matched?' revealed':'');if(c.matched)el.classList.add('win');el.textContent=c.up||c.matched?c.face:'❓';});}
   boardEl.addEventListener('click',function(e){
     var i=e.target.dataset.i;if(i==null||lock)return;var c=cards[+i];
     if(c.up||c.matched)return;
@@ -63,12 +67,12 @@ icon: "🃏"
     if(!first){first=c;return;}
     moves++;movesEl.textContent=moves;lock=true;
     if(first.face===c.face){first.matched=c.matched=true;pairs++;pairsEl.textContent=pairs;first=null;lock=false;paint();
-      if(pairs===cards.length/2){var key=diffEl.value,b=JSON.parse(localStorage.getItem('tv_mm_best')||'{}');if(b[key]==null||moves<b[key]){b[key]=moves;try{localStorage.setItem('tv_mm_best',JSON.stringify(b));}catch(e){}}bestEl.textContent=b[key];statusEl.textContent='Solved in '+moves+' moves! 🎉';}
+      if(pairs===cards.length/2){var key=diffEl.value,b=loadBest();if(b[key]==null||moves<b[key]){b[key]=moves;try{localStorage.setItem('tv_mm_best',JSON.stringify(b));}catch(e){}}bestEl.textContent=b[key];statusEl.textContent='Solved in '+moves+' moves! 🎉';}
     }else{
       setTimeout(function(){first.up=false;c.up=false;first=null;lock=false;paint();},700);
     }
   });
-  diffEl.addEventListener('change',function(){var b=JSON.parse(localStorage.getItem('tv_mm_best')||'{}');bestEl.textContent=b[diffEl.value]!=null?b[diffEl.value]:'--';mmNew();});
-  mmNew();
+  diffEl.addEventListener('change',function(){var b=loadBest();bestEl.textContent=b[diffEl.value]!=null?b[diffEl.value]:'--';window.mmNew();});
+  window.mmNew();
 })();
 </script>

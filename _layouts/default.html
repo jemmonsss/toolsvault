@@ -152,6 +152,8 @@
         const favoritesGrid = document.getElementById('favorites-grid');
         const favTotalEl = document.getElementById('fav-total');
         let activeCategory = 'all';
+        const initialQuery = new URLSearchParams(window.location.search).get('q');
+        if (searchInput && initialQuery) searchInput.value = initialQuery;
 
         const FAV_KEY = 'toolsvault_favorites';
         function getFavorites() {
@@ -261,6 +263,10 @@
         searchInput.addEventListener('input', function() {
             if (activeCategory === 'favorites') return;
             filterTools();
+            const url = new URL(window.location.href);
+            const query = searchInput.value.trim();
+            if (query) url.searchParams.set('q', query); else url.searchParams.delete('q');
+            history.replaceState(null, '', url.pathname + url.search + url.hash);
         });
 
         const randomBtn = document.getElementById('random-tool');
@@ -300,6 +306,7 @@
 
         updateFavButtons();
         updateFavCount();
+        if (initialQuery) filterTools();
     });
     </script>
     {% endif %}

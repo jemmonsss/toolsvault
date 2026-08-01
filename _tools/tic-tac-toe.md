@@ -39,7 +39,11 @@ icon: "❎"
   var boardEl=document.getElementById('ttt-board'),statusEl=document.getElementById('ttt-status');
   var wEl=document.getElementById('ttt-w'),lEl=document.getElementById('ttt-l'),dEl=document.getElementById('ttt-d'),diffEl=document.getElementById('ttt-diff');
   var board,over,turn;
-  var rec=JSON.parse(localStorage.getItem('tv_ttt')||'{"w":0,"l":0,"d":0}');
+  function loadRecord(){
+    try{return JSON.parse(localStorage.getItem('tv_ttt')||'{"w":0,"l":0,"d":0}');}
+    catch(e){return {w:0,l:0,d:0};}
+  }
+  var rec=loadRecord();
   wEl.textContent=rec.w;lEl.textContent=rec.l;dEl.textContent=rec.d;
   function paint(){
     boardEl.innerHTML='';
@@ -110,7 +114,7 @@ icon: "❎"
   function save(){try{localStorage.setItem('tv_ttt',JSON.stringify(rec));}catch(e){}wEl.textContent=rec.w;lEl.textContent=rec.l;dEl.textContent=rec.d;}
   window.tttNew=function(){board=Array(9).fill('');over=false;turn='X';statusEl.textContent='Your move!';paint();};
   boardEl.addEventListener('click',function(e){var i=e.target.dataset.i;if(i==null||over||turn!=='X'||board[i])return;board[+i]='X';after();});
-  diffEl.addEventListener('change',function(){tttNew();});
-  tttNew();
+  diffEl.addEventListener('change',function(){window.tttNew();});
+  window.tttNew();
 })();
 </script>

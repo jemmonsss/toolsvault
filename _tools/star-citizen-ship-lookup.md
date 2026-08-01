@@ -35,14 +35,14 @@ async function search(){
     let html='<div style="display:flex;flex-direction:column;gap:.75rem">';
     ships.forEach(function(s){
       html+='<div style="padding:.75rem;background:var(--bg-elev);border:1px solid var(--border);border-radius:8px">';
-      html+='<div style="font-weight:600;color:var(--text);font-size:1rem">'+(s.name||'Unknown')+'</div>';
+      html+='<div style="font-weight:600;color:var(--text);font-size:1rem">'+escapeHtml(s.name||'Unknown')+'</div>';
       html+='<div style="color:var(--text-dim);font-size:.85rem;margin-top:.25rem">';
-      if(s.manufacturer)html+='<div>Manufacturer: '+(s.manufacturer.name||s.manufacturer)+'</div>';
-      if(s.classification)html+='<div>Role: '+(s.classification||'')+'</div>';
-      if(s.crew)html+='<div>Crew: '+(s.crew||'')+'</div>';
+      if(s.manufacturer)html+='<div>Manufacturer: '+escapeHtml(s.manufacturer.name||s.manufacturer)+'</div>';
+      if(s.classification)html+='<div>Role: '+escapeHtml(s.classification||'')+'</div>';
+      if(s.crew)html+='<div>Crew: '+escapeHtml(s.crew||'')+'</div>';
       if(s.cargo_capacity)html+='<div>Cargo: '+(s.cargo_capacity||0)+' SCU</div>';
       if(s.mass)html+='<div>Mass: '+(s.mass||0).toLocaleString()+' kg</div>';
-      if(s.size)html+='<div>Size: '+(s.size||'')+'</div>';
+      if(s.size)html+='<div>Size: '+escapeHtml(s.size||'')+'</div>';
       html+='</div></div>';
     });
     html+='</div>';

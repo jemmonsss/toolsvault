@@ -37,7 +37,11 @@ icon: "🪢"
   var canvas=document.getElementById('hm-canvas'),ctx=canvas.getContext('2d'),lettersEl=document.getElementById('hm-letters');
   var wEl=document.getElementById('hm-w'),streakEl=document.getElementById('hm-streak');
   var words=['gta','roleplay','server','vehicle','helicopter','mission','sandbox','police','weapon','garage','keycard','drift','races','faction'];
-  var word,guessed,wrong,over,rec=JSON.parse(localStorage.getItem('tv_hm')||'{"w":0,"streak":0}');
+  function loadRecord(){
+    try{return JSON.parse(localStorage.getItem('tv_hm')||'{"w":0,"streak":0}');}
+    catch(e){return {w:0,streak:0};}
+  }
+  var word,guessed,wrong,over,rec=loadRecord();
   wEl.textContent=rec.w;streakEl.textContent=rec.streak;
   function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()||'#e0e0e0';}
   function drawGallows(){
@@ -73,6 +77,6 @@ icon: "🪢"
   }
   function save(){try{localStorage.setItem('tv_hm',JSON.stringify(rec));}catch(e){}wEl.textContent=rec.w;streakEl.textContent=rec.streak;}
   window.hmNew=function(){word=words[Math.floor(Math.random()*words.length)];guessed=[];wrong=0;over=false;statusEl.textContent='Choose a letter to begin.';buildLetters();paint();};
-  hmNew();
+  window.hmNew();
 })();
 </script>
