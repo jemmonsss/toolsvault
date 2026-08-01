@@ -23,7 +23,7 @@
   /* ---------- State ---------- */
   var project = {
     name: 'My Texture Pack',
-    format: 34,
+    format: '88.0',
     description: '§6My custom textures',
     files: new Map()
   };
@@ -62,7 +62,7 @@
     }
     var filesArr = [];
     project.files.forEach(function (entry, path) {
-      filesArr.push({ path: path, name: entry.name, data: canvasToDataURL(entry.canvas) });
+      filesArr.push({ path: path, name: entry.name, data: canvasToDataURL(entry.canvas), animation: entry.animation || null });
     });
     return {
       version: SAVE_VERSION,
@@ -93,7 +93,7 @@
   function applyProject(obj) {
     if (!obj || !obj.files) throw new Error('Invalid project');
     project.name = obj.name || 'My Texture Pack';
-    project.format = obj.format || 34;
+    project.format = String(obj.format || '88.0');
     project.description = obj.description || '';
     project.files = new Map();
     $('tpc-name').value = project.name;
@@ -101,7 +101,7 @@
     $('tpc-desc').value = project.description;
     var tasks = obj.files.map(function (f) {
       return dataUrlToCanvas(f.data).then(function (c) {
-        project.files.set(f.path, { canvas: c, name: f.name || f.path.split('/').pop() });
+        project.files.set(f.path, { canvas: c, name: f.name || f.path.split('/').pop(), animation: f.animation || null });
       });
     });
     return Promise.all(tasks);
@@ -210,6 +210,9 @@
   function sanitizeName(s) {
     return (s || 'pack').toLowerCase().replace(/[^a-z0-9_-]+/g, '_').replace(/^_+|_+$/g, '') || 'pack';
   }
+  function escHtml(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
 
   /* ---------- Vanilla reference textures (fetched from a public CDN, never
    * hosted on this site). Source: InventivetalentDev/minecraft-assets on the
@@ -218,19 +221,15 @@
   var VANILLA_BASE = 'https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/';
   // Map pack_format -> asset version tag used by the CDN repo.
   function formatToVersion(fmt) {
-    fmt = parseInt(fmt, 10);
-    if (fmt >= 48) return '1.21.5';
-    if (fmt >= 42) return '1.21.4';
+    fmt = parseFloat(fmt);
+    if (fmt >= 88) return '1.21.5'; // CDN fallback: newest tag currently available there.
+    if (fmt >= 55) return '1.21.5';
+    if (fmt >= 46) return '1.21.4';
     if (fmt >= 34) return '1.21';
     if (fmt >= 32) return '1.20.6';
-    if (fmt >= 26) return '1.20.4';
     if (fmt >= 22) return '1.20.2';
-    if (fmt >= 18) return '1.19.4';
     if (fmt >= 15) return '1.19.3';
-    if (fmt >= 13) return '1.19.2';
     if (fmt >= 9) return '1.18.2';
-    if (fmt >= 8) return '1.18.1';
-    if (fmt >= 7) return '1.17.1';
     return '1.16.5';
   }
   function vanillaUrl(slot) {
@@ -629,7 +628,36 @@
     fitZoom();
     requestAnimationFrame(fitZoom);
     showVanillaPreview(path);
+    updateAnimationControls();
     undoStack = []; redoStack = [];
+  }
+
+  function updateAnimationControls() {
+    var entry = selectedSlot && project.files.get(selectedSlot);
+    var animation = entry && entry.animation;
+    $('tpc-animate').checked = !!animation;
+    $('tpc-frametime').value = animation && animation.frametime ? animation.frametime : 2;
+    $('tpc-interpolate').checked = !!(animation && animation.interpolate);
+    $('tpc-frames').value = animation && Array.isArray(animation.frames) ? animation.frames.join(',') : '';
+  }
+
+  function persistAnimationSettings() {
+    if (!selectedSlot) return;
+    if (!project.files.has(selectedSlot)) {
+      project.files.set(selectedSlot, { canvas: cloneCanvas(canvas), name: selectedSlot.split('/').pop(), animation: null });
+    }
+    var entry = project.files.get(selectedSlot);
+    if (!$('tpc-animate').checked) entry.animation = null;
+    else {
+      var raw = $('tpc-frames').value.trim();
+      var frames = raw ? raw.split(',').map(function (x) { return parseInt(x.trim(), 10); }).filter(function (x) { return Number.isInteger(x) && x >= 0; }) : null;
+      entry.animation = {
+        frametime: Math.max(1, parseInt($('tpc-frametime').value, 10) || 1),
+        interpolate: $('tpc-interpolate').checked,
+        frames: frames && frames.length ? frames : null
+      };
+    }
+    renderFileList(); renderPreview(); renderMeta();
   }
 
   // Show a live vanilla reference thumbnail for the selected slot (from CDN).
@@ -860,15 +888,40 @@
 
   /* ---------- pack.mcmeta ---------- */
   function buildMeta() {
-    return {
-      pack: {
-        pack_format: parseInt($('tpc-format').value, 10),
-        description: $('tpc-desc').value
-      }
-    };
+    if (window.MinecraftPack) return MinecraftPack.buildPackMeta('resource', $('tpc-format').value, $('tpc-desc').value);
+    return { pack: { pack_format: parseInt($('tpc-format').value, 10), description: $('tpc-desc').value } };
+  }
+  function validatePack() {
+    var out = [];
+    function add(level, message) { out.push({ level: level, message: message }); }
+    if (!String($('tpc-name').value || '').trim()) add('error', 'Pack name is required.');
+    if (!project.files.size) add('error', 'Add at least one texture.');
+    project.files.forEach(function (entry, path) {
+      try { if (window.MinecraftPack) MinecraftPack.safePath(path); } catch (e) { add('error', path + ': unsafe path.'); }
+      if (!/^assets\/[a-z0-9._-]+\/textures\/.+\.png$/.test(path)) add('warning', path + ': texture paths should be lowercase assets/<namespace>/textures/*.png.');
+      var w = entry.canvas.width, h = entry.canvas.height;
+      if (!w || !h) add('error', path + ': texture has no dimensions.');
+      if ((w & (w - 1)) !== 0) add('warning', path + ': width ' + w + ' is not a power of two.');
+      if (entry.animation) {
+        if (h % w !== 0) add('error', path + ': animated strips must be vertical and height must divide evenly by width.');
+        var frameCount = w ? h / w : 0;
+        if (entry.animation.frames && entry.animation.frames.some(function (frame) { return frame >= frameCount; })) add('error', path + ': animation frame index exceeds the ' + frameCount + ' available frames.');
+      } else if (h !== w) add('warning', path + ': non-square texture; enable animation if this is a vertical frame strip.');
+      if (w > 1024 || h > 16384) add('warning', path + ': very large texture may consume substantial memory in-game.');
+    });
+    if (!out.some(function (item) { return item.level === 'error'; })) add('success', 'Resource pack structure is ready to export.');
+    return out;
+  }
+  function renderDiagnostics() {
+    var root = $('tpc-diagnostics');
+    if (!root) return;
+    root.innerHTML = '<ul class="tpc-diagnostic-list">' + validatePack().map(function (item) {
+      return '<li class="' + item.level + '"><span>' + (item.level === 'error' ? '✕' : item.level === 'warning' ? '!' : '✓') + '</span>' + escHtml(item.message) + '</li>';
+    }).join('') + '</ul>';
   }
   function renderMeta() {
     $('tpc-meta-preview').textContent = JSON.stringify(buildMeta(), null, 2);
+    renderDiagnostics();
   }
   function renderIconOptions() {
     var sel = $('tpc-icon');
@@ -908,7 +961,8 @@
   }
 
   async function exportZip() {
-    if (project.files.size === 0) { showMsg('Add at least one texture before exporting.', false); return; }
+    var errors = validatePack().filter(function (item) { return item.level === 'error'; });
+    if (errors.length) { showMsg('Fix ' + errors.length + ' validation error' + (errors.length === 1 ? '' : 's') + ' before exporting.', false); return; }
     try {
       var files = [];
       // pack.mcmeta
@@ -932,6 +986,13 @@
       for (var i = 0; i < entries.length; i++) {
         var bytes = await canvasToPngBytes(entries[i][1].canvas);
         files.push({ name: entries[i][0], data: bytes });
+        var animation = entries[i][1].animation;
+        if (animation) {
+          var anim = { animation: { frametime: animation.frametime || 1 } };
+          if (animation.interpolate) anim.animation.interpolate = true;
+          if (animation.frames && animation.frames.length) anim.animation.frames = animation.frames;
+          files.push({ name: entries[i][0] + '.mcmeta', data: MinecraftPack.textBytes(JSON.stringify(anim, null, 2)) });
+        }
       }
       var zip = TpcZip.createZip(files);
       var url = URL.createObjectURL(zip);
@@ -1024,6 +1085,74 @@
     }
     if (added) { renderFileList(); renderPreview(); renderMeta(); renderIconOptions(); refreshTreeFlags();
       showMsg('Imported ' + added + ' file(s).', true); }
+  }
+
+
+  async function bytesToCanvas(bytes) {
+    var url = URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
+    try { return await dataUrlToCanvas(url); }
+    finally { URL.revokeObjectURL(url); }
+  }
+
+  async function importResourcePack(file) {
+    if (!file || !window.MinecraftPack) return;
+    try {
+      var entries = await MinecraftPack.readZip(file);
+      var metaEntry = entries.find(function (entry) { return entry.name === 'pack.mcmeta'; });
+      if (metaEntry) {
+        var meta = JSON.parse(MinecraftPack.bytesText(metaEntry.data));
+        if (meta.pack) {
+          $('tpc-desc').value = typeof meta.pack.description === 'string' ? meta.pack.description : JSON.stringify(meta.pack.description || '');
+          var fmt = meta.pack.max_format || meta.pack.min_format || meta.pack.pack_format;
+          if (Array.isArray(fmt)) fmt = fmt[0] + '.' + (fmt[1] || 0);
+          if (fmt != null) {
+            var option = Array.from($('tpc-format').options).find(function (o) { return parseFloat(o.value) === parseFloat(fmt); });
+            if (option) $('tpc-format').value = option.value;
+          }
+        }
+      }
+      var animations = {};
+      entries.forEach(function (entry) {
+        if (/\.png\.mcmeta$/.test(entry.name)) {
+          try { animations[entry.name.replace(/\.mcmeta$/, '')] = JSON.parse(MinecraftPack.bytesText(entry.data)).animation || null; } catch (e) {}
+        }
+      });
+      var added = 0;
+      for (var i = 0; i < entries.length; i++) {
+        var entry = entries[i];
+        if (!/^assets\/[a-z0-9._-]+\/textures\/.+\.png$/i.test(entry.name)) continue;
+        var c = await bytesToCanvas(entry.data);
+        var anim = animations[entry.name];
+        project.files.set(entry.name, { canvas: c, name: entry.name.split('/').pop(), animation: anim ? { frametime: anim.frametime || 1, interpolate: !!anim.interpolate, frames: Array.isArray(anim.frames) ? anim.frames.map(function (f) { return typeof f === 'number' ? f : f.index; }).filter(Number.isInteger) : null } : null });
+        added++;
+      }
+      renderFileList(); renderPreview(); renderMeta(); renderIconOptions(); refreshTreeFlags();
+      showMsg('Imported ' + added + ' textures from ' + file.name + '.', true);
+    } catch (e) { showMsg('Resource-pack import failed: ' + e.message, false); }
+  }
+
+  function transformCanvas(kind) {
+    if (!selectedSlot) return showMsg('Select a texture first.', false);
+    pushUndo();
+    var src = cloneCanvas(canvas);
+    var next = document.createElement('canvas');
+    var nctx = next.getContext('2d');
+    nctx.imageSmoothingEnabled = false;
+    if (kind === 'rotate') {
+      next.width = src.height; next.height = src.width;
+      nctx.translate(next.width, 0); nctx.rotate(Math.PI / 2); nctx.drawImage(src, 0, 0);
+    } else {
+      next.width = src.width; next.height = src.height;
+      if (kind === 'flip-h') { nctx.translate(next.width, 0); nctx.scale(-1, 1); }
+      else { nctx.translate(0, next.height); nctx.scale(1, -1); }
+      nctx.drawImage(src, 0, 0);
+    }
+    copyCanvas(next, canvas); renderCanvas(); afterEdit(); updateAnimationControls();
+  }
+
+  function exportValidationReport() {
+    var report = { generatedAt: new Date().toISOString(), pack: buildMeta(), textureCount: project.files.size, diagnostics: validatePack() };
+    MinecraftPack.downloadBlob(new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' }), sanitizeName($('tpc-name').value) + '-validation.json');
   }
 
   /* ---------- Wire up UI ---------- */
@@ -1163,6 +1292,8 @@
     });
 
     // Folder import
+    $('tpc-import-pack').addEventListener('click', function () { $('tpc-pack-file').click(); });
+    $('tpc-pack-file').addEventListener('change', function () { importResourcePack(this.files[0]); this.value = ''; });
     $('tpc-import-folder').addEventListener('click', function () { $('tpc-folder').click(); });
     $('tpc-folder').addEventListener('change', function () { importFolder(this.files); this.value = ''; });
 
@@ -1179,9 +1310,17 @@
       showMsg('Created blank ' + path.split('/').pop() + '.', true);
     });
 
+    $('tpc-flip-h').addEventListener('click', function () { transformCanvas('flip-h'); });
+    $('tpc-flip-v').addEventListener('click', function () { transformCanvas('flip-v'); });
+    $('tpc-rotate').addEventListener('click', function () { transformCanvas('rotate'); });
+    ['tpc-animate', 'tpc-frametime', 'tpc-interpolate', 'tpc-frames'].forEach(function (id) {
+      $(id).addEventListener(id === 'tpc-frametime' || id === 'tpc-frames' ? 'input' : 'change', persistAnimationSettings);
+    });
+
     // Metadata inputs
     $('tpc-name').addEventListener('input', function () { project.name = this.value; });
     $('tpc-format').addEventListener('change', function () {
+      project.format = this.value;
       renderMeta();
       if (selectedSlot) showVanillaPreview(selectedSlot);
     });
@@ -1211,6 +1350,7 @@
     // Export
     $('tpc-export-zip').addEventListener('click', exportZip);
     $('tpc-export-meta').addEventListener('click', exportMetaOnly);
+    $('tpc-export-report').addEventListener('click', exportValidationReport);
 
     // Save / load / import / delete
     $('tpc-save').addEventListener('click', saveProject);
@@ -1275,12 +1415,12 @@
   function init() {
     if (inited) return;
     inited = true;
-    if (!canvas || typeof TpcZip === 'undefined') {
-      console.error('TPC init failed: missing canvas or TpcZip.');
+    if (!canvas || typeof TpcZip === 'undefined' || typeof MinecraftPack === 'undefined') {
+      console.error('TPC init failed: missing canvas, TpcZip, or MinecraftPack.');
       return;
     }
     project.name = $('tpc-name').value;
-    project.format = parseInt($('tpc-format').value, 10);
+    project.format = $('tpc-format').value;
     project.description = $('tpc-desc').value;
     // Wire up ALL UI listeners FIRST so tabs/tools work even if a later
     // step (tree fetch, auto-select, fit) fails or races layout.
@@ -1310,6 +1450,8 @@
       window.addEventListener('load', function () { fitZoom(); setTimeout(fitZoom, 200); });
     }
   }
+
+  window.ToolsvaultTexturePack = { getState: function () { return project; }, buildMeta: buildMeta, validate: validatePack, applyProject: applyProject };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

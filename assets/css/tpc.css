@@ -181,3 +181,8 @@
 .tpc-info-pop{position:absolute;top:calc(100% + .4rem);left:0;z-index:20;width:min(280px,72vw);padding:.55rem .7rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-elev);color:var(--text);font-size:.8rem;line-height:1.35;box-shadow:0 6px 18px rgba(0,0,0,.3);cursor:default}
 .tpc-info-pop[hidden]{display:none}
 .tpc-info-pop::before{content:"";position:absolute;top:-5px;left:8px;width:9px;height:9px;background:var(--bg-elev);border-left:1px solid var(--border);border-top:1px solid var(--border);transform:rotate(45deg)}
+
+/* Expanded pack workflow */
+.tpc-animation-card{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;margin:.8rem 0;padding:.75rem;border:1px solid var(--border);border-radius:10px;background:var(--bg-elev)}
+.tpc-animation-card>div{display:flex;flex-direction:column;gap:.15rem;margin-right:auto}.tpc-animation-card>div span{font-size:.78rem;color:var(--text-dim)}.tpc-animation-card input[type=number]{width:76px}.tpc-animation-card input[type=text]{width:150px}.tpc-animation-card input[type=checkbox]{width:auto}
+.tpc-diagnostic-list{list-style:none;padding:0;margin:0 0 1rem;display:flex;flex-direction:column;gap:.45rem}.tpc-diagnostic-list li{display:flex;gap:.5rem;align-items:flex-start;padding:.48rem .58rem;border-radius:7px;background:var(--bg);font-size:.84rem}.tpc-diagnostic-list li span{display:grid;place-items:center;flex:0 0 20px;height:20px;border-radius:50%;font-weight:700}.tpc-diagnostic-list .error{color:var(--danger)}.tpc-diagnostic-list .warning{color:#d9a521}.tpc-diagnostic-list .success{color:#45b86b}

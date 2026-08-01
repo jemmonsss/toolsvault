@@ -35,21 +35,21 @@ icon: "&#127959;"
       <input type="text" id="tpc-name" value="My Texture Pack" maxlength="48">
     </div>
     <div class="tpc-field">
-      <label for="tpc-format">pack_format</label>
+      <label for="tpc-format">Minecraft / resource format</label>
       <select id="tpc-format">
-        <option value="48">48 — 1.21.5+</option>
-        <option value="42">42 — 1.21.2–1.21.4</option>
-        <option value="34" selected>34 — 1.21</option>
-        <option value="32">32 — 1.20.5–1.20.6</option>
-        <option value="26">26 — 1.20.4</option>
-        <option value="22">22 — 1.20.2–1.20.3</option>
-        <option value="18">18 — 1.19.4</option>
-        <option value="15">15 — 1.19.3</option>
-        <option value="13">13 — 1.19.1–1.19.2</option>
-        <option value="9">9 — 1.18.2</option>
-        <option value="8">8 — 1.18–1.18.1</option>
-        <option value="7">7 — 1.17–1.17.1</option>
-        <option value="6">6 — 1.16.2–1.16.5</option>
+        <option value="88.0" selected>88.0 — Java 26.2</option>
+        <option value="84.0">84.0 — Java 26.1</option>
+        <option value="75.0">75.0 — Java 1.21.11</option>
+        <option value="69.0">69.0 — Java 1.21.9</option>
+        <option value="63.0">63.0 — Java 1.21.6</option>
+        <option value="55.0">55.0 — Java 1.21.5</option>
+        <option value="46.0">46.0 — Java 1.21.4</option>
+        <option value="34.0">34.0 — Java 1.21</option>
+        <option value="32.0">32.0 — Java 1.20.5–1.20.6</option>
+        <option value="22.0">22.0 — Java 1.20.2–1.20.3</option>
+        <option value="15.0">15.0 — Java 1.19.3</option>
+        <option value="9.0">9.0 — Java 1.18.2</option>
+        <option value="6.0">6.0 — Java 1.16.2–1.16.5</option>
       </select>
     </div>
     <div class="tpc-field tpc-field-grow">
@@ -110,6 +110,9 @@ icon: "&#127959;"
 <label class="tpc-inline"><input type="checkbox" id="tpc-smooth" checked> Smooth</label>
             <button class="btn btn-secondary tpc-sm" id="tpc-undo" title="Undo (Ctrl+Z)">{%- include tpc/undo.svg -%}</button>
             <button class="btn btn-secondary tpc-sm" id="tpc-redo" title="Redo (Ctrl+Y)">{%- include tpc/redo.svg -%}</button>
+            <button class="btn btn-secondary tpc-sm" id="tpc-flip-h" type="button">Flip H</button>
+            <button class="btn btn-secondary tpc-sm" id="tpc-flip-v" type="button">Flip V</button>
+            <button class="btn btn-secondary tpc-sm" id="tpc-rotate" type="button">Rotate 90°</button>
             <button class="btn btn-secondary tpc-sm" id="tpc-clear">Clear</button>
           </div>
         </div>
@@ -135,6 +138,14 @@ icon: "&#127959;"
           </div>
         </div>
 
+        <div class="tpc-animation-card">
+          <div><strong>Animated texture</strong><span>Export a matching <code>.png.mcmeta</code> for vertical frame strips.</span></div>
+          <label class="tpc-inline"><input type="checkbox" id="tpc-animate"> Enable</label>
+          <label class="tpc-inline">Frame time <input type="number" id="tpc-frametime" min="1" max="1200" value="2"></label>
+          <label class="tpc-inline"><input type="checkbox" id="tpc-interpolate"> Interpolate</label>
+          <label class="tpc-inline">Frames <input type="text" id="tpc-frames" placeholder="Auto, or 0,1,2,1"></label>
+        </div>
+
         <div class="tpc-dropzone" id="tpc-drop">
           <p>Drop a <strong>.png</strong> here, or
             <button class="btn btn-secondary tpc-sm" id="tpc-upload-btn">Upload to selected slot</button>
@@ -149,6 +160,8 @@ icon: "&#127959;"
   <!-- FILES -->
   <section class="panel" id="tab-files">
     <div class="tpc-filebar">
+      <button class="btn btn-secondary" id="tpc-import-pack">Import resource-pack ZIP…</button>
+      <input type="file" id="tpc-pack-file" accept=".zip,application/zip" hidden>
       <button class="btn btn-secondary" id="tpc-import-folder">Import folder…</button>
       <input type="file" id="tpc-folder" webkitdirectory directory multiple hidden>
       <button class="btn btn-secondary" id="tpc-new-blank">+ New blank texture</button>
@@ -179,8 +192,11 @@ icon: "&#127959;"
         </div>
         <button class="btn btn-primary" id="tpc-export-zip">{%- include tpc/download.svg -%} Download .zip</button>
         <button class="btn btn-secondary" id="tpc-export-meta">Download pack.mcmeta only</button>
+        <button class="btn btn-secondary" id="tpc-export-report">Download validation report</button>
       </div>
       <div class="tpc-export-col">
+        <h3>Pack diagnostics</h3>
+        <div id="tpc-diagnostics"></div>
         <h3>pack.mcmeta preview</h3>
         <pre class="tpc-json" id="tpc-meta-preview"></pre>
       </div>
@@ -188,5 +204,5 @@ icon: "&#127959;"
   </section>
 </div>
 <script src="{{ '/assets/js/zip-writer.js' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M' }}" defer></script>
-
+<script src="{{ '/assets/js/minecraft-pack-utils.js' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M' }}" defer></script>
 <script src="{{ '/assets/js/tpc.js' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M' }}" defer></script>

@@ -9,92 +9,92 @@
   /* ---------- Templates ---------- */
   var TEMPLATES = {
     functions: {
-      ext: '.mcfunction',
-      content: '# Datapack function\nsay Hello from <namespace>!\n'
+      ext: ".mcfunction",
+      content: "# Datapack function\nsay Hello from <namespace>!\n"
     },
     advancements: {
-      ext: '.json',
-      content: '{\n  "display": {\n    "title": "Example Advancement",\n    "description": "First advancement",\n    "icon": "minecraft:stone",\n    "background": "minecraft:textures/block/stone.png",\n    "frame": "task",\n    "announce_to_chat": true,\n    "show_toast": true\n  },\n  "criteria": {\n    "example": {\n      "trigger": "minecraft:impossible"\n    }\n  }\n}\n'
+      ext: ".json",
+      content: "{\n  \"display\": {\n    \"title\": {\n      \"text\": \"Example Advancement\"\n    },\n    \"description\": {\n      \"text\": \"First advancement\"\n    },\n    \"icon\": {\n      \"id\": \"minecraft:stone\"\n    },\n    \"frame\": \"task\",\n    \"announce_to_chat\": true,\n    \"show_toast\": true,\n    \"hidden\": false\n  },\n  \"criteria\": {\n    \"example\": {\n      \"trigger\": \"minecraft:impossible\"\n    }\n  }\n}\n"
     },
     recipes: {
-      ext: '.json',
-      content: '{\n  "type": "minecraft:crafting_shaped",\n  "pattern": ["#  ", " # ", "  #"],\n  "key": {\n    "#": { "item": "minecraft:diamond" }\n  },\n  "result": {\n    "item": "minecraft:diamond_sword",\n    "count": 1\n  }\n}\n'
+      ext: ".json",
+      content: "{\n  \"type\": \"minecraft:crafting_shaped\",\n  \"pattern\": [\n    \"#  \",\n    \" # \",\n    \"  #\"\n  ],\n  \"key\": {\n    \"#\": \"minecraft:diamond\"\n  },\n  \"result\": {\n    \"id\": \"minecraft:diamond_sword\",\n    \"count\": 1\n  }\n}\n"
     },
     loot_tables: {
-      ext: '.json',
-      content: '{\n  "pools": [\n    {\n      "rolls": 1,\n      "entries": [\n        {\n          "type": "minecraft:item",\n          "name": "minecraft:stone"\n        }\n      ]\n    }\n  ]\n}\n'
+      ext: ".json",
+      content: "{\n  \"pools\": [\n    {\n      \"rolls\": 1,\n      \"entries\": [\n        {\n          \"type\": \"minecraft:item\",\n          \"name\": \"minecraft:stone\"\n        }\n      ]\n    }\n  ]\n}\n"
     },
     tags: {
-      ext: '.json',
-      content: '{\n  "values": []\n}\n'
+      ext: ".json",
+      content: "{\n  \"replace\": false,\n  \"values\": []\n}\n"
     },
     predicates: {
-      ext: '.json',
-      content: '{\n  "condition": "minecraft:entity_properties",\n  "entity": "this",\n  "predicate": {\n    "location": {\n      "biome": "minecraft:plains"\n    }\n  }\n}\n'
+      ext: ".json",
+      content: "{\n  \"condition\": \"minecraft:entity_properties\",\n  \"entity\": \"this\",\n  \"predicate\": {\n    \"location\": {\n      \"biomes\": \"minecraft:plains\"\n    }\n  }\n}\n"
     },
     item_modifiers: {
-      ext: '.json',
-      content: '{\n  "function": "minecraft:set_count",\n  "count": {\n    "type": "minecraft:uniform",\n    "min": 1,\n    "max": 3\n  }\n}\n'
+      ext: ".json",
+      content: "{\n  \"function\": \"minecraft:set_count\",\n  \"count\": {\n    \"type\": \"minecraft:uniform\",\n    \"min\": 1,\n    \"max\": 3\n  }\n}\n"
     },
     dimension: {
-      ext: '.json',
-      content: '{\n  // Dimension JSON — generate with a data pack generator or copy from an existing dimension\n}\n'
+      ext: ".json",
+      content: "{\n  \"type\": \"minecraft:overworld\",\n  \"generator\": {\n    \"type\": \"minecraft:noise\",\n    \"settings\": \"minecraft:overworld\",\n    \"biome_source\": {\n      \"type\": \"minecraft:multi_noise\",\n      \"preset\": \"minecraft:overworld\"\n    }\n  }\n}\n"
     },
     dimension_type: {
-      ext: '.json',
-      content: '{\n  // Dimension type JSON — see Minecraft Wiki for schema\n}\n'
+      ext: ".json",
+      content: "{\n  \"ultrawarm\": false,\n  \"natural\": true,\n  \"coordinate_scale\": 1.0,\n  \"bed_works\": true,\n  \"respawn_anchor_works\": false,\n  \"min_y\": -64,\n  \"height\": 384,\n  \"logical_height\": 384,\n  \"infiniburn\": \"#minecraft:infiniburn_overworld\",\n  \"effects\": \"minecraft:overworld\",\n  \"ambient_light\": 0.0,\n  \"piglin_safe\": false,\n  \"has_raids\": true,\n  \"monster_spawn_light_level\": {\n    \"type\": \"minecraft:uniform\",\n    \"value\": {\n      \"min_inclusive\": 0,\n      \"max_inclusive\": 7\n    }\n  },\n  \"monster_spawn_block_light_limit\": 0\n}\n"
     },
     worldgen: {
-      ext: '.json',
-      content: '{\n  // Worldgen JSON — see Minecraft Wiki for configured_feature / placed_feature schema\n}\n'
+      ext: ".json",
+      content: "{\n  \"type\": \"minecraft:simple_block\",\n  \"config\": {\n    \"to_place\": {\n      \"type\": \"minecraft:simple_state_provider\",\n      \"state\": {\n        \"Name\": \"minecraft:stone\"\n      }\n    }\n  }\n}\n"
     },
     structures: {
-      ext: '.nbt',
-      content: '# Binary .nbt structures are not editable as text.\n# Paste raw NBT here if your tool supports it, or leave empty.\n'
+      ext: ".nbt",
+      content: "# Binary .nbt structures are not editable as text.\n# Import an existing structure file or leave this file empty.\n"
     },
     smithing_trim: {
-      ext: '.json',
-      content: '{\n  "type": "minecraft:smithing_trim",\n  "template": "minecraft:template_sentry",\n  "base": "minecraft:netherite_chestplate",\n  "trim": "minecraft:quartz"\n}\n'
+      ext: ".json",
+      content: "{\n  \"type\": \"minecraft:smithing_trim\",\n  \"template\": \"minecraft:sentry_armor_trim_smithing_template\",\n  \"base\": \"#minecraft:trimmable_armor\",\n  \"addition\": \"#minecraft:trim_materials\",\n  \"pattern\": \"minecraft:sentry\"\n}\n"
     },
     smithing_transform: {
-      ext: '.json',
-      content: '{\n  "type": "minecraft:smithing_transform",\n  "template": "minecraft:template_sentry",\n  "base": "minecraft:netherite_sword",\n  "addition": "minecraft:netherite_ingot"\n}\n'
+      ext: ".json",
+      content: "{\n  \"type\": \"minecraft:smithing_transform\",\n  \"template\": \"minecraft:netherite_upgrade_smithing_template\",\n  \"base\": \"minecraft:diamond_sword\",\n  \"addition\": \"minecraft:netherite_ingot\",\n  \"result\": {\n    \"id\": \"minecraft:netherite_sword\"\n  }\n}\n"
     },
     chat_type: {
-      ext: '.json',
-      content: '{\n  "chat_type": {\n    "display_name": { "translate": "chat.type.text" },\n    "parameters": ["text", "selector"]\n  }\n}\n'
+      ext: ".json",
+      content: "{\n  \"chat\": {\n    \"translation_key\": \"chat.type.text\",\n    \"parameters\": [\n      \"sender\",\n      \"content\"\n    ]\n  },\n  \"narration\": {\n    \"translation_key\": \"chat.type.text.narrate\",\n    \"parameters\": [\n      \"sender\",\n      \"content\"\n    ]\n  }\n}\n"
     },
     jukebox_song: {
-      ext: '.json',
-      content: '{\n  "jukebox_song": {\n    "comparator_output": 6,\n    "length_in_seconds": 180,\n    "sound_event": "minecraft:record.pigstep"\n  }\n}\n'
+      ext: ".json",
+      content: "{\n  \"sound_event\": \"minecraft:music_disc.pigstep\",\n  \"description\": {\n    \"text\": \"Custom Song\"\n  },\n  \"length_in_seconds\": 148.0,\n  \"comparator_output\": 13\n}\n"
     },
     trim_pattern: {
-      ext: '.json',
-      content: '{\n  "trim_pattern": {\n    "description": { "translate": "trim_pattern.minecraft.spire" },\n    "template_item": "minecraft:template_sentry"\n  }\n}\n'
+      ext: ".json",
+      content: "{\n  \"asset_id\": \"minecraft:sentry\",\n  \"description\": {\n    \"translate\": \"trim_pattern.minecraft.sentry\"\n  }\n}\n"
     },
     trim_material: {
-      ext: '.json',
-      content: '{\n  "trim_material": {\n    "description": { "translate": "trim_material.minecraft.quartz" },\n    "ingredient": "minecraft:quartz",\n    "item_model_index": 0.5\n  }\n}\n'
+      ext: ".json",
+      content: "{\n  \"asset_name\": \"quartz\",\n  \"description\": {\n    \"translate\": \"trim_material.minecraft.quartz\"\n  },\n  \"ingredient\": \"minecraft:quartz\"\n}\n"
     },
     damage_type: {
-      ext: '.json',
-      content: '{\n  "damage_type": {\n    "exhaustion": 0.1,\n    "message_id": "my_damage",\n    "scaling": "never",\n    "effects": "hurt",\n    "death_message_type": "default"\n  }\n}\n'
+      ext: ".json",
+      content: "{\n  \"exhaustion\": 0.1,\n  \"message_id\": \"my_damage\",\n  \"scaling\": \"never\",\n  \"effects\": \"hurt\",\n  \"death_message_type\": \"default\"\n}\n"
     },
     painting_variant: {
-      ext: '.json',
-      content: '{\n  "painting_variant": {\n    "asset_id": "minecraft:backyard",\n    "height": 1,\n    "width": 2\n  }\n}\n'
+      ext: ".json",
+      content: "{\n  \"asset_id\": \"minecraft:backyard\",\n  \"height\": 1,\n  \"width\": 2,\n  \"title\": {\n    \"text\": \"Custom Painting\"\n  },\n  \"author\": {\n    \"text\": \"Toolsvault\"\n  }\n}\n"
     },
     wolf_variant: {
-      ext: '.json',
-      content: '{\n  "wolf_variant": {\n    "asset_name": "pale",\n    "tame_texture": "minecraft:entity/wolf/tame/pale",\n    "wild_texture": "minecraft:entity/wolf/wild/pale"\n  }\n}\n'
+      ext: ".json",
+      content: "{\n  \"assets\": {\n    \"wild\": \"minecraft:entity/wolf/wolf\",\n    \"tame\": \"minecraft:entity/wolf/wolf_tame\",\n    \"angry\": \"minecraft:entity/wolf/wolf_angry\"\n  },\n  \"spawn_conditions\": []\n}\n"
     },
     instrument: {
-      ext: '.json',
-      content: '{\n  "instrument": {\n    "sound_event": "minecraft:block.note_block.pling",\n    "use_duration": 0.5,\n    "range": 16.0\n  }\n}\n'
+      ext: ".json",
+      content: "{\n  \"sound_event\": \"minecraft:item.goat_horn.sound.0\",\n  \"use_duration\": 7.0,\n  \"range\": 256.0,\n  \"description\": {\n    \"translate\": \"instrument.minecraft.ponder_goat_horn\"\n  }\n}\n"
     },
     file: {
-      ext: '',
-      content: ''
+      ext: "",
+      content: ""
     }
   };
 
@@ -324,9 +324,9 @@
   /* ---------- State ---------- */
   var project = {
     name: 'My Datapack',
-    format: 61,
+    format: '107.1',
     description: 'My custom datapack',
-    namespace: 'minecraft',
+    namespace: 'mypack',
     files: new Map()
   };
   var selectedPath = null;
@@ -375,9 +375,9 @@
   function applyProject(obj) {
     if (!obj || !obj.files) throw new Error('Invalid project');
     project.name = obj.name || 'My Datapack';
-    project.format = obj.format || 61;
+    project.format = String(obj.format || '107.1');
     project.description = obj.description || '';
-    project.namespace = obj.namespace || 'minecraft';
+    project.namespace = obj.namespace || 'mypack';
     project.files = new Map();
     $('tpd-name').value = project.name;
     $('tpd-format').value = String(project.format);
@@ -400,7 +400,7 @@
         } else {
           entry.content = f.content || '';
         }
-        project.files.set(f.path, entry);
+        if (f.path !== 'pack.mcmeta') project.files.set(f.path, entry);
       });
     });
     return Promise.all(tasks.map(function (t) { try { t(); } catch (e) {} return Promise.resolve(); }));
@@ -499,16 +499,16 @@
 
   /* ---------- Helpers ---------- */
   function guessType(path) {
-    if (/\.mcfunction$/.test(path)) return 'functions';
-    if (/\/advancements\//.test(path)) return 'advancements';
-    if (/\/recipes\//.test(path)) return 'recipes';
-    if (/\/loot_tables\//.test(path)) return 'loot_tables';
+    if (/\.mcfunction$/i.test(path)) return 'functions';
+    if (/\/(advancement|advancements)\//.test(path)) return 'advancements';
+    if (/\/(recipe|recipes)\//.test(path)) return 'recipes';
+    if (/\/(loot_table|loot_tables)\//.test(path)) return 'loot_tables';
     if (/\/tags\//.test(path)) return 'tags';
-    if (/\/predicates\//.test(path)) return 'predicates';
-    if (/\/item_modifiers\//.test(path)) return 'item_modifiers';
+    if (/\/(predicate|predicates)\//.test(path)) return 'predicates';
+    if (/\/(item_modifier|item_modifiers)\//.test(path)) return 'item_modifiers';
     if (/\/dimension(_type)?\//.test(path)) return /\/dimension_type\//.test(path) ? 'dimension_type' : 'dimension';
     if (/\/worldgen\//.test(path)) return 'worldgen';
-    if (/\/structures\//.test(path)) return 'structures';
+    if (/\/(structure|structures)\//.test(path)) return 'structures';
     if (/\/smithing_trim\//.test(path)) return 'smithing_trim';
     if (/\/smithing_transform\//.test(path)) return 'smithing_transform';
     if (/\/chat_type\//.test(path)) return 'chat_type';
@@ -522,12 +522,42 @@
     return 'file';
   }
 
+  function isModernLayout() { return parseFloat($('tpd-format').value || project.format || 0) >= 48; }
+
+  function folderForType(typeKey) {
+    if (!isModernLayout()) return typeKey;
+    var folders = {
+      functions: 'function', advancements: 'advancement', recipes: 'recipe',
+      loot_tables: 'loot_table', tags: 'tags/function', predicates: 'predicate',
+      item_modifiers: 'item_modifier', structures: 'structure',
+      smithing_trim: 'recipe', smithing_transform: 'recipe', worldgen: 'worldgen/configured_feature'
+    };
+    return folders[typeKey] || typeKey;
+  }
+
+  function modernizePath(path) {
+    if (!isModernLayout()) return path;
+    var replacements = [
+      ['/functions/', '/function/'], ['/advancements/', '/advancement/'],
+      ['/recipes/', '/recipe/'], ['/loot_tables/', '/loot_table/'],
+      ['/predicates/', '/predicate/'], ['/item_modifiers/', '/item_modifier/'],
+      ['/structures/', '/structure/'], ['/tags/functions/', '/tags/function/'],
+      ['/tags/items/', '/tags/item/'], ['/tags/blocks/', '/tags/block/'],
+      ['/tags/entity_types/', '/tags/entity_type/'], ['/tags/fluids/', '/tags/fluid/'],
+      ['/tags/game_events/', '/tags/game_event/']
+    ];
+    replacements.forEach(function (pair) { path = path.replace(pair[0], pair[1]); });
+    if (/^data\/[^/]+\/tags\/[^/]+\.json$/.test(path)) path = path.replace('/tags/', '/tags/function/');
+    return path;
+  }
+
+
   function sanitizeName(s) {
     return (s || 'pack').toLowerCase().replace(/[^a-z0-9_-]+/g, '_').replace(/^_+|_+$/g, '') || 'pack';
   }
 
   function sanitizeNamespace(ns) {
-    return (ns || 'minecraft').toLowerCase().replace(/[^a-z0-9_.-]+/g, '_').replace(/^_+|_+$/g, '') || 'minecraft';
+    return (ns || 'mypack').toLowerCase().replace(/[^a-z0-9_.-]+/g, '_').replace(/^_+|_+$/g, '') || 'mypack';
   }
 
   function fileNameFromPath(path) {
@@ -573,7 +603,7 @@
     menu.style.position = 'fixed';
     menu.style.top = (rect.bottom + 4) + 'px';
     menu.style.left = rect.left + 'px';
-    var ns = sanitizeNamespace($('tpd-namespace').value || 'minecraft');
+    var ns = sanitizeNamespace($('tpd-namespace').value || 'mypack');
     TYPE_GROUPS.forEach(function (g) {
       var groupLabel = document.createElement('div');
       groupLabel.className = 'tpd-new-group';
@@ -608,7 +638,7 @@
     if (!tmpl) return;
     var ext = tmpl.ext;
     var content = tmpl.content.replace(/<namespace>/g, ns);
-    var basePath = 'data/' + ns + '/' + typeKey;
+    var basePath = 'data/' + ns + '/' + folderForType(typeKey);
     var name = 'new_' + typeKey.slice(0, -1);
     var path = basePath + '/' + name + ext;
     var counter = 1;
@@ -651,6 +681,34 @@
     setTimeout(function () { document.addEventListener('click', close); }, 0);
   }
 
+  function modernizeTemplateContent(type, content) {
+    if (!isModernLayout() || !/\.json$/i.test(TEMPLATES[type] ? TEMPLATES[type].ext : '.json')) return content;
+    var data;
+    try { data = JSON.parse(content); } catch (e) { return content; }
+
+    if (type === 'advancements' && data.display && data.display.icon) {
+      if (typeof data.display.icon === 'string') data.display.icon = { id: data.display.icon };
+      if (data.display.icon.item && !data.display.icon.id) {
+        data.display.icon.id = data.display.icon.item;
+        delete data.display.icon.item;
+      }
+    }
+    if (type === 'recipes') {
+      if (data.result && data.result.item && !data.result.id) {
+        data.result.id = data.result.item;
+        delete data.result.item;
+      }
+      if (data.key) Object.keys(data.key).forEach(function (key) {
+        var ingredient = data.key[key];
+        if (ingredient && typeof ingredient === 'object' && ingredient.item && Object.keys(ingredient).length === 1) data.key[key] = ingredient.item;
+      });
+      if (data.ingredient && typeof data.ingredient === 'object' && data.ingredient.item && Object.keys(data.ingredient).length === 1) data.ingredient = data.ingredient.item;
+    }
+    var directRegistryTypes = ['chat_type', 'jukebox_song', 'trim_pattern', 'trim_material', 'damage_type', 'painting_variant', 'wolf_variant', 'instrument'];
+    if (directRegistryTypes.indexOf(type) !== -1 && data[type] && Object.keys(data).length === 1) data = data[type];
+    return JSON.stringify(data, null, 2) + '\n';
+  }
+
   function loadPackTemplate(key) {
     var tmpl = PACK_TEMPLATES[key];
     if (!tmpl) return;
@@ -662,8 +720,9 @@
     selectedPath = null;
     editor.value = '';
     tmpl.files.forEach(function (f) {
-      var path = f.path.replace('<namespace>', project.namespace);
-      project.files.set(path, { name: fileNameFromPath(path), type: f.type, content: f.content });
+      if (f.path === 'pack.mcmeta') return;
+      var path = modernizePath(f.path.replace('<namespace>', project.namespace));
+      project.files.set(path, { name: fileNameFromPath(path), type: f.type || guessType(path), content: modernizeTemplateContent(f.type || guessType(path), f.content) });
     });
     updateEditorHeader(); validateCurrent();
     buildTree(); renderFileList(); renderPreview(); renderMeta();
@@ -785,11 +844,10 @@
       var trimmed = line.trim();
       if (!trimmed) return;
       if (trimmed.startsWith('#')) return;
-      if (trimmed.startsWith('//')) return;
+      if (trimmed.startsWith('//')) issues.push('Line ' + (i + 1) + ': use # for comments; // is parsed as a command');
+      if (trimmed.startsWith('/')) issues.push('Line ' + (i + 1) + ': remove the leading slash from datapack commands');
       if (trimmed.startsWith('$')) return;
-      if (!/^[a-z0-9_./]/.test(trimmed) && !trimmed.startsWith('$')) {
-        issues.push('Line ' + (i + 1) + ': command starts with unexpected character');
-      }
+      if (!/^[a-z0-9_.$]/.test(trimmed)) issues.push('Line ' + (i + 1) + ': command starts with an unexpected character');
     });
     if (issues.length === 0) return { ok: true, msg: lines.length + ' line(s)' };
     return { ok: true, msg: lines.length + ' line(s), ' + issues.length + ' warning(s)' };
@@ -821,16 +879,91 @@
 
   /* ---------- pack.mcmeta ---------- */
   function buildMeta() {
-    return {
-      pack: {
-        pack_format: parseInt($('tpd-format').value, 10) || 61,
-        description: $('tpd-desc').value || ''
-      }
-    };
+    if (window.MinecraftPack) return MinecraftPack.buildPackMeta('data', $('tpd-format').value, $('tpd-desc').value || '');
+    return { pack: { pack_format: parseInt($('tpd-format').value, 10) || 61, description: $('tpd-desc').value || '' } };
   }
+
+  function syncSelectedContent() {
+    if (selectedPath && project.files.has(selectedPath) && !project.files.get(selectedPath).blob) project.files.get(selectedPath).content = editor.value;
+  }
+
+  function validatePack() {
+    syncSelectedContent();
+    var out = [];
+    function add(level, message, path) { out.push({ level: level, message: message, path: path || null }); }
+    var modern = isModernLayout();
+    var namespace = sanitizeNamespace($('tpd-namespace').value || 'mypack');
+    if (!String($('tpd-name').value || '').trim()) add('error', 'Pack name is required.');
+    if (!project.files.size) add('error', 'Add at least one datapack file.');
+    if (!/^[a-z0-9_.-]+$/.test(namespace)) add('error', 'Namespace may only contain lowercase letters, numbers, _, -, and dots.');
+    var hasLoadFn = false, hasTickFn = false, hasLoadTag = false, hasTickTag = false;
+    project.files.forEach(function (entry, path) {
+      try { if (window.MinecraftPack) MinecraftPack.safePath(path); } catch (e) { add('error', 'Unsafe archive path.', path); }
+      if (path !== path.toLowerCase()) add('error', 'Datapack paths must be lowercase.', path);
+      if (path === 'pack.mcmeta') add('error', 'Remove pack.mcmeta from project files; it is generated automatically.', path);
+      if (!/^data\/[a-z0-9_.-]+\/.+/.test(path)) add('error', 'File must be inside data/<namespace>/.', path);
+      var legacySegment = /\/(functions|advancements|recipes|loot_tables|predicates|item_modifiers|structures)\//.test(path) || /\/tags\/(functions|items|blocks|entity_types|fluids|game_events)\//.test(path);
+      var modernSegment = /\/(function|advancement|recipe|loot_table|predicate|item_modifier|structure)\//.test(path);
+      if (modern && legacySegment) add('error', 'Uses a pre-1.21 plural registry folder; rename it to the singular form.', path);
+      if (!modern && modernSegment) add('warning', 'Uses a modern singular registry folder that older versions may not load.', path);
+      if (/\/function\/load\.mcfunction$|\/functions\/load\.mcfunction$/.test(path)) hasLoadFn = true;
+      if (/\/function\/tick\.mcfunction$|\/functions\/tick\.mcfunction$/.test(path)) hasTickFn = true;
+      if (/^data\/minecraft\/tags\/(function|functions)\/load\.json$/.test(path)) hasLoadTag = true;
+      if (/^data\/minecraft\/tags\/(function|functions)\/tick\.json$/.test(path)) hasTickTag = true;
+      if (!entry.blob) {
+        if (/\.json$/i.test(path)) {
+          try {
+            var parsed = JSON.parse(entry.content || '');
+            if (modern && entry.type === 'recipes') {
+              if (parsed && parsed.result && parsed.result.item && !parsed.result.id) add('error', 'Modern recipes use result.id instead of result.item.', path);
+              if (parsed && parsed.key) Object.keys(parsed.key).forEach(function (key) {
+                var ingredient = parsed.key[key];
+                if (ingredient && typeof ingredient === 'object' && ingredient.item && Object.keys(ingredient).length === 1) add('warning', 'Modern recipe ingredients can use the item ID directly instead of { item: ... }.', path);
+              });
+            }
+            if (modern && entry.type === 'advancements' && parsed && parsed.display && parsed.display.icon) {
+              if (typeof parsed.display.icon === 'string') add('error', 'Modern advancement icons must be an item stack object such as { id: "minecraft:stone" }.', path);
+              else if (parsed.display.icon.item && !parsed.display.icon.id) add('error', 'Modern advancement icons use icon.id instead of icon.item.', path);
+            }
+            if (modern && ['chat_type', 'jukebox_song', 'trim_pattern', 'trim_material', 'damage_type', 'painting_variant', 'wolf_variant', 'instrument'].indexOf(entry.type) !== -1 && parsed && parsed[entry.type] && Object.keys(parsed).length === 1) {
+              add('error', 'Registry JSON should contain its fields directly, without an extra "' + entry.type + '" wrapper.', path);
+            }
+            if (/^data\/minecraft\/tags\/(function|functions)\/(load|tick)\.json$/.test(path)) {
+              if (!parsed || !Array.isArray(parsed.values)) add('error', 'Function tag requires a values array.', path);
+              else parsed.values.forEach(function (id) {
+                if (typeof id !== 'string' || id.startsWith('#')) return;
+                var parts = id.split(':');
+                var ns = parts.length > 1 ? parts[0] : 'minecraft';
+                var fn = parts.length > 1 ? parts.slice(1).join(':') : parts[0];
+                var expected = 'data/' + ns + '/' + (modern ? 'function' : 'functions') + '/' + fn + '.mcfunction';
+                if (!project.files.has(expected)) add('warning', 'Tag references missing function ' + id + '.', path);
+              });
+            }
+          } catch (e) { add('error', 'Invalid JSON: ' + e.message, path); }
+        } else if (/\.mcfunction$/i.test(path)) {
+          var check = validateMcfunction(entry.content || '');
+          if (/warning/.test(check.msg)) add('warning', check.msg + '.', path);
+        }
+      }
+    });
+    if (hasLoadFn && !hasLoadTag) add('warning', 'A load.mcfunction exists but minecraft:load does not reference it.');
+    if (hasTickFn && !hasTickTag) add('warning', 'A tick.mcfunction exists but minecraft:tick does not reference it.');
+    if (!out.some(function (item) { return item.level === 'error'; })) add('success', 'Datapack structure and text syntax are ready to export.');
+    return out;
+  }
+
+  function renderDiagnostics() {
+    var root = $('tpd-diagnostics');
+    if (!root) return;
+    root.innerHTML = '<ul class="tpd-diagnostic-list">' + validatePack().map(function (item) {
+      return '<li class="' + item.level + '"><span>' + (item.level === 'error' ? '✕' : item.level === 'warning' ? '!' : '✓') + '</span><div>' + escHtml(item.message) + (item.path ? '<code>' + escHtml(item.path) + '</code>' : '') + '</div></li>';
+    }).join('') + '</ul>';
+  }
+
   function renderMeta() {
     var el = $('tpd-meta-preview');
     if (el) el.textContent = JSON.stringify(buildMeta(), null, 2);
+    renderDiagnostics();
   }
 
   /* ---------- File list ---------- */
@@ -888,7 +1021,7 @@
 
   /* ---------- Export ---------- */
   function textToBytes(str) {
-    return new TextEncoder().encode(str);
+    return window.MinecraftPack ? MinecraftPack.textBytes(str) : new TextEncoder().encode(str);
   }
 
   function zipName() { return sanitizeName($('tpd-name').value) + '.zip'; }
@@ -905,7 +1038,8 @@
   }
 
   function exportZip() {
-    if (project.files.size === 0) { showMsg('Add at least one file before exporting.', false); return; }
+    var errors = validatePack().filter(function (item) { return item.level === 'error'; });
+    if (errors.length) { showMsg('Fix ' + errors.length + ' validation error' + (errors.length === 1 ? '' : 's') + ' before exporting.', false); activateTab('export'); return; }
     try {
       var files = [];
       var meta = buildMeta();
@@ -945,25 +1079,40 @@
     for (var i = 0; i < fileList.length; i++) {
       var f = fileList[i];
       var rel = (f.webkitRelativePath || f.name).replace(/\\/g, '/');
+      var dataPos = rel.toLowerCase().indexOf('/data/');
+      if (dataPos >= 0) rel = rel.slice(dataPos + 1);
+      if (/(^|\/)pack\.mcmeta$/i.test(rel)) {
+        try {
+          var importedMeta = JSON.parse(await readFileAsText(f));
+          if (importedMeta.pack) {
+            $('tpd-desc').value = typeof importedMeta.pack.description === 'string' ? importedMeta.pack.description : JSON.stringify(importedMeta.pack.description || '');
+            var importedFmt = importedMeta.pack.max_format || importedMeta.pack.min_format || importedMeta.pack.pack_format;
+            if (Array.isArray(importedFmt)) importedFmt = importedFmt[0] + '.' + (importedFmt[1] || 0);
+            var importedOption = Array.from($('tpd-format').options).find(function (o) { return parseFloat(o.value) === parseFloat(importedFmt); });
+            if (importedOption) $('tpd-format').value = importedOption.value;
+          }
+        } catch (e) { showMsg('Could not parse pack.mcmeta.', false); }
+        continue;
+      }
       var path;
       if (/^data\//i.test(rel)) {
         path = rel;
       } else {
-        var ns = sanitizeNamespace($('tpd-namespace').value || 'minecraft');
+        var ns = sanitizeNamespace($('tpd-namespace').value || 'mypack');
         var base = sanitizeName(rel.replace(/\.[^.]+$/, ''));
         var ext = '';
         if (/\.mcfunction$/.test(rel)) {
-          path = 'data/' + ns + '/functions/' + base + '.mcfunction';
+          path = 'data/' + ns + '/' + folderForType('functions') + '/' + base + '.mcfunction';
         } else if (/\.json$/.test(rel)) {
           var type = guessTypeFromName(rel);
-          path = 'data/' + ns + '/' + type + '/' + base + '.json';
+          path = 'data/' + ns + '/' + folderForType(type) + '/' + base + '.json';
         } else if (isLikelyBinary(rel)) {
           var binType = guessTypeFromName(rel);
           if (binType === 'functions') binType = '';
           var binExt = rel.replace(/^.*\./, '.');
-          path = 'data/' + ns + (binType ? '/' + binType : '') + '/' + base + binExt;
+          path = 'data/' + ns + (binType ? '/' + folderForType(binType) : '') + '/' + base + binExt;
         } else {
-          path = 'data/' + ns + '/functions/' + base + '.txt';
+          path = 'data/' + ns + '/' + folderForType('functions') + '/' + base + '.txt';
         }
       }
       try {
@@ -1707,6 +1856,101 @@
     try { return JSON.parse(str); } catch (e) { return {}; }
   }
 
+
+  function setOrMergeFunctionTag(kind, functionId) {
+    var path = 'data/minecraft/tags/' + (isModernLayout() ? 'function' : 'functions') + '/' + kind + '.json';
+    var data = { values: [] };
+    if (project.files.has(path)) {
+      try { data = JSON.parse(project.files.get(path).content || '{}'); } catch (e) {}
+      if (!Array.isArray(data.values)) data.values = [];
+    }
+    if (!data.values.includes(functionId)) data.values.push(functionId);
+    project.files.set(path, { name: kind + '.json', type: 'tags', content: JSON.stringify(data, null, 2) + '\n' });
+  }
+
+  function addLifecycle(kind) {
+    var ns = sanitizeNamespace($('tpd-namespace').value || 'mypack');
+    var path = 'data/' + ns + '/' + folderForType('functions') + '/' + kind + '.mcfunction';
+    if (!project.files.has(path)) project.files.set(path, { name: kind + '.mcfunction', type: 'functions', content: '# Runs on datapack ' + kind + '\n' + (kind === 'load' ? 'tellraw @a {"text":"' + ns + ' loaded","color":"green"}\n' : '# Add commands carefully: this runs 20 times per second.\n') });
+    setOrMergeFunctionTag(kind, ns + ':' + kind);
+    buildTree(); renderFileList(); renderPreview(); renderMeta(); selectFile(path);
+    showMsg('Added ' + kind + ' function and minecraft:' + kind + ' tag.', true);
+  }
+
+  function renameSelected() {
+    if (!selectedPath || !project.files.has(selectedPath)) return showMsg('Select a file first.', false);
+    var next = prompt('New datapack path:', selectedPath);
+    if (next == null || next === selectedPath) return;
+    try {
+      next = MinecraftPack.safePath(next.toLowerCase());
+      if (project.files.has(next)) throw new Error('A file already uses that path.');
+      var entry = project.files.get(selectedPath);
+      project.files.delete(selectedPath);
+      entry.name = fileNameFromPath(next);
+      entry.type = guessType(next);
+      project.files.set(next, entry);
+      selectedPath = next;
+      buildTree(); renderFileList(); renderPreview(); renderMeta(); selectFile(next);
+      showMsg('File renamed.', true);
+    } catch (e) { showMsg(e.message, false); }
+  }
+
+  function duplicateSelected() {
+    if (!selectedPath || !project.files.has(selectedPath)) return showMsg('Select a file first.', false);
+    syncSelectedContent();
+    var entry = project.files.get(selectedPath);
+    var dot = selectedPath.lastIndexOf('.');
+    var base = dot > selectedPath.lastIndexOf('/') ? selectedPath.slice(0, dot) : selectedPath;
+    var ext = dot > selectedPath.lastIndexOf('/') ? selectedPath.slice(dot) : '';
+    var i = 1, path = base + '_copy' + ext;
+    while (project.files.has(path)) path = base + '_copy_' + (++i) + ext;
+    var copy = { name: fileNameFromPath(path), type: entry.type, content: entry.content || '' };
+    if (entry.blob) copy.blob = entry.blob.slice(0);
+    project.files.set(path, copy);
+    buildTree(); renderFileList(); renderPreview(); renderMeta(); selectFile(path);
+    showMsg('Duplicated file.', true);
+  }
+
+  async function importDatapackZip(file) {
+    if (!file) return;
+    try {
+      var entries = await MinecraftPack.readZip(file);
+      var metaEntry = entries.find(function (entry) { return entry.name === 'pack.mcmeta'; });
+      if (metaEntry) {
+        var meta = JSON.parse(MinecraftPack.bytesText(metaEntry.data));
+        if (meta.pack) {
+          $('tpd-desc').value = typeof meta.pack.description === 'string' ? meta.pack.description : JSON.stringify(meta.pack.description || '');
+          var fmt = meta.pack.max_format || meta.pack.min_format || meta.pack.pack_format;
+          if (Array.isArray(fmt)) fmt = fmt[0] + '.' + (fmt[1] || 0);
+          var option = Array.from($('tpd-format').options).find(function (o) { return parseFloat(o.value) === parseFloat(fmt); });
+          if (option) $('tpd-format').value = option.value;
+        }
+      }
+      project.files = new Map();
+      entries.forEach(function (entry) {
+        if (entry.name === 'pack.mcmeta' || entry.name === 'pack.png') return;
+        var path = entry.name;
+        var type = guessType(path);
+        if (isLikelyBinary(path)) project.files.set(path, { name: fileNameFromPath(path), type: type, content: '', blob: entry.data.buffer.slice(entry.data.byteOffset, entry.data.byteOffset + entry.data.byteLength) });
+        else project.files.set(path, { name: fileNameFromPath(path), type: type, content: MinecraftPack.bytesText(entry.data) });
+      });
+      project.format = $('tpd-format').value;
+      project.description = $('tpd-desc').value;
+      var firstData = Array.from(project.files.keys()).find(function (path) { return /^data\/[^/]+\//.test(path) && !path.startsWith('data/minecraft/'); });
+      if (firstData) { project.namespace = firstData.split('/')[1]; $('tpd-namespace').value = project.namespace; }
+      selectedPath = null; editor.value = '';
+      buildTree(); renderFileList(); renderPreview(); renderMeta();
+      if (project.files.size) selectFile(Array.from(project.files.keys())[0]);
+      showMsg('Imported ' + project.files.size + ' datapack files.', true);
+    } catch (e) { showMsg('Datapack import failed: ' + e.message, false); }
+  }
+
+  function exportValidationReport() {
+    syncSelectedContent();
+    var report = { generatedAt: new Date().toISOString(), pack: buildMeta(), namespace: project.namespace, fileCount: project.files.size, diagnostics: validatePack() };
+    MinecraftPack.downloadBlob(new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' }), sanitizeName($('tpd-name').value) + '-validation.json');
+  }
+
   /* ---------- Wire up UI ---------- */
   function activateTab(name) {
     document.querySelectorAll('.tpd .tab').forEach(function (t) {
@@ -1747,8 +1991,13 @@
       showTemplateMenu();
     });
 
+    $('tpd-add-load').addEventListener('click', function () { addLifecycle('load'); });
+    $('tpd-add-tick').addEventListener('click', function () { addLifecycle('tick'); });
+    $('tpd-rename-file').addEventListener('click', renameSelected);
+    $('tpd-duplicate-file').addEventListener('click', duplicateSelected);
+
     $('tpd-new-blank').addEventListener('click', function () {
-      var ns = sanitizeNamespace($('tpd-namespace').value || 'minecraft');
+      var ns = sanitizeNamespace($('tpd-namespace').value || 'mypack');
       showNewFileMenu();
     });
 
@@ -1814,9 +2063,9 @@
 
     // Metadata inputs
     $('tpd-name').addEventListener('input', function () { project.name = this.value; renderMeta(); });
-    $('tpd-format').addEventListener('change', function () { project.format = parseInt(this.value, 10) || 61; renderMeta(); });
+    $('tpd-format').addEventListener('change', function () { project.format = this.value || '107.1'; renderMeta(); });
     $('tpd-desc').addEventListener('input', function () { project.description = this.value; renderMeta(); });
-    $('tpd-namespace').addEventListener('input', function () { project.namespace = sanitizeNamespace(this.value); renderMeta(); });
+    $('tpd-namespace').addEventListener('input', function () { project.namespace = sanitizeNamespace(this.value || 'mypack'); renderMeta(); });
 
     // Tree search
     $('tpd-tree-search').addEventListener('input', function () {
@@ -1837,6 +2086,7 @@
     // Export
     $('tpd-export-zip').addEventListener('click', exportZip);
     $('tpd-export-meta').addEventListener('click', exportMetaOnly);
+    $('tpd-export-report').addEventListener('click', exportValidationReport);
 
     // Save / load / import / delete
     $('tpd-save').addEventListener('click', saveProject);
@@ -1850,6 +2100,11 @@
     $('tpd-clear-project').addEventListener('click', function () {
       if (window.confirm('Delete the saved project from this browser?')) deleteSavedProject();
     });
+
+    $('tpd-import-pack').addEventListener('click', function () { $('tpd-pack-file').click(); });
+    $('tpd-pack-file').addEventListener('change', function () { importDatapackZip(this.files[0]); this.value = ''; });
+    $('tpd-import-folder').addEventListener('click', function () { $('tpd-folder').click(); });
+    $('tpd-folder').addEventListener('change', function () { handleFiles(this.files); this.value = ''; });
 
     // Upload
     $('tpd-upload-btn').addEventListener('click', function () { $('tpd-upload').click(); });
@@ -1885,14 +2140,14 @@
   function init() {
     if (inited) return;
     inited = true;
-    if (!editor || typeof TpcZip === 'undefined') {
-      console.error('TPD init failed: missing editor or TpcZip.');
+    if (!editor || typeof TpcZip === 'undefined' || typeof MinecraftPack === 'undefined') {
+      console.error('TPD init failed: missing editor, TpcZip, or MinecraftPack.');
       return;
     }
     project.name = $('tpd-name').value;
-    project.format = parseInt($('tpd-format').value, 10) || 61;
+    project.format = $('tpd-format').value || '107.1';
     project.description = $('tpd-desc').value;
-    project.namespace = sanitizeNamespace($('tpd-namespace').value || 'minecraft');
+    project.namespace = sanitizeNamespace($('tpd-namespace').value || 'mypack');
     bindUI();
     buildTree();
     renderFileList();
@@ -1906,6 +2161,8 @@
       if (first) selectFile(first);
     } catch (e) {}
   }
+
+  window.ToolsvaultDatapack = { getState: function () { return project; }, buildMeta: buildMeta, validate: validatePack, modernizePath: modernizePath, applyProject: applyProject, loadTemplate: loadPackTemplate, templateKeys: TEMPLATE_LIST.map(function (item) { return item.key; }) };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

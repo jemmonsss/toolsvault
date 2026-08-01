@@ -145,3 +145,8 @@
 /* Respect reduced-motion */
 @media (prefers-reduced-motion:reduce){
 }
+
+
+/* Expanded datapack workflow */
+.tpd-diagnostic-list{list-style:none;padding:0;margin:0 0 1rem;display:flex;flex-direction:column;gap:.45rem}.tpd-diagnostic-list li{display:flex;gap:.55rem;align-items:flex-start;padding:.5rem .6rem;border-radius:7px;background:var(--bg);font-size:.84rem}.tpd-diagnostic-list li>span{display:grid;place-items:center;flex:0 0 20px;height:20px;border-radius:50%;font-weight:700}.tpd-diagnostic-list li>div{display:flex;flex-direction:column;gap:.25rem;min-width:0}.tpd-diagnostic-list code{word-break:break-all;font-size:.74rem}.tpd-diagnostic-list .error{color:var(--danger)}.tpd-diagnostic-list .warning{color:#d9a521}.tpd-diagnostic-list .success{color:#45b86b}
+.tpd-toolbar .tpd-tools,.tpd-toolbar .tpd-tool-opts{align-items:center}.tpd-filebar{align-items:center}

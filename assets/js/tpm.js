@@ -1,954 +1,628 @@
-/* Minecraft Content Pack Maker — app logic.
- * Depends on: TpcZip (assets/js/zip-writer.js)
- * State: project = { name, format, description, namespace, textures: Map, content: Map }
- * content entries: { id, type, name, path, data, content }
+/* Toolsvault Minecraft Modpack Creator
+ * Builds Modrinth .mrpack archives entirely in the browser.
+ * Depends on MinecraftPack and TpcZip.
  */
 (function () {
   'use strict';
 
-  /* ---------- Content type definitions ---------- */
-  var CONTENT_TYPES = {
-    items: { folder: 'items', ext: '.json', simple: 'item', label: 'Items' },
-    recipes: { folder: 'recipes', ext: '.json', simple: 'recipe', label: 'Recipes' },
-    loot_tables: { folder: 'loot_tables', ext: '.json', simple: 'loot', label: 'Loot Tables' },
-    advancements: { folder: 'advancements', ext: '.json', simple: 'advancement', label: 'Advancements' },
-    predicates: { folder: 'predicates', ext: '.json', simple: 'predicate', label: 'Predicates' },
-    functions: { folder: 'functions', ext: '.mcfunction', simple: 'function', label: 'Functions' },
-    tags: { folder: 'tags', ext: '.json', simple: 'tag', label: 'Tags' }
-  };
+  var API = 'https://api.modrinth.com/v2';
+  var STORAGE_KEY = 'tpm:modpack:v2';
+  var ALLOWED_DOWNLOAD_HOSTS = ['cdn.modrinth.com', 'github.com', 'raw.githubusercontent.com', 'gitlab.com'];
+  var project;
+  var statusTimer;
 
-  /* ---------- Pack templates ---------- */
-  var PACK_TEMPLATES = {
-    custom_item: 'Custom Item',
-    tool_pack: 'Tool Pack',
-    food_pack: 'Food Pack',
-    recipe_pack: 'Recipe Pack',
-    loot_table_pack: 'Loot Table Pack',
-    advancement_pack: 'Advancement Pack',
-    function_pack: 'Function Pack',
-    complete_pack: 'Complete Pack'
-  };
-
-  /* ---------- State ---------- */
-  var project = {
-    name: 'My Content Pack',
-    format: 41,
-    description: 'My custom content pack',
-    namespace: 'mypack',
-    textures: new Map(),
-    content: new Map()
-  };
-  var selectedId = null;
-  var selectedType = null;
-  var simpleMode = false;
-  var inited = false;
-  var statusTimer = null;
-
-  /* ---------- Element refs ---------- */
-  var $ = function (id) { return document.getElementById(id); };
-
-  /* ---------- Utilities ---------- */
-  function sanitizeName(s) {
-    return (s || 'pack').toLowerCase().replace(/[^a-z0-9_\-]+/g, '_').replace(/^_+|_+$/g, '') || 'pack';
-  }
-  function sanitizeNamespace(s) {
-    return (s || 'mypack').toLowerCase().replace(/[^a-z0-9_\-]+/g, '_').replace(/^_+|_+$/g, '') || 'mypack';
-  }
-  function escHtml(s) {
-    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
-  function tryParseJson(str) {
-    try { return JSON.parse(str); } catch (e) { return null; }
-  }
-  function generateId() {
-    return 'c_' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
-  }
-
-  /* ---------- Path helpers ---------- */
-  function contentPath(typeKey, name, ns) {
-    return 'data/' + ns + '/' + CONTENT_TYPES[typeKey].folder + '/' + sanitizeName(name) + CONTENT_TYPES[typeKey].ext;
-  }
-  function texturePath(name, ns) {
-    return 'assets/' + ns + '/textures/item/' + sanitizeName(name) + '.png';
-  }
-  function modelPath(name, ns) {
-    return 'assets/' + ns + '/models/item/' + sanitizeName(name) + '.json';
-  }
-
-  /* ---------- Persistence ---------- */
-  var STORAGE_KEY = 'tpm:project';
-  var SAVE_VERSION = 1;
-
-  function serializeProject() {
-    var filesArr = [];
-    project.textures.forEach(function (canvas, name) {
-      filesArr.push({ name: name, type: 'texture', data: canvasToDataURL(canvas) });
-    });
-    var contentArr = [];
-    project.content.forEach(function (entry, id) {
-      contentArr.push({ id: id, type: entry.type, name: entry.name, path: entry.path, data: entry.data, content: entry.content });
-    });
+  function blankProject() {
     return {
-      version: SAVE_VERSION,
-      name: project.name,
-      format: project.format,
-      description: project.description,
-      namespace: project.namespace,
-      textures: filesArr,
-      content: contentArr
+      schema: 2,
+      name: 'My Modpack',
+      versionId: '1.0.0',
+      minecraft: '26.2',
+      loader: 'fabric',
+      loaderVersion: '',
+      summary: 'A custom Minecraft modpack',
+      mods: [],
+      overrides: []
     };
   }
 
-  function canvasToDataURL(c) { return c.toDataURL('image/png'); }
-  function dataUrlToCanvas(dataUrl) {
-    return new Promise(function (resolve, reject) {
-      var img = new Image();
-      img.onload = function () {
-        var c = document.createElement('canvas');
-        c.width = img.naturalWidth || img.width;
-        c.height = img.naturalHeight || img.height;
-        c.getContext('2d').drawImage(img, 0, 0);
-        resolve(c);
-      };
-      img.onerror = reject;
-      img.src = dataUrl;
-    });
+  function $(id) { return document.getElementById(id); }
+  function esc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
-
-  function applyProject(obj) {
-    if (!obj || !obj.name) throw new Error('Invalid project');
-    project.name = obj.name;
-    project.format = obj.format || 41;
-    project.description = obj.description || '';
-    project.namespace = obj.namespace || 'mypack';
-    project.textures = new Map();
-    project.content = new Map();
-    $('tpm-name').value = project.name;
-    $('tpm-format').value = String(project.format);
-    $('tpm-desc').value = project.description;
-    $('tpm-namespace').value = project.namespace;
-    if (obj.textures) {
-      obj.textures.forEach(function (t) {
-        dataUrlToCanvas(t.data).then(function (c) {
-          project.textures.set(t.name, c);
-          renderPreview();
-        });
-      });
-    }
-    if (obj.content) {
-      obj.content.forEach(function (c) {
-        project.content.set(c.id, c);
-      });
-    }
-    renderFileList();
-    renderPreview();
-    renderMeta();
-    refreshTreeFlags();
+  function uid(prefix) { return (prefix || 'id') + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+  function prettyBytes(size) {
+    size = Number(size) || 0;
+    if (size < 1024) return size + ' B';
+    if (size < 1048576) return (size / 1024).toFixed(1) + ' KB';
+    return (size / 1048576).toFixed(1) + ' MB';
   }
-
+  function showStatus(message, ok) {
+    var el = $('tpm-status');
+    if (!el) return;
+    clearTimeout(statusTimer);
+    el.hidden = false;
+    el.className = 'tpm-status ' + (ok === false ? 'err' : 'ok');
+    el.textContent = message;
+    statusTimer = setTimeout(function () { el.hidden = true; }, 5500);
+  }
+  function downloadJson(data, filename) {
+    MinecraftPack.downloadBlob(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), filename);
+  }
   function storageAvailable() {
     try {
-      var k = '__toolsvault_storage_test__';
-      window.localStorage.setItem(k, '1');
-      window.localStorage.removeItem(k);
+      localStorage.setItem('__tpm_test__', '1');
+      localStorage.removeItem('__tpm_test__');
       return true;
     } catch (e) { return false; }
   }
-  function saveProject() {
-    if (!storageAvailable()) { showMsg('Local storage is not available.', false); return; }
-    try {
-      var data = serializeProject();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      var label = $('tpm-saved-label');
-      label.hidden = false; label.textContent = 'Saved ' + new Date().toLocaleTimeString();
-      showMsg('Project saved.', true);
-    } catch (e) { showMsg('Save failed: ' + e.message, false); }
+  function base64FromBytes(bytes) {
+    var out = '';
+    for (var i = 0; i < bytes.length; i += 0x8000) out += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(out);
   }
-  function loadSavedProject() {
-    if (!storageAvailable()) { showMsg('Local storage is not available.', false); return; }
+  function bytesFromBase64(value) {
+    var raw = atob(value || '');
+    var bytes = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+    return bytes;
+  }
+
+  function syncProjectFromForm() {
+    project.name = $('tpm-name').value.trim();
+    project.versionId = $('tpm-version-id').value.trim();
+    project.minecraft = $('tpm-minecraft').value.trim();
+    project.loader = $('tpm-loader').value;
+    project.loaderVersion = $('tpm-loader-version').value.trim();
+    project.summary = $('tpm-summary').value.trim();
+  }
+
+  function syncFormFromProject() {
+    $('tpm-name').value = project.name || '';
+    $('tpm-version-id').value = project.versionId || '';
+    $('tpm-minecraft').value = project.minecraft || '';
+    $('tpm-loader').value = project.loader || 'fabric';
+    $('tpm-loader-version').value = project.loaderVersion || '';
+    $('tpm-summary').value = project.summary || '';
+  }
+
+  function serializableProject() {
+    syncProjectFromForm();
+    return {
+      schema: 2,
+      name: project.name,
+      versionId: project.versionId,
+      minecraft: project.minecraft,
+      loader: project.loader,
+      loaderVersion: project.loaderVersion,
+      summary: project.summary,
+      mods: project.mods.map(function (mod) {
+        return {
+          id: mod.id,
+          projectId: mod.projectId || null,
+          versionId: mod.versionId || null,
+          name: mod.name,
+          versionName: mod.versionName || '',
+          path: mod.path,
+          hashes: mod.hashes,
+          downloads: mod.downloads,
+          fileSize: mod.fileSize || 0,
+          env: mod.env || { client: 'required', server: 'required' },
+          source: mod.source || 'manual'
+        };
+      }),
+      overrides: project.overrides.map(function (file) {
+        return {
+          id: file.id,
+          layer: file.layer,
+          path: file.path,
+          name: file.name,
+          type: file.type || 'application/octet-stream',
+          data: base64FromBytes(file.data)
+        };
+      })
+    };
+  }
+
+  function normalizeProject(data) {
+    if (!data || typeof data !== 'object') throw new Error('The project file is not valid JSON project data.');
+    var next = blankProject();
+    next.name = String(data.name || next.name);
+    next.versionId = String(data.versionId || data.version_id || next.versionId);
+    next.minecraft = String(data.minecraft || next.minecraft);
+    next.loader = String(data.loader || next.loader);
+    next.loaderVersion = String(data.loaderVersion || data.loader_version || '');
+    next.summary = String(data.summary || '');
+    next.mods = Array.isArray(data.mods) ? data.mods.map(function (mod) {
+      return {
+        id: mod.id || uid('mod'),
+        projectId: mod.projectId || null,
+        versionId: mod.versionId || null,
+        name: String(mod.name || mod.path || 'Download'),
+        versionName: String(mod.versionName || ''),
+        path: String(mod.path || ''),
+        hashes: mod.hashes || {},
+        downloads: Array.isArray(mod.downloads) ? mod.downloads : [],
+        fileSize: Number(mod.fileSize) || 0,
+        env: mod.env || { client: 'required', server: 'required' },
+        source: mod.source || 'manual'
+      };
+    }) : [];
+    next.overrides = Array.isArray(data.overrides) ? data.overrides.map(function (file) {
+      return {
+        id: file.id || uid('override'),
+        layer: ['overrides', 'client-overrides', 'server-overrides'].includes(file.layer) ? file.layer : 'overrides',
+        path: String(file.path || file.name || 'file'),
+        name: String(file.name || file.path || 'file'),
+        type: file.type || 'application/octet-stream',
+        data: file.data instanceof Uint8Array ? file.data : bytesFromBase64(file.data || '')
+      };
+    }) : [];
+    return next;
+  }
+
+  function applyProject(data) {
+    project = normalizeProject(data);
+    syncFormFromProject();
+    renderAll();
+  }
+
+  function saveProject() {
+    if (!storageAvailable()) return showStatus('Local storage is blocked in this browser.', false);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(serializableProject()));
+      var label = $('tpm-saved-label');
+      label.hidden = false;
+      label.textContent = 'Saved ' + new Date().toLocaleTimeString();
+      showStatus('Project saved locally.', true);
+    } catch (error) { showStatus('Save failed: ' + error.message, false); }
+  }
+
+  function loadProject() {
+    if (!storageAvailable()) return showStatus('Local storage is blocked in this browser.', false);
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) { showMsg('No saved project found.', false); return; }
+      if (!raw) return showStatus('No saved project was found.', false);
       applyProject(JSON.parse(raw));
-      showMsg('Project loaded.', true);
-    } catch (e) { showMsg('Load failed: ' + e.message, false); }
+      showStatus('Saved project loaded.', true);
+    } catch (error) { showStatus('Load failed: ' + error.message, false); }
   }
-  function deleteSavedProject() {
-    if (!storageAvailable()) return;
-    try { localStorage.removeItem(STORAGE_KEY); showMsg('Saved project deleted.', true); }
-    catch (e) { showMsg('Delete failed: ' + e.message, false); }
+
+  function exportProject() {
+    downloadJson(serializableProject(), MinecraftPack.sanitizeName(project.name, 'modpack') + '.toolsvault-modpack.json');
   }
-  function exportProjectFile() {
-    var data = serializeProject();
-    var blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url; a.download = sanitizeName(project.name) + '.tpm.json';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
-  }
-  function importProjectFile(file) {
+
+  async function importProjectFile(file) {
     if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function () {
+    try {
+      applyProject(JSON.parse(await file.text()));
+      showStatus('Project imported.', true);
+    } catch (error) { showStatus('Project import failed: ' + error.message, false); }
+  }
+
+  function buildDependencies() {
+    syncProjectFromForm();
+    var dependencies = { minecraft: project.minecraft };
+    var keyMap = { fabric: 'fabric-loader', quilt: 'quilt-loader', forge: 'forge', neoforge: 'neoforge' };
+    if (keyMap[project.loader] && project.loaderVersion) dependencies[keyMap[project.loader]] = project.loaderVersion;
+    return dependencies;
+  }
+
+  function buildManifest() {
+    syncProjectFromForm();
+    return {
+      formatVersion: 1,
+      game: 'minecraft',
+      versionId: project.versionId,
+      name: project.name,
+      summary: project.summary,
+      files: project.mods.map(function (mod) {
+        return {
+          path: mod.path,
+          hashes: { sha1: String(mod.hashes.sha1 || '').toLowerCase(), sha512: String(mod.hashes.sha512 || '').toLowerCase() },
+          env: { client: mod.env.client, server: mod.env.server },
+          downloads: mod.downloads.slice(),
+          fileSize: mod.fileSize || undefined
+        };
+      }).map(function (entry) {
+        if (!entry.fileSize) delete entry.fileSize;
+        return entry;
+      }),
+      dependencies: buildDependencies()
+    };
+  }
+
+  function validate() {
+    syncProjectFromForm();
+    var items = [];
+    function add(level, message) { items.push({ level: level, message: message }); }
+    if (!project.name) add('error', 'Pack name is required.');
+    if (!project.versionId) add('error', 'Version ID is required.');
+    if (!project.minecraft) add('error', 'Minecraft version is required.');
+    if (project.loader !== 'minecraft' && !project.loaderVersion) add('error', 'Enter the exact ' + project.loader + ' loader version.');
+    if (!project.summary) add('warning', 'Add a summary so launchers can explain the pack.');
+    if (!project.mods.length && !project.overrides.length) add('error', 'Add at least one mod or override file.');
+    if (!project.mods.length) add('warning', 'This pack contains only overrides and no downloadable mods.');
+
+    var paths = new Set();
+    project.mods.forEach(function (mod) {
+      var prefix = mod.name || mod.path || 'Download';
+      try { MinecraftPack.safePath(mod.path); } catch (e) { add('error', prefix + ': unsafe install path.'); }
+      if (paths.has(mod.path)) add('error', 'Duplicate archive path: ' + mod.path);
+      paths.add(mod.path);
+      if (!/^https:\/\//i.test(mod.downloads[0] || '')) add('error', prefix + ': download URL must use HTTPS.');
+      if (!/^[a-f0-9]{40}$/i.test(mod.hashes.sha1 || '')) add('error', prefix + ': SHA-1 must contain 40 hexadecimal characters.');
+      if (!/^[a-f0-9]{128}$/i.test(mod.hashes.sha512 || '')) add('error', prefix + ': SHA-512 must contain 128 hexadecimal characters.');
       try {
-        applyProject(JSON.parse(reader.result));
-        showMsg('Project imported.', true);
-      } catch (e) { showMsg('Invalid project file.', false); }
-    };
-    reader.readAsText(file);
-  }
-
-  /* ---------- Content builders ---------- */
-  function createContent(typeKey, name, extraData) {
-    var id = generateId();
-    var path = contentPath(typeKey, name, project.namespace);
-    var data = {
-      id: id,
-      type: typeKey,
-      name: sanitizeName(name),
-      path: path,
-      data: extraData || {},
-      content: ''
-    };
-    project.content.set(id, data);
-    selectContent(id);
-    renderFileList();
-    renderPreview();
-    refreshTreeFlags();
-    showMsg('Created ' + (CONTENT_TYPES[typeKey].label.toLowerCase()) + ': ' + data.name, true);
-  }
-  function deleteContent(id) {
-    if (!id) return;
-    project.content.delete(id);
-    if (selectedId === id) { selectedId = null; selectedType = null; updateEditorHeader(); }
-    renderFileList();
-    renderPreview();
-    refreshTreeFlags();
-  }
-  function selectContent(id) {
-    selectedId = id;
-    selectedType = id ? project.content.get(id).type : null;
-    updateEditorHeader();
-    refreshTreeFlags();
-  }
-  function updateEditorHeader() {
-    var filenameEl = $('tpm-editor-filename');
-    if (selectedId && project.content.has(selectedId)) {
-      var entry = project.content.get(selectedId);
-      filenameEl.textContent = entry.path;
-    } else {
-      filenameEl.textContent = 'No content selected';
-    }
-  }
-
-  /* ---------- JSON generators ---------- */
-  function buildItemJSON(data) {
-    var itemName = sanitizeName(data.item_name || 'custom_item');
-    var displayName = data.display_name || 'Custom Item';
-    var hasTexture = project.textures.has(itemName + '.png');
-    var model = hasTexture ? project.namespace + ':item/' + itemName : 'minecraft:item/generated';
-    var cmd = data.custom_model_data ? parseInt(data.custom_model_data, 10) : 1;
-    var json = {
-      model: {
-        type: 'minecraft:model',
-        model: {
-          type: 'minecraft:select',
-          property: 'custom_model_data',
-          cases: {
-            [String(cmd)]: { type: 'minecraft:model', model: model }
-          },
-          fallback: { type: 'minecraft:model', model: model }
+        var host = new URL(mod.downloads[0]).hostname.toLowerCase();
+        if (!ALLOWED_DOWNLOAD_HOSTS.some(function (allowed) { return host === allowed || host.endsWith('.' + allowed); })) {
+          add('warning', prefix + ': ' + host + ' may be rejected by Modrinth upload validation.');
         }
-      }
-    };
-    if (displayName) {
-      json.display_name = displayName;
-    }
-    return JSON.stringify(json, null, 2);
-  }
-
-  function buildRecipeJSON(data) {
-    var type = data.recipe_type || 'minecraft:crafting_shaped';
-    var key = {};
-    var pattern = [];
-    var result = data.result_item || 'minecraft:stone';
-    var count = parseInt(data.result_count, 10) || 1;
-    var ingredients = data.ingredients ? data.ingredients.split('\n').filter(Boolean) : [];
-    if (type === 'minecraft:crafting_shaped') {
-      for (var i = 0; i < Math.min(3, ingredients.length); i++) {
-        var row = ingredients[i] || '   ';
-        pattern.push(row.split(''));
-        for (var j = 0; j < row.length; j++) {
-          var ch = row[j];
-          if (ch !== ' ' && !key[ch]) key[ch] = { item: 'minecraft:stone' };
-        }
-      }
-      var shaped = { type: type, pattern: pattern, key: key, result: { item: result, count: count } };
-      return JSON.stringify(shaped, null, 2);
-    } else {
-      var ingredientsFlat = [];
-      ingredients.forEach(function (ing) { ingredientsFlat.push({ item: 'minecraft:stone' }); });
-      var shapeless = { type: type, ingredients: ingredientsFlat, result: { item: result, count: count } };
-      return JSON.stringify(shapeless, null, 2);
-    }
-  }
-
-  function buildLootTableJSON(data) {
-    var pool = {
-      rolls: 1,
-      entries: [
-        {
-          type: 'minecraft:item',
-          name: data.loot_item || 'minecraft:diamond',
-          functions: data.functions ? data.functions.split('\n').filter(Boolean).map(function (f) {
-            return { function: 'minecraft:set_count', count: { type: 'minecraft:uniform', min: 1, max: 3 } };
-          }) : []
-        }
-      ]
-    };
-    return JSON.stringify({ type: 'minecraft:block', pools: [pool] }, null, 2);
-  }
-
-  function buildAdvancementJSON(data) {
-    return JSON.stringify({
-      criteria: {
-        trigger: { trigger: 'minecraft:impossible' }
-      },
-      rewards: { loot: data.reward_loot ? data.reward_loot.split('\n').filter(Boolean) : [] }
-    }, null, 2);
-  }
-
-  function buildPredicateJSON(data) {
-    return JSON.stringify({ condition: 'minecraft:alternative', terms: [] }, null, 2);
-  }
-
-  function buildFunctionLines(data) {
-    return data.lines || 'say Hello from ' + project.namespace + '!';
-  }
-
-  function buildTagJSON(data, itemName) {
-    var tagName = sanitizeName(data.tag_name || itemName) || 'custom';
-    var values = data.values ? data.values.split('\n').filter(Boolean) : [];
-    var entries = values.map(function (v) { return { id: v || 'minecraft:stone' }; });
-    return JSON.stringify({ values: entries }, null, 2);
-  }
-
-  /* ---------- Simple form renderers ---------- */
-  function renderSimpleForm() {
-    if (!selectedId || !project.content.has(selectedId)) return;
-    var entry = project.content.get(selectedId);
-    var body = $('tpm-simple-body');
-    body.innerHTML = '';
-    var typeKey = entry.type;
-    if (typeKey === 'items') renderSimpleItem(entry, body);
-    else if (typeKey === 'recipes') renderSimpleRecipe(entry, body);
-    else if (typeKey === 'loot_tables') renderSimpleLootTable(entry, body);
-    else if (typeKey === 'advancements') renderSimpleAdvancement(entry, body);
-    else if (typeKey === 'predicates') renderSimplePredicate(entry, body);
-    else if (typeKey === 'functions') renderSimpleFunction(entry, body);
-    else if (typeKey === 'tags') renderSimpleTag(entry, body);
-  }
-
-  function bindSimpleInput(id, data, cb) {
-    var el = $(id);
-    if (!el) return;
-    if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
-      el.oninput = function (e) { cb(e.target.value); };
-    } else {
-      el.oninput = function (e) { cb(e.target.value); };
-    }
-  }
-
-  function renderSimpleItem(entry, body) {
-    var data = entry.data || {};
-    body.innerHTML = buildItemSimple(data);
-    bindSimpleInput('tpmsi-name', data, function (v) { data.item_name = v; entry.content = buildItemJSON(data); updateEditorFromSimple(); });
-    bindSimpleInput('tpmsi-display', data, function (v) { data.display_name = v; entry.content = buildItemJSON(data); updateEditorFromSimple(); });
-    bindSimpleInput('tpmsi-cmd', data, function (v) { data.custom_model_data = v; entry.content = buildItemJSON(data); updateEditorFromSimple(); });
-  }
-  function buildItemSimple(data) {
-    return '<div class="tpm-row"><div class="tpm-field"><label>Item name</label><input id="tpmsi-name" value="' + escHtml(data.item_name || '') + '"></div>' +
-      '<div class="tpm-field"><label>Display name</label><input id="tpmsi-display" value="' + escHtml(data.display_name || '') + '"></div></div>' +
-      '<div class="tpm-field"><label>Custom Model Data</label><input id="tpmsi-cmd" type="number" value="' + escHtml(data.custom_model_data || '1') + '"></div>';
-  }
-
-  function renderSimpleRecipe(entry, body) {
-    var data = entry.data || {};
-    body.innerHTML = buildRecipeSimple(data);
-    bindSimpleInput('tpmsr-type', data, function (v) { data.recipe_type = v === 'shapeless' ? 'minecraft:crafting_shapeless' : 'minecraft:crafting_shaped'; entry.content = buildRecipeJSON(data); updateEditorFromSimple(); });
-    bindSimpleInput('tpmsr-result', data, function (v) { data.result_item = v; entry.content = buildRecipeJSON(data); updateEditorFromSimple(); });
-    bindSimpleInput('tpmsr-count', data, function (v) { data.result_count = v; entry.content = buildRecipeJSON(data); updateEditorFromSimple(); });
-    bindSimpleInput('tpmsr-ing', data, function (v) { data.ingredients = v; entry.content = buildRecipeJSON(data); updateEditorFromSimple(); });
-  }
-  function buildRecipeSimple(data) {
-    return '<div class="tpm-row"><div class="tpm-field"><label>Recipe type</label><select id="tpmsr-type"><option value="shaped">Shaped</option><option value="shapeless">Shapeless</option></select></div>' +
-      '<div class="tpm-field"><label>Result item</label><input id="tpmsr-result" value="' + escHtml(data.result_item || 'minecraft:stone') + '"></div></div>' +
-      '<div class="tpm-field"><label>Result count</label><input id="tpmsr-count" type="number" value="' + escHtml(data.result_count || '1') + '"></div>' +
-      '<div class="tpm-field"><label>Ingredients (one per line)</label><textarea id="tpmsr-ing" rows="3">' + escHtml(data.ingredients || '') + '</textarea></div>';
-  }
-
-  function renderSimpleLootTable(entry, body) {
-    var data = entry.data || {};
-    body.innerHTML = buildLootTableSimple(data);
-    bindSimpleInput('tpmsl-item', data, function (v) { data.loot_item = v; entry.content = buildLootTableJSON(data); updateEditorFromSimple(); });
-    bindSimpleInput('tpmsl-fns', data, function (v) { data.functions = v; entry.content = buildLootTableJSON(data); updateEditorFromSimple(); });
-  }
-  function buildLootTableSimple(data) {
-    return '<div class="tpm-field"><label>Loot item</label><input id="tpmsl-item" value="' + escHtml(data.loot_item || 'minecraft:diamond') + '"></div>' +
-      '<div class="tpm-field"><label>Functions (one per line)</label><textarea id="tpmsl-fns" rows="3">' + escHtml(data.functions || '') + '</textarea></div>';
-  }
-
-  function renderSimpleAdvancement(entry, body) {
-    var data = entry.data || {};
-    body.innerHTML = buildAdvancementSimple(data);
-    bindSimpleInput('tpmsa-reward', data, function (v) { data.reward_loot = v; entry.content = buildAdvancementJSON(data); updateEditorFromSimple(); });
-  }
-  function buildAdvancementSimple(data) {
-    return '<div class="tpm-field"><label>Reward loot tables (one file per line)</label><textarea id="tpmsa-reward" rows="3">' + escHtml(data.reward_loot || '') + '</textarea></div>';
-  }
-
-  function renderSimplePredicate(entry, body) {
-    var data = entry.data || {};
-    body.innerHTML = '<div class="tpm-field"><label>Predicate</label><input disabled value="Simple predicate editor coming soon."></div>';
-  }
-  function renderSimpleFunction(entry, body) {
-    body.innerHTML = '<div class="tpm-field"><label>Function commands</label><textarea id="tpmsf-lines" rows="6">' + escHtml(entry.content || '') + '</textarea></div>';
-    bindSimpleInput('tpmsf-lines', entry, function (v) { entry.content = v; updateEditorFromSimple(); });
-  }
-  function renderSimpleTag(entry, body) {
-    var data = entry.data || {};
-    body.innerHTML = buildTagSimple(data, entry.name);
-    bindSimpleInput('tpmst-tag', data, function (v) { data.tag_name = v; entry.content = buildTagJSON(data, entry.name); updateEditorFromSimple(); });
-    bindSimpleInput('tpmst-vals', data, function (v) { data.values = v; entry.content = buildTagJSON(data, entry.name); updateEditorFromSimple(); });
-  }
-  function buildTagSimple(data, name) {
-    return '<div class="tpm-field"><label>Tag name</label><input id="tpmst-tag" value="' + escHtml(data.tag_name || name || 'custom') + '"></div>' +
-      '<div class="tpm-field"><label>Values (one id per line)</label><textarea id="tpmst-vals" rows="3">' + escHtml(data.values || '') + '</textarea></div>';
-  }
-
-  function updateEditorFromSimple() {
-    if (selectedId && project.content.has(selectedId)) {
-      var entry = project.content.get(selectedId);
-      $('tpm-editor').value = entry.content || '';
-    }
-    renderPreview();
-    renderMeta();
-  }
-
-  /* ---------- Tree ---------- */
-  function buildTree() {
-    var body = $('tpm-tree-body');
-    body.innerHTML = '<p class="tpm-empty">No content yet. Click "+ New" to add items, recipes, and more.</p>';
-    Object.keys(CONTENT_TYPES).forEach(function (typeKey) {
-      var section = document.createElement('div');
-      section.className = 'tpm-section';
-      section.textContent = CONTENT_TYPES[typeKey].label;
-      body.appendChild(section);
-      var group = document.createElement('div');
-      group.className = 'tpm-group-body';
-      group.dataset.type = typeKey;
-      body.appendChild(group);
-    });
-    refreshTreeFlags();
-  }
-
-  function refreshTreeFlags() {
-    var body = $('tpm-tree-body');
-    if (!body) return;
-    body.querySelectorAll('.tpm-group-body').forEach(function (g) {
-      var typeKey = g.dataset.type;
-      var found = false;
-      project.content.forEach(function (entry) {
-        if (entry.type === typeKey) {
-          found = true;
-          var node = document.createElement('div');
-          node.className = 'tpm-node';
-          node.dataset.id = entry.id;
-          node.innerHTML = '<span class="tpm-dot"></span><span class="tpm-name">' + escHtml(entry.name) + '</span>';
-          node.addEventListener('click', function () { selectContent(entry.id); loadIntoEditor(entry); });
-          g.appendChild(node);
-        }
-      });
-      if (!found) {
-        g.innerHTML = '<div class="tpm-loading">None yet.</div>';
+      } catch (e) { /* URL error already covered */ }
+      if (!['required', 'optional', 'unsupported'].includes(mod.env.client) || !['required', 'optional', 'unsupported'].includes(mod.env.server)) {
+        add('error', prefix + ': invalid client/server environment setting.');
       }
     });
-    document.querySelectorAll('.tpm-node').forEach(function (n) {
-      n.classList.toggle('active', n.dataset.id === selectedId);
+    project.overrides.forEach(function (file) {
+      try { MinecraftPack.safePath(file.path); } catch (e) { add('error', file.name + ': unsafe override path.'); }
+      var fullPath = file.layer + '/' + file.path;
+      if (paths.has(fullPath)) add('error', 'Duplicate archive path: ' + fullPath);
+      paths.add(fullPath);
+      if (!file.data || !file.data.length) add('warning', fullPath + ' is empty.');
     });
+    if (!items.some(function (item) { return item.level === 'error'; })) add('success', 'Manifest and archive structure are ready to export.');
+    return items;
   }
 
-  function loadIntoEditor(entry) {
-    $('tpm-editor-filename').textContent = entry.path;
-    $('tpm-editor').value = entry.content || '';
-    if (simpleMode) renderSimpleForm();
+  function diagnosticHtml(items) {
+    if (!items.length) return '<p class="tpm-empty">No checks have run.</p>';
+    return '<ul class="tpm-diagnostic-list">' + items.map(function (item) {
+      return '<li class="' + item.level + '"><span aria-hidden="true">' + (item.level === 'error' ? '✕' : item.level === 'warning' ? '!' : '✓') + '</span>' + esc(item.message) + '</li>';
+    }).join('') + '</ul>';
   }
 
-  /* ---------- Render views ---------- */
-  function renderFileList() {
-    var list = $('tpm-filelist');
-    var countEl = $('tpm-file-count');
-    var count = project.content.size + project.textures.size;
-    countEl.textContent = count + (count === 1 ? ' item' : ' items');
-    if (count === 0) { list.innerHTML = '<p class="tpm-empty">No content yet. Create some in the Editor tab.</p>'; return; }
-    list.innerHTML = '';
-    project.content.forEach(function (entry, id) {
-      var card = document.createElement('div');
-      card.className = 'tpm-filecard';
-      card.innerHTML = '<div class="tpm-type">' + escHtml(entry.type) + '</div><div class="tpm-fname">' + escHtml(entry.name) + '</div>';
-      var del = document.createElement('button');
-      del.className = 'tpm-del'; del.textContent = '×'; del.title = 'Remove';
-      del.addEventListener('click', function () { deleteContent(id); });
-      card.appendChild(del);
-      list.appendChild(card);
-    });
+  function renderReview() {
+    if (!$('tpm-diagnostics')) return;
+    var diagnostics = validate();
+    $('tpm-diagnostics').innerHTML = diagnosticHtml(diagnostics);
+    $('tpm-dependency-preview').textContent = JSON.stringify(buildDependencies(), null, 2);
+    $('tpm-manifest-preview').textContent = JSON.stringify(buildManifest(), null, 2);
+    $('tpm-export-checklist').innerHTML = diagnosticHtml(diagnostics);
   }
 
-  function renderPreview() {
-    var list = $('tpm-preview-list');
-    if (project.content.size === 0 && project.textures.size === 0) {
-      list.innerHTML = '<p class="tpm-empty">Add content to see a live preview here.</p>';
+  function envLabel(value) { return value.charAt(0).toUpperCase() + value.slice(1); }
+
+  function renderMods() {
+    var root = $('tpm-mod-list');
+    $('tpm-mod-count').textContent = project.mods.length + (project.mods.length === 1 ? ' file' : ' files');
+    if (!project.mods.length) {
+      root.innerHTML = '<p class="tpm-empty">No mods added yet.</p>';
       return;
     }
-    list.innerHTML = '';
-    project.content.forEach(function (entry, id) {
-      var item = document.createElement('div');
-      item.className = 'tpm-preview-item';
-      item.innerHTML = '<div class="tpm-prev-head"><span class="tpm-fname">' + escHtml(entry.name) + '</span><span class="tpm-type">' + escHtml(entry.type) + '</span></div>' +
-        '<div class="tpm-preview-content">' + escHtml(entry.content || '') + '</div>';
-      list.appendChild(item);
-    });
-    project.textures.forEach(function (canvas, name) {
-      var item = document.createElement('div');
-      item.className = 'tpm-preview-item';
-      item.innerHTML = '<div class="tpm-prev-head"><span class="tpm-fname">' + escHtml(name) + '</span><span class="tpm-type">texture</span></div>' +
-        '<div class="tpm-preview-content"><img src="' + canvasToDataURL(canvas) + '" style="max-width:64px;image-rendering:pixelated"></div>';
-      list.appendChild(item);
-    });
+    root.innerHTML = project.mods.map(function (mod) {
+      return '<article class="tpm-mod-row" data-id="' + esc(mod.id) + '">' +
+        '<div class="tpm-mod-main"><strong>' + esc(mod.name) + '</strong><span>' + esc(mod.versionName || mod.source) + '</span><code>' + esc(mod.path) + '</code></div>' +
+        '<div class="tpm-mod-meta"><span>' + prettyBytes(mod.fileSize) + '</span>' +
+          '<label>Client<select data-action="client"><option value="required"' + (mod.env.client === 'required' ? ' selected' : '') + '>Required</option><option value="optional"' + (mod.env.client === 'optional' ? ' selected' : '') + '>Optional</option><option value="unsupported"' + (mod.env.client === 'unsupported' ? ' selected' : '') + '>Unsupported</option></select></label>' +
+          '<label>Server<select data-action="server"><option value="required"' + (mod.env.server === 'required' ? ' selected' : '') + '>Required</option><option value="optional"' + (mod.env.server === 'optional' ? ' selected' : '') + '>Optional</option><option value="unsupported"' + (mod.env.server === 'unsupported' ? ' selected' : '') + '>Unsupported</option></select></label>' +
+          '<button class="tpm-icon-btn" data-action="remove" type="button" aria-label="Remove ' + esc(mod.name) + '">Remove</button></div></article>';
+    }).join('');
   }
 
-  function buildMeta() {
-    var ns = sanitizeNamespace($('tpm-namespace').value);
-    return { pack: { pack_format: parseInt($('tpm-format').value, 10), description: $('tpm-desc').value } };
-  }
-  function renderMeta() {
-    $('tpm-meta-preview').textContent = JSON.stringify(buildMeta(), null, 2);
-  }
-
-  /* ---------- Export ---------- */
-  function textToBytes(str) {
-    var d = new Uint8Array(str.length);
-    for (var i = 0; i < str.length; i++) d[i] = str.charCodeAt(i);
-    return d;
+  function renderOverrides() {
+    var root = $('tpm-override-list');
+    if (!project.overrides.length) {
+      root.innerHTML = '<p class="tpm-empty">No override files added.</p>';
+      return;
+    }
+    root.innerHTML = project.overrides.map(function (file) {
+      return '<article class="tpm-override-row" data-id="' + esc(file.id) + '">' +
+        '<div><strong>' + esc(file.name) + '</strong><code>' + esc(file.layer + '/' + file.path) + '</code><span>' + prettyBytes(file.data.length) + '</span></div>' +
+        '<div class="tpm-row-actions"><button class="btn btn-secondary tpm-sm" data-action="rename" type="button">Rename path</button><button class="tpm-icon-btn" data-action="remove" type="button">Remove</button></div></article>';
+    }).join('');
   }
 
-  function zipName() { return sanitizeName(project.name) + '.zip'; }
-
-  function showMsg(text, ok) {
-    var m = $('tpm-status');
-    if (!m) return;
-    m.hidden = false;
-    m.className = 'tpm-status ' + (ok ? 'ok' : 'err');
-    m.textContent = text;
-    if (statusTimer) clearTimeout(statusTimer);
-    statusTimer = setTimeout(function () { m.hidden = true; }, ok ? 3500 : 6000);
+  function renderAll() {
+    renderMods();
+    renderOverrides();
+    renderReview();
   }
 
-  async function exportZip() {
-    if (project.content.size === 0 && project.textures.size === 0) { showMsg('Add at least one item or texture before exporting.', false); return; }
+  function resultEnvironment(projectHit) {
+    var client = projectHit.client_side || 'required';
+    var server = projectHit.server_side || 'required';
+    return {
+      client: ['required', 'optional', 'unsupported'].includes(client) ? client : 'required',
+      server: ['required', 'optional', 'unsupported'].includes(server) ? server : 'required'
+    };
+  }
+
+  async function apiJson(path) {
+    var response = await fetch(API + path, { headers: { Accept: 'application/json' } });
+    if (!response.ok) throw new Error('Modrinth returned HTTP ' + response.status + '.');
+    return response.json();
+  }
+
+  async function searchModrinth() {
+    syncProjectFromForm();
+    var query = $('tpm-search').value.trim();
+    if (!query) return showStatus('Enter a mod name to search.', false);
+    var root = $('tpm-search-results');
+    root.innerHTML = '<p class="tpm-empty">Searching Modrinth…</p>';
     try {
-      var files = [];
-      var meta = buildMeta();
-      var metaStr = JSON.stringify(meta, null, 2);
-      files.push({ name: 'pack.mcmeta', data: textToBytes(metaStr) });
-      var ns = sanitizeNamespace(project.namespace);
-      project.textures.forEach(function (canvas, name) {
-        canvas.toBlob(function (blob) {
-          var fr = new FileReader();
-          fr.onload = function () { files.push({ name: texturePath(name, ns), data: new Uint8Array(fr.result) }); };
-          fr.readAsArrayBuffer(blob);
-        }, 'image/png');
-      });
-      project.content.forEach(function (entry) {
-        if (entry.type === 'items' || entry.type === 'recipes' || entry.type === 'loot_tables' || entry.type === 'advancements' || entry.type === 'predicates' || entry.type === 'tags') {
-          files.push({ name: entry.path, data: textToBytes(entry.content || '{}') });
-          var itemName = entry.name;
-          files.push({ name: modelPath(itemName, ns), data: textToBytes(JSON.stringify({ parent: 'minecraft:item/generated', textures: { layer0: ns + ':item/' + itemName } }, null, 2)) });
-        } else if (entry.type === 'functions') {
-          files.push({ name: entry.path, data: textToBytes(entry.content || '') });
-          var loadTag = 'data/' + ns + '/tags/functions/load.json';
-          if (!files.some(function (f) { return f.name === loadTag; })) {
-            files.push({ name: loadTag, data: textToBytes(JSON.stringify({ values: [ns + ':load' ] }, null, 2)) });
-          }
-        }
-      });
-      await new Promise(function (resolve) { setTimeout(resolve, 50); });
-      var zip = TpcZip.createZip(files);
-      var url = URL.createObjectURL(zip);
-      var a = document.createElement('a');
-      a.href = url; a.download = zipName();
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
-      showMsg('Exported ' + files.length + ' files to ' + zipName() + '.', true);
-    } catch (e) {
-      showMsg('Export failed: ' + e.message, false);
+      var facets = [['project_type:mod'], ['versions:' + project.minecraft]];
+      if (project.loader !== 'minecraft') facets.push(['categories:' + project.loader]);
+      var params = new URLSearchParams({ query: query, limit: '12', index: 'relevance', facets: JSON.stringify(facets) });
+      var data = await apiJson('/search?' + params.toString());
+      if (!data.hits || !data.hits.length) {
+        root.innerHTML = '<p class="tpm-empty">No compatible results found. Check the Minecraft version and loader.</p>';
+        return;
+      }
+      root.innerHTML = data.hits.map(function (hit) {
+        var icon = hit.icon_url ? '<img src="' + esc(hit.icon_url) + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '<span class="tpm-result-placeholder">◆</span>';
+        return '<article class="tpm-result-card" data-project="' + esc(hit.project_id || hit.slug) + '">' + icon + '<div><strong>' + esc(hit.title) + '</strong><p>' + esc(hit.description || '') + '</p><span>' + esc((hit.categories || []).slice(0, 4).join(' · ')) + '</span></div><button class="btn btn-primary tpm-sm" type="button">Add</button></article>';
+      }).join('');
+    } catch (error) {
+      root.innerHTML = '<p class="tpm-empty">Search failed. ' + esc(error.message) + '</p>';
+      showStatus('Modrinth search failed: ' + error.message, false);
     }
   }
 
-  async function exportDatapackOnly() {
-    if (project.content.size === 0) { showMsg('Add content before exporting.', false); return; }
-    try {
-      var files = [];
-      var ns = sanitizeNamespace(project.namespace);
-      project.content.forEach(function (entry) {
-        files.push({ name: entry.path, data: textToBytes(entry.content || '{}') });
-      });
-      var zip = TpcZip.createZip(files);
-      var url = URL.createObjectURL(zip);
-      var a = document.createElement('a');
-      a.href = url; a.download = sanitizeName(project.name) + '_datapack.zip';
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
-      showMsg('Exported datapack.', true);
-    } catch (e) { showMsg('Export failed: ' + e.message, false); }
+  function compatibleVersionPath(projectId) {
+    var params = new URLSearchParams();
+    params.set('game_versions', JSON.stringify([project.minecraft]));
+    if (project.loader !== 'minecraft') params.set('loaders', JSON.stringify([project.loader]));
+    params.set('include_changelog', 'false');
+    return '/project/' + encodeURIComponent(projectId) + '/version?' + params.toString();
   }
 
-  async function exportResourcePackOnly() {
-    if (project.textures.size === 0) { showMsg('Add textures before exporting.', false); return; }
-    try {
-      var files = [];
-      var meta = buildMeta();
-      files.push({ name: 'pack.mcmeta', data: textToBytes(JSON.stringify(meta, null, 2)) });
-      var ns = sanitizeNamespace(project.namespace);
-      await new Promise(function (resolve, done) {
-        var pending = project.textures.size;
-        if (pending === 0) { done(); return; }
-        project.textures.forEach(function (canvas, name) {
-          canvas.toBlob(function (blob) {
-            var fr = new FileReader();
-            fr.onload = function () {
-              files.push({ name: texturePath(name, ns), data: new Uint8Array(fr.result) });
-              if (--pending === 0) done();
-            };
-            fr.readAsArrayBuffer(blob);
-          }, 'image/png');
-        });
-      });
-      var zip = TpcZip.createZip(files);
-      var url = URL.createObjectURL(zip);
-      var a = document.createElement('a');
-      a.href = url; a.download = sanitizeName(project.name) + '_resourcepack.zip';
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
-      showMsg('Exported resource pack.', true);
-    } catch (e) { showMsg('Export failed: ' + e.message, false); }
+  async function resolveVersion(projectId) {
+    var versions = await apiJson(compatibleVersionPath(projectId));
+    if (!versions.length) throw new Error('No release matches Minecraft ' + project.minecraft + ' and ' + project.loader + '.');
+    return versions.find(function (version) { return version.version_type === 'release' && version.status !== 'draft'; }) || versions[0];
   }
 
-  /* ---------- Upload handling ---------- */
-  async function handleFiles(fileList) {
-    for (var i = 0; i < fileList.length; i++) {
-      var f = fileList[i];
-      if (!/image\//.test(f.type)) continue;
+  function primaryFile(version) {
+    return version.files.find(function (file) { return file.primary; }) || version.files[0];
+  }
+
+  async function addVersion(version, displayName, source, env) {
+    var file = primaryFile(version);
+    if (!file) throw new Error('This version has no downloadable file.');
+    if (project.mods.some(function (mod) { return mod.versionId === version.id || mod.path === 'mods/' + file.filename; })) return false;
+    project.mods.push({
+      id: uid('mod'),
+      projectId: version.project_id || null,
+      versionId: version.id || null,
+      name: displayName || version.name || file.filename,
+      versionName: version.version_number || version.name || '',
+      path: 'mods/' + file.filename,
+      hashes: { sha1: file.hashes.sha1 || '', sha512: file.hashes.sha512 || '' },
+      downloads: [file.url],
+      fileSize: file.size || 0,
+      env: env || { client: 'required', server: 'required' },
+      source: source || 'modrinth'
+    });
+    return true;
+  }
+
+  async function addDependency(dep, seen, depth) {
+    if (depth > 8) return;
+    var key = dep.version_id || dep.project_id;
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    var version;
+    if (dep.version_id) version = await apiJson('/version/' + encodeURIComponent(dep.version_id));
+    else version = await resolveVersion(dep.project_id);
+    var added = await addVersion(version, version.name || 'Required dependency', 'modrinth dependency');
+    if (added && version.dependencies) {
+      var required = version.dependencies.filter(function (item) { return item.dependency_type === 'required'; });
+      for (var i = 0; i < required.length; i++) await addDependency(required[i], seen, depth + 1);
+    }
+  }
+
+  async function addModrinthProject(projectId, button) {
+    syncProjectFromForm();
+    var original = button ? button.textContent : '';
+    if (button) { button.disabled = true; button.textContent = 'Adding…'; }
+    try {
+      var details = await apiJson('/project/' + encodeURIComponent(projectId));
+      var version = await resolveVersion(projectId);
+      var added = await addVersion(version, details.title, 'modrinth', resultEnvironment(details));
+      if (!added) return showStatus(details.title + ' is already in the pack.', false);
+      var depsAdded = 0;
+      if ($('tpm-auto-deps').checked) {
+        var before = project.mods.length;
+        var required = (version.dependencies || []).filter(function (dep) { return dep.dependency_type === 'required'; });
+        var seen = new Set([version.id, version.project_id]);
+        for (var i = 0; i < required.length; i++) await addDependency(required[i], seen, 0);
+        depsAdded = project.mods.length - before;
+      }
+      renderAll();
+      showStatus('Added ' + details.title + (depsAdded ? ' and ' + depsAdded + ' required ' + (depsAdded === 1 ? 'dependency.' : 'dependencies.') : '.'), true);
+    } catch (error) { showStatus('Could not add mod: ' + error.message, false); }
+    finally { if (button) { button.disabled = false; button.textContent = original; } }
+  }
+
+  function addManual() {
+    var url = $('tpm-manual-url').value.trim();
+    var path = $('tpm-manual-path').value.trim();
+    var name = $('tpm-manual-name').value.trim() || path.split('/').pop() || 'Direct download';
+    var sha1 = $('tpm-manual-sha1').value.trim().toLowerCase();
+    var sha512 = $('tpm-manual-sha512').value.trim().toLowerCase();
+    try {
+      var parsed = new URL(url);
+      if (parsed.protocol !== 'https:') throw new Error('Use an HTTPS download URL.');
+      path = MinecraftPack.safePath(path);
+      if (!/^[a-f0-9]{40}$/i.test(sha1)) throw new Error('SHA-1 must contain 40 hexadecimal characters.');
+      if (!/^[a-f0-9]{128}$/i.test(sha512)) throw new Error('SHA-512 must contain 128 hexadecimal characters.');
+      if (project.mods.some(function (mod) { return mod.path === path; })) throw new Error('A file already uses that install path.');
+      project.mods.push({ id: uid('mod'), name: name, versionName: 'Direct download', path: path, hashes: { sha1: sha1, sha512: sha512 }, downloads: [url], fileSize: 0, env: { client: $('tpm-manual-client').value, server: $('tpm-manual-server').value }, source: 'manual' });
+      renderAll();
+      showStatus('Direct download added.', true);
+    } catch (error) { showStatus(error.message, false); }
+  }
+
+  async function addOverrideFiles(files, layer) {
+    var added = 0;
+    for (var i = 0; i < files.length; i++) {
+      var file = files[i];
+      var relative = file.webkitRelativePath || file.name;
       try {
-        var img = await new Promise(function (resolve, reject) {
-          var reader = new FileReader();
-          reader.onload = function () {
-            var img = new Image();
-            img.onload = function () { resolve(img); };
-            img.onerror = reject;
-            img.src = reader.result;
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(f);
-        });
-        var name = f.name.replace(/\.[^.]+$/, '') + '.png';
-        var c = document.createElement('canvas');
-        c.width = img.width || 16; c.height = img.height || 16;
-        c.getContext('2d').drawImage(img, 0, 0);
-        project.textures.set(name, c);
-        renderPreview();
-        showMsg('Loaded texture ' + name + '.', true);
-      } catch (e) { showMsg('Could not load ' + f.name, false); }
+        var path = MinecraftPack.safePath(relative);
+        var full = layer + '/' + path;
+        if (project.overrides.some(function (existing) { return existing.layer + '/' + existing.path === full; })) continue;
+        project.overrides.push({ id: uid('override'), layer: layer, path: path, name: file.name, type: file.type, data: new Uint8Array(await file.arrayBuffer()) });
+        added++;
+      } catch (error) { showStatus('Skipped ' + file.name + ': ' + error.message, false); }
     }
+    renderAll();
+    if (added) showStatus('Added ' + added + ' override ' + (added === 1 ? 'file.' : 'files.'), true);
   }
 
-  /* ---------- Tabs ---------- */
-  function activateTab(name) {
-    document.querySelectorAll('.tpm .tab').forEach(function (t) {
-      var on = t.dataset.tab === name;
-      t.classList.toggle('active', on);
-      t.setAttribute('aria-selected', on ? 'true' : 'false');
-    });
-    document.querySelectorAll('.tpm .panel').forEach(function (p) {
-      p.classList.toggle('active', p.id === 'tab-' + name);
-    });
-    if (name === 'preview') renderPreview();
-    if (name === 'files') renderFileList();
-    if (name === 'export') renderMeta();
-    if (name === 'editor' && simpleMode) renderSimpleForm();
-  }
-
-  /* ---------- Validation helpers ---------- */
-  function validateJSON(str) {
-    try { JSON.parse(str); return true; } catch (e) { return false; }
-  }
-  function validateMcfunction(str) {
-    return true;
-  }
-  function validateCurrent() {
-    var el = $('tpm-editor');
-    if (!el) return true;
-    var str = el.value.trim();
-    if (!str) return true;
-    if (selectedId && project.content.has(selectedId)) {
-      var entry = project.content.get(selectedId);
-      if (entry.type === 'functions') return validateMcfunction(str);
-      return validateJSON(str);
-    }
-    return true;
-  }
-  function updateValidity() {
-    var el = $('tpm-validity');
-    if (!el) return;
-    var ok = validateCurrent();
-    el.textContent = ok ? 'Valid' : 'Invalid JSON';
-    el.className = 'tpm-validity ' + (ok ? 'ok' : 'err');
-  }
-
-  /* ---------- UI binding ---------- */
-  function bindUI() {
-    // Tabs
-    var tabsEl = document.querySelector('.tpm .tabs');
-    if (tabsEl) {
-      tabsEl.addEventListener('click', function (e) {
-        var t = e.target.closest ? e.target.closest('.tab') : null;
-        if (t && t.dataset && t.dataset.tab) activateTab(t.dataset.tab);
+  async function importMrpack(file) {
+    if (!file) return;
+    try {
+      var entries = await MinecraftPack.readZip(file);
+      var indexEntry = entries.find(function (entry) { return entry.name === 'modrinth.index.json'; });
+      if (!indexEntry) throw new Error('The archive has no root modrinth.index.json file.');
+      var manifest = JSON.parse(MinecraftPack.bytesText(indexEntry.data));
+      if (manifest.formatVersion !== 1 || manifest.game !== 'minecraft') throw new Error('Unsupported Modrinth pack format.');
+      var next = blankProject();
+      next.name = manifest.name || next.name;
+      next.versionId = manifest.versionId || next.versionId;
+      next.summary = manifest.summary || '';
+      next.minecraft = String((manifest.dependencies || {}).minecraft || next.minecraft);
+      var dep = manifest.dependencies || {};
+      if (dep['fabric-loader']) { next.loader = 'fabric'; next.loaderVersion = String(dep['fabric-loader']); }
+      else if (dep['quilt-loader']) { next.loader = 'quilt'; next.loaderVersion = String(dep['quilt-loader']); }
+      else if (dep.neoforge) { next.loader = 'neoforge'; next.loaderVersion = String(dep.neoforge); }
+      else if (dep.forge) { next.loader = 'forge'; next.loaderVersion = String(dep.forge); }
+      else next.loader = 'minecraft';
+      next.mods = (manifest.files || []).map(function (entry) {
+        return {
+          id: uid('mod'), name: entry.path.split('/').pop(), versionName: 'Imported .mrpack', path: entry.path,
+          hashes: entry.hashes || {}, downloads: entry.downloads || [], fileSize: entry.fileSize || 0,
+          env: entry.env || { client: 'required', server: 'required' }, source: 'imported'
+        };
       });
+      entries.forEach(function (entry) {
+        var match = entry.name.match(/^(overrides|client-overrides|server-overrides)\/(.+)$/);
+        if (!match) return;
+        next.overrides.push({ id: uid('override'), layer: match[1], path: match[2], name: match[2].split('/').pop(), type: 'application/octet-stream', data: entry.data });
+      });
+      applyProject(next);
+      showStatus('Imported ' + next.mods.length + ' downloads and ' + next.overrides.length + ' override files.', true);
+    } catch (error) { showStatus('Could not import .mrpack: ' + error.message, false); }
+  }
+
+  function exportMrpack() {
+    var diagnostics = validate();
+    var errors = diagnostics.filter(function (item) { return item.level === 'error'; });
+    if (errors.length) {
+      switchTab('review');
+      return showStatus('Fix ' + errors.length + ' validation ' + (errors.length === 1 ? 'error' : 'errors') + ' before exporting.', false);
     }
+    try {
+      var files = [{ name: 'modrinth.index.json', data: MinecraftPack.textBytes(JSON.stringify(buildManifest(), null, 2)) }];
+      project.overrides.forEach(function (file) { files.push({ name: file.layer + '/' + file.path, data: file.data }); });
+      var blob = TpcZip.createZip(files);
+      MinecraftPack.downloadBlob(new Blob([blob], { type: 'application/x-modrinth-modpack+zip' }), MinecraftPack.sanitizeName(project.name, 'modpack') + '-' + MinecraftPack.sanitizeName(project.versionId, '1.0.0') + '.mrpack');
+      showStatus('Modrinth pack exported.', true);
+    } catch (error) { showStatus('Export failed: ' + error.message, false); }
+  }
+
+  function switchTab(name) {
     document.querySelectorAll('.tpm .tab').forEach(function (tab) {
-      tab.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activateTab(tab.dataset.tab); }
-      });
+      var active = tab.dataset.tab === name;
+      tab.classList.toggle('active', active);
+      tab.setAttribute('aria-selected', active ? 'true' : 'false');
     });
+    document.querySelectorAll('.tpm .panel').forEach(function (panel) { panel.classList.toggle('active', panel.id === 'tab-' + name); });
+    if (name === 'review' || name === 'export') renderReview();
+  }
 
-    // New / Delete / Templates
-    var newForm = $('tpm-new-form');
-    var newName = $('tpm-new-name');
-    var newType = $('tpm-new-type');
-    function openNewForm() {
-      if (newForm) { newForm.hidden = false; $('tpm-template-form').hidden = true; newName.focus(); }
-    }
-    function closeNewForm() {
-      if (newForm) newForm.hidden = true;
-    }
-    $('tpm-new-content').addEventListener('click', openNewForm);
-    if ($('tpm-new-confirm')) {
-      $('tpm-new-confirm').addEventListener('click', function () {
-        var name = (newName.value || '').trim();
-        if (!name) { showMsg('Enter a name.', false); return; }
-        createContent(newType.value, name);
-        newName.value = '';
-        closeNewForm();
-      });
-    }
-    if ($('tpm-new-cancel')) {
-      $('tpm-new-cancel').addEventListener('click', closeNewForm);
-    }
-    $('tpm-delete-content').addEventListener('click', function () {
-      if (!selectedId) return;
-      if (!window.confirm('Delete this content?')) return;
-      deleteContent(selectedId);
+  function bindEvents() {
+    ['tpm-name', 'tpm-version-id', 'tpm-minecraft', 'tpm-loader', 'tpm-loader-version', 'tpm-summary'].forEach(function (id) {
+      $(id).addEventListener(id === 'tpm-loader' ? 'change' : 'input', function () { syncProjectFromForm(); renderReview(); });
     });
-
-    // Templates inline picker
-    var templateForm = $('tpm-template-form');
-    var templateGrid = $('tpm-template-grid');
-    function openTemplatePicker() {
-      if (!templateGrid) return;
-      templateGrid.innerHTML = '';
-      Object.keys(PACK_TEMPLATES).forEach(function (key) {
-        var card = document.createElement('button');
-        card.className = 'tpm-template-card';
-        card.type = 'button';
-        card.textContent = PACK_TEMPLATES[key];
-        card.dataset.template = key;
-        card.addEventListener('click', function () {
-          applyTemplate(key);
-          if (templateForm) templateForm.hidden = true;
-        });
-        templateGrid.appendChild(card);
-      });
-      if (templateForm) { templateForm.hidden = false; newForm.hidden = true; }
-    }
-    function closeTemplatePicker() {
-      if (templateForm) templateForm.hidden = true;
-    }
-    var templateBtn = $('tpm-load-template');
-    if (templateBtn) {
-      templateBtn.addEventListener('click', openTemplatePicker);
-    }
-    if ($('tpm-template-close')) {
-      $('tpm-template-close').addEventListener('click', closeTemplatePicker);
-    }
-
-    // Mode toggle
-    $('tpm-mode-toggle').addEventListener('click', function () {
-      simpleMode = !simpleMode;
-      this.textContent = simpleMode ? 'Simple mode: on' : 'Simple mode: off';
-      $('tpm-simple').hidden = !simpleMode;
-      if (simpleMode) renderSimpleForm();
-    });
-
-    // Editor
-    $('tpm-editor').addEventListener('input', function () {
-      if (selectedId && project.content.has(selectedId)) {
-        project.content.get(selectedId).content = this.value;
-      }
-      updateValidity();
-      renderPreview();
-    });
-
-    // Save / load / import / export
+    document.querySelectorAll('.tpm .tab').forEach(function (tab) { tab.addEventListener('click', function () { switchTab(tab.dataset.tab); }); });
     $('tpm-save').addEventListener('click', saveProject);
-    $('tpm-load').addEventListener('click', loadSavedProject);
-    $('tpm-export-project').addEventListener('click', exportProjectFile);
-    $('tpm-import').addEventListener('click', function () { $('tpm-import-file').click(); });
-    $('tpm-import-file').addEventListener('change', function () {
-      if (this.files && this.files[0]) importProjectFile(this.files[0]);
-      this.value = '';
+    $('tpm-load').addEventListener('click', loadProject);
+    $('tpm-export-project').addEventListener('click', exportProject);
+    $('tpm-import-project').addEventListener('click', function () { $('tpm-import-project-file').click(); });
+    $('tpm-import-project-file').addEventListener('change', function () { importProjectFile(this.files[0]); this.value = ''; });
+    $('tpm-import-pack').addEventListener('click', function () { $('tpm-import-pack-file').click(); });
+    $('tpm-import-pack-file').addEventListener('change', function () { importMrpack(this.files[0]); this.value = ''; });
+    $('tpm-clear').addEventListener('click', function () {
+      if (project.mods.length || project.overrides.length) {
+        if (!confirm('Start a new modpack and discard the current in-browser project?')) return;
+      }
+      applyProject(blankProject());
+      showStatus('New project created.', true);
     });
-    $('tpm-clear-project').addEventListener('click', function () {
-      if (window.confirm('Delete the saved project from this browser?')) deleteSavedProject();
+    $('tpm-search-btn').addEventListener('click', searchModrinth);
+    $('tpm-search').addEventListener('keydown', function (event) { if (event.key === 'Enter') { event.preventDefault(); searchModrinth(); } });
+    $('tpm-search-results').addEventListener('click', function (event) {
+      var card = event.target.closest('[data-project]');
+      if (card && event.target.closest('button')) addModrinthProject(card.dataset.project, event.target.closest('button'));
     });
-
-    // Export buttons
-    $('tpm-export-zip').addEventListener('click', exportZip);
-    $('tpm-export-datapack').addEventListener('click', exportDatapackOnly);
-    $('tpm-export-resource').addEventListener('click', exportResourcePackOnly);
-
-    // Upload
-    $('tpm-upload-btn').addEventListener('click', function () { $('tpm-upload').click(); });
-    $('tpm-upload').addEventListener('change', function () { handleFiles(this.files); this.value = ''; });
-    var dz = $('tpm-drop');
-    ['dragenter', 'dragover'].forEach(function (ev) {
-      dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add('drag'); });
+    $('tpm-manual-add').addEventListener('click', addManual);
+    $('tpm-mod-list').addEventListener('change', function (event) {
+      var row = event.target.closest('[data-id]');
+      if (!row) return;
+      var mod = project.mods.find(function (item) { return item.id === row.dataset.id; });
+      if (!mod) return;
+      if (event.target.dataset.action === 'client') mod.env.client = event.target.value;
+      if (event.target.dataset.action === 'server') mod.env.server = event.target.value;
+      renderReview();
     });
-    ['dragleave', 'drop'].forEach(function (ev) {
-      dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.remove('drag'); });
+    $('tpm-mod-list').addEventListener('click', function (event) {
+      if (event.target.dataset.action !== 'remove') return;
+      var row = event.target.closest('[data-id]');
+      project.mods = project.mods.filter(function (item) { return item.id !== row.dataset.id; });
+      renderAll();
     });
-    dz.addEventListener('drop', function (e) {
-      if (e.dataTransfer && e.dataTransfer.files) handleFiles(e.dataTransfer.files);
+    $('tpm-add-overrides').addEventListener('click', function () { $('tpm-override-files').click(); });
+    $('tpm-add-folder').addEventListener('click', function () { $('tpm-override-folder').click(); });
+    $('tpm-override-files').addEventListener('change', function () { addOverrideFiles(this.files, $('tpm-override-layer').value); this.value = ''; });
+    $('tpm-override-folder').addEventListener('change', function () { addOverrideFiles(this.files, $('tpm-override-layer').value); this.value = ''; });
+    var drop = $('tpm-drop');
+    ['dragenter', 'dragover'].forEach(function (type) { drop.addEventListener(type, function (event) { event.preventDefault(); drop.classList.add('drag'); }); });
+    ['dragleave', 'drop'].forEach(function (type) { drop.addEventListener(type, function (event) { event.preventDefault(); drop.classList.remove('drag'); }); });
+    drop.addEventListener('drop', function (event) { addOverrideFiles(event.dataTransfer.files, $('tpm-override-layer').value); });
+    $('tpm-override-list').addEventListener('click', function (event) {
+      var row = event.target.closest('[data-id]');
+      if (!row) return;
+      var file = project.overrides.find(function (item) { return item.id === row.dataset.id; });
+      if (!file) return;
+      if (event.target.dataset.action === 'remove') project.overrides = project.overrides.filter(function (item) { return item.id !== file.id; });
+      if (event.target.dataset.action === 'rename') {
+        var next = prompt('Path inside ' + file.layer + ':', file.path);
+        if (next == null) return;
+        try { file.path = MinecraftPack.safePath(next); } catch (error) { return showStatus(error.message, false); }
+      }
+      renderAll();
     });
-
-    // Metadata inputs
-    $('tpm-name').addEventListener('input', function () { project.name = this.value; });
-    $('tpm-format').addEventListener('change', function () { project.format = parseInt(this.value, 10); renderMeta(); });
-    $('tpm-desc').addEventListener('input', function () { project.description = this.value; renderMeta(); });
-    $('tpm-namespace').addEventListener('input', function () { project.namespace = sanitizeNamespace(this.value); });
-
-    // Tree search
-    $('tpm-tree-search').addEventListener('input', function () {
-      var q = this.value.toLowerCase();
-      document.querySelectorAll('.tpm-node').forEach(function (n) {
-        var show = !q || n.dataset.name.toLowerCase().indexOf(q) !== -1;
-        n.style.display = show ? '' : 'none';
-      });
-      document.querySelectorAll('.tpm-section').forEach(function (sec) {
-        var sib = sec.nextElementSibling; var visible = false;
-        while (sib && sib.classList.contains('tpm-group-body')) {
-          var nodes = sib.querySelectorAll('.tpm-node');
-          for (var i = 0; i < nodes.length; i++) { if (nodes[i].style.display !== 'none') { visible = true; break; } }
-          break;
-        }
-        sec.style.display = visible ? '' : 'none';
-      });
-    });
-
-    // Keyboard shortcuts
-    document.addEventListener('keydown', function (e) {
-      var tag = (e.target.tagName || '').toLowerCase();
-      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); saveProject(); }
-    });
-
-    // Responsive resize
-    window.addEventListener('resize', function () { renderPreview(); });
+    $('tpm-export-mrpack').addEventListener('click', exportMrpack);
+    $('tpm-export-manifest').addEventListener('click', function () { downloadJson(buildManifest(), 'modrinth.index.json'); });
   }
 
-  function applyTemplate(name) {
-    if (name === 'custom_item') {
-      createContent('items', 'custom_sword');
-      var entry = project.content.get(selectedId);
-      entry.data = { item_name: 'custom_sword', display_name: 'Custom Sword', custom_model_data: '1' };
-      entry.content = buildItemJSON(entry.data);
-    } else if (name === 'tool_pack') {
-      createContent('items', 'custom_pickaxe');
-      var entry = project.content.get(selectedId);
-      entry.data = { item_name: 'custom_pickaxe', display_name: 'Custom Pickaxe', custom_model_data: '2' };
-      entry.content = buildItemJSON(entry.data);
-    } else if (name === 'food_pack') {
-      createContent('items', 'custom_food');
-      var entry = project.content.get(selectedId);
-      entry.data = { item_name: 'custom_food', display_name: 'Custom Food', custom_model_data: '3' };
-      entry.content = buildItemJSON(entry.data);
-    } else if (name === 'recipe_pack') {
-      createContent('recipes', 'custom_recipe');
-      var entry = project.content.get(selectedId);
-      entry.data = { recipe_type: 'minecraft:crafting_shaped', result_item: 'minecraft:stone', result_count: '4', ingredients: 'A\nA\nA' };
-      entry.content = buildRecipeJSON(entry.data);
-    } else if (name === 'loot_table_pack') {
-      createContent('loot_tables', 'custom_loot');
-      var entry = project.content.get(selectedId);
-      entry.data = { loot_item: 'minecraft:diamond', functions: '' };
-      entry.content = buildLootTableJSON(entry.data);
-    } else if (name === 'advancement_pack') {
-      createContent('advancements', 'custom_advancement');
-      var entry = project.content.get(selectedId);
-      entry.data = { reward_loot: '' };
-      entry.content = buildAdvancementJSON(entry.data);
-    } else if (name === 'function_pack') {
-      createContent('functions', 'load');
-      var entry = project.content.get(selectedId);
-      entry.content = 'say ' + project.namespace + ' loaded!';
-    } else if (name === 'complete_pack') {
-      applyTemplate('custom_item');
-      applyTemplate('recipe_pack');
-      applyTemplate('loot_table_pack');
-    }
-    loadIntoEditor(project.content.get(selectedId));
-    renderFileList();
-    renderPreview();
-    refreshTreeFlags();
-    updateEditorHeader();
-  }
-
-  /* ---------- Init ---------- */
   function init() {
-    if (inited) return;
-    inited = true;
-    if (!$('tpm-editor') || typeof TpcZip === 'undefined') {
-      console.error('TPM init failed: missing editor or TpcZip.');
-      return;
-    }
-    project.name = $('tpm-name').value;
-    project.format = parseInt($('tpm-format').value, 10);
-    project.description = $('tpm-desc').value;
-    project.namespace = sanitizeNamespace($('tpm-namespace').value);
-    bindUI();
-    renderMeta();
-    buildTree();
-    try { checkSavedExists(); } catch (e) {}
+    if (!window.MinecraftPack || !window.TpcZip) return showStatus('Required ZIP helpers did not load. Refresh the page.', false);
+    project = blankProject();
+    bindEvents();
+    syncFormFromProject();
+    renderAll();
   }
 
-  function checkSavedExists() {
-    if (!storageAvailable()) return;
-    var saved = localStorage.getItem(STORAGE_KEY);
-    var label = $('tpm-saved-label');
-    if (saved && label) {
-      label.hidden = false; label.textContent = 'Saved project available';
-    }
-  }
+  window.ToolsvaultModpack = {
+    getState: function () { return project; },
+    buildManifest: buildManifest,
+    validate: validate,
+    applyProject: applyProject
+  };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

@@ -36,23 +36,22 @@ games_only: true
       <input type="text" id="tpd-name" value="My Datapack" maxlength="48">
     </div>
     <div class="tpd-field">
-      <label for="tpd-format">pack_format</label>
+      <label for="tpd-format">Minecraft / data format</label>
       <select id="tpd-format">
-        <option value="61">61 — 1.21.5+</option>
-        <option value="48">48 — 1.21.2–1.21.4</option>
-        <option value="41">41 — 1.21</option>
-        <option value="32">32 — 1.20.5–1.20.6</option>
-        <option value="26">26 — 1.20.4</option>
-        <option value="18">18 — 1.20.2–1.20.3</option>
-        <option value="15">15 — 1.20–1.20.1</option>
-        <option value="12">12 — 1.19.4</option>
-        <option value="11">11 — 1.19.3</option>
-        <option value="10">10 — 1.19</option>
-        <option value="9">9 — 1.18.2</option>
-        <option value="8">8 — 1.18.1</option>
-        <option value="7">7 — 1.18</option>
-        <option value="6">6 — 1.17</option>
-        <option value="5">5 — 1.16.2–1.16.5</option>
+        <option value="107.1" selected>107.1 — Java 26.2</option>
+        <option value="101.1">101.1 — Java 26.1</option>
+        <option value="94.1">94.1 — Java 1.21.11</option>
+        <option value="88.0">88.0 — Java 1.21.9</option>
+        <option value="80.0">80.0 — Java 1.21.6</option>
+        <option value="71.0">71.0 — Java 1.21.5</option>
+        <option value="61.0">61.0 — Java 1.21.4</option>
+        <option value="48.0">48.0 — Java 1.21</option>
+        <option value="41.0">41.0 — Java 1.20.5–1.20.6</option>
+        <option value="26.0">26.0 — Java 1.20.4</option>
+        <option value="15.0">15.0 — Java 1.20–1.20.1</option>
+        <option value="10.0">10.0 — Java 1.19</option>
+        <option value="9.0">9.0 — Java 1.18.2</option>
+        <option value="6.0">6.0 — Java 1.17</option>
       </select>
     </div>
     <div class="tpd-field tpd-field-grow">
@@ -61,7 +60,7 @@ games_only: true
     </div>
     <div class="tpd-field">
       <label for="tpd-namespace">Default namespace</label>
-      <input type="text" id="tpd-namespace" value="minecraft" maxlength="16">
+      <input type="text" id="tpd-namespace" value="mypack" maxlength="32">
     </div>
   </div>
 
@@ -92,10 +91,14 @@ games_only: true
           <div class="tpd-tools">
             <button class="btn btn-primary tpd-sm" id="tpd-new-file" type="button" title="Create a new datapack file">+ New file</button>
             <button class="btn btn-secondary tpd-sm" id="tpd-load-template" type="button" title="Load a built-in pack template">Load template</button>
+            <button class="btn btn-secondary tpd-sm" id="tpd-add-load" type="button">Add load function</button>
+            <button class="btn btn-secondary tpd-sm" id="tpd-add-tick" type="button">Add tick function</button>
           </div>
           <div class="tpd-tool-opts">
             <button class="btn btn-secondary tpd-sm" id="tpd-validate" type="button" title="Validate the current file">Validate</button>
             <button class="btn btn-secondary tpd-sm" id="tpd-pretty" type="button" title="Pretty-print JSON">Pretty print</button>
+            <button class="btn btn-secondary tpd-sm" id="tpd-rename-file" type="button">Rename</button>
+            <button class="btn btn-secondary tpd-sm" id="tpd-duplicate-file" type="button">Duplicate</button>
             <button class="btn btn-secondary tpd-sm" id="tpd-delete-file" type="button" title="Delete the current file">Delete</button>
             <button class="btn btn-secondary tpd-sm" id="tpd-mode-toggle" type="button" title="Switch between Code and Simple mode">Simple mode: off</button>
             <span class="tpd-validity" id="tpd-validity"></span>
@@ -130,6 +133,10 @@ games_only: true
   <!-- FILES -->
   <section class="panel" id="tab-files">
     <div class="tpd-filebar">
+      <button class="btn btn-secondary" id="tpd-import-pack">Import datapack ZIP…</button>
+      <input type="file" id="tpd-pack-file" accept=".zip,application/zip" hidden>
+      <button class="btn btn-secondary" id="tpd-import-folder">Import folder…</button>
+      <input type="file" id="tpd-folder" webkitdirectory directory multiple hidden>
       <button class="btn btn-secondary" id="tpd-new-blank">+ New file</button>
       <button class="btn btn-secondary" id="tpd-add-file">Add file...</button>
       <button class="btn btn-secondary" id="tpd-load-template-files">Load template</button>
@@ -155,8 +162,11 @@ games_only: true
         <p class="tpd-muted">Packages <code>pack.mcmeta</code> and every file under <code>data/&lt;namespace&gt;/…</code> into a downloadable <code>.zip</code>.</p>
         <button class="btn btn-primary" id="tpd-export-zip">{%- include tpc/download.svg -%} Download .zip</button>
         <button class="btn btn-secondary" id="tpd-export-meta">Download pack.mcmeta only</button>
+        <button class="btn btn-secondary" id="tpd-export-report">Download validation report</button>
       </div>
       <div class="tpd-export-col">
+        <h3>Pack diagnostics</h3>
+        <div id="tpd-diagnostics"></div>
         <h3>pack.mcmeta preview</h3>
         <pre class="tpd-json" id="tpd-meta-preview"></pre>
       </div>
@@ -164,5 +174,5 @@ games_only: true
   </section>
 </div>
 <script src="{{ '/assets/js/zip-writer.js' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M' }}" defer></script>
-
+<script src="{{ '/assets/js/minecraft-pack-utils.js' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M' }}" defer></script>
 <script src="{{ '/assets/js/tpd.js' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M' }}" defer></script>
