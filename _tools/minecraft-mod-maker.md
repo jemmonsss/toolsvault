@@ -54,7 +54,7 @@ icon: "&#128736;"
 
   <div class="tpm-status" id="tpm-status" role="status" aria-live="polite" hidden></div>
 
-  <section class="panel active" id="tab-mods">
+  <section class="panel active" id="panel-mods">
     <div class="tpm-two-col">
       <div class="tpm-card">
         <h3>Find mods on Modrinth</h3>
@@ -87,7 +87,7 @@ icon: "&#128736;"
     <div class="tpm-mod-list" id="tpm-mod-list"><p class="tpm-empty">No mods added yet.</p></div>
   </section>
 
-  <section class="panel" id="tab-overrides">
+  <section class="panel" id="panel-overrides">
     <div class="tpm-card">
       <h3>Config and instance files</h3>
       <p class="tpm-muted">Add config files, scripts, resource packs, datapacks, default options, and server properties. Choose the layer that receives each file.</p>
@@ -103,7 +103,7 @@ icon: "&#128736;"
     <div class="tpm-override-list" id="tpm-override-list"><p class="tpm-empty">No override files added.</p></div>
   </section>
 
-  <section class="panel" id="tab-review">
+  <section class="panel" id="panel-review">
     <div class="tpm-review-grid">
       <div class="tpm-card"><h3>Validation</h3><div id="tpm-diagnostics"></div></div>
       <div class="tpm-card"><h3>Dependencies</h3><pre class="tpm-json" id="tpm-dependency-preview"></pre></div>
@@ -111,7 +111,7 @@ icon: "&#128736;"
     </div>
   </section>
 
-  <section class="panel" id="tab-export">
+  <section class="panel" id="panel-export">
     <div class="tpm-export-grid">
       <div class="tpm-card">
         <h3>Modrinth modpack</h3>

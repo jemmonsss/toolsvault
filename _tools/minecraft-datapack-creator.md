@@ -65,17 +65,17 @@ games_only: true
   </div>
 
   <div class="tabs" role="tablist">
-    <button class="tab active" data-tab="editor" role="tab" aria-selected="true" aria-controls="tab-editor">Editor</button>
-    <button class="tab" data-tab="files" role="tab" aria-selected="false" aria-controls="tab-files">Files</button>
-    <button class="tab" data-tab="preview" role="tab" aria-selected="false" aria-controls="tab-preview">Preview</button>
-    <button class="tab" data-tab="export" role="tab" aria-selected="false" aria-controls="tab-export">Export</button>
+    <button class="tab active" data-tab="editor" role="tab" aria-selected="true" aria-controls="panel-editor">Editor</button>
+    <button class="tab" data-tab="files" role="tab" aria-selected="false" aria-controls="panel-files">Files</button>
+    <button class="tab" data-tab="preview" role="tab" aria-selected="false" aria-controls="panel-preview">Preview</button>
+    <button class="tab" data-tab="export" role="tab" aria-selected="false" aria-controls="panel-export">Export</button>
   </div>
 
   <!-- Global status toast (visible on every tab) -->
   <div class="tpd-status" id="tpd-status" role="status" aria-live="polite" hidden></div>
 
   <!-- EDITOR -->
-  <section class="panel active" id="tab-editor">
+  <section class="panel active" id="panel-editor">
     <div class="tpd-layout">
       <aside class="tpd-tree" id="tpd-tree">
         <div class="tpd-tree-head">
@@ -131,7 +131,7 @@ games_only: true
   </section>
 
   <!-- FILES -->
-  <section class="panel" id="tab-files">
+  <section class="panel" id="panel-files">
     <div class="tpd-filebar">
       <button class="btn btn-secondary" id="tpd-import-pack">Import datapack ZIP…</button>
       <input type="file" id="tpd-pack-file" accept=".zip,application/zip" hidden>
@@ -148,14 +148,14 @@ games_only: true
   </section>
 
   <!-- PREVIEW -->
-  <section class="panel" id="tab-preview">
+  <section class="panel" id="panel-preview">
     <div class="tpd-preview-list" id="tpd-preview-list">
       <p class="tpc-empty">Add files to see a live preview here.</p>
     </div>
   </section>
 
   <!-- EXPORT -->
-  <section class="panel" id="tab-export">
+  <section class="panel" id="panel-export">
     <div class="tpd-export">
       <div class="tpd-export-col">
         <h3>Datapack</h3>

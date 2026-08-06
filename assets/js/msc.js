@@ -1760,7 +1760,7 @@
         root.querySelectorAll('.panel').forEach(function (p) { p.classList.remove('active'); });
         btn.classList.add('active');
         btn.setAttribute('aria-selected', 'true');
-        var panel = $('tab-' + tab);
+        var panel = $('panel-' + tab);
         if (panel) panel.classList.add('active');
 
         // Re-render active tab

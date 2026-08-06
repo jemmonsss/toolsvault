@@ -49,7 +49,7 @@ icon: "&#9881;"
   <div class="msc-status" id="msc-status" role="status" aria-live="polite" hidden></div>
 
   <!-- TAB: Server Type & Version -->
-  <section class="panel active" id="tab-type">
+  <section class="panel active" id="panel-type">
     <div class="msc-card">
       <h3>Choose Server Type</h3>
       <p class="msc-muted">Select the server software. Plugin servers (Paper, Spigot, Purpur) support Bukkit plugins. Modded servers (Fabric, Forge, NeoForge) support mods.</p>
@@ -79,7 +79,7 @@ icon: "&#9881;"
   </section>
 
   <!-- TAB: Server Properties -->
-  <section class="panel" id="tab-properties">
+  <section class="panel" id="panel-properties">
     <div class="msc-card">
       <h3>server.properties</h3>
       <p class="msc-muted">Configure every server property. Click a group header to collapse/expand it. Properties are organized by category for easy navigation.</p>
@@ -88,7 +88,7 @@ icon: "&#9881;"
   </section>
 
   <!-- TAB: Players -->
-  <section class="panel" id="tab-players">
+  <section class="panel" id="panel-players">
     <div class="msc-two-col">
       <div class="msc-card">
         <h3>Operators (Ops)</h3>
@@ -154,7 +154,7 @@ icon: "&#9881;"
   </section>
 
   <!-- TAB: Plugins / Mods -->
-  <section class="panel" id="tab-addons">
+  <section class="panel" id="panel-addons">
     <p class="msc-empty" id="msc-addon-vanilla-msg" hidden>Vanilla servers don't support plugins or mods. Switch to Paper, Spigot, Purpur, Fabric, Forge, or NeoForge in the Server Type tab.</p>
 
     <div id="msc-addon-content">
@@ -186,7 +186,7 @@ icon: "&#9881;"
   </section>
 
   <!-- TAB: JVM Config -->
-  <section class="panel" id="tab-jvm">
+  <section class="panel" id="panel-jvm">
     <div class="msc-two-col">
       <div class="msc-card">
         <h3>RAM Allocation</h3>
@@ -266,7 +266,7 @@ icon: "&#9881;"
   </section>
 
   <!-- TAB: Review & Export -->
-  <section class="panel" id="tab-review">
+  <section class="panel" id="panel-review">
     <div class="msc-review-grid">
       <div class="msc-card">
         <h3>Validation</h3>

@@ -59,17 +59,17 @@ icon: "&#127959;"
   </div>
 
   <div class="tabs" role="tablist">
-    <button class="tab active" data-tab="editor" role="tab" aria-selected="true" aria-controls="tab-editor">Editor</button>
-    <button class="tab" data-tab="files" role="tab" aria-selected="false" aria-controls="tab-files">Files</button>
-    <button class="tab" data-tab="preview" role="tab" aria-selected="false" aria-controls="tab-preview">Preview</button>
-    <button class="tab" data-tab="export" role="tab" aria-selected="false" aria-controls="tab-export">Export</button>
+    <button class="tab active" data-tab="editor" role="tab" aria-selected="true" aria-controls="panel-editor">Editor</button>
+    <button class="tab" data-tab="files" role="tab" aria-selected="false" aria-controls="panel-files">Files</button>
+    <button class="tab" data-tab="preview" role="tab" aria-selected="false" aria-controls="panel-preview">Preview</button>
+    <button class="tab" data-tab="export" role="tab" aria-selected="false" aria-controls="panel-export">Export</button>
   </div>
 
   <!-- Global status toast (visible on every tab) -->
   <div class="tpc-status" id="tpc-status" role="status" aria-live="polite" hidden></div>
 
   <!-- EDITOR -->
-  <section class="panel active" id="tab-editor">
+  <section class="panel active" id="panel-editor">
     <div class="tpc-layout">
       <aside class="tpc-tree" id="tpc-tree">
         <div class="tpc-tree-head">
@@ -158,7 +158,7 @@ icon: "&#127959;"
   </section>
 
   <!-- FILES -->
-  <section class="panel" id="tab-files">
+  <section class="panel" id="panel-files">
     <div class="tpc-filebar">
       <button class="btn btn-secondary" id="tpc-import-pack">Import resource-pack ZIP…</button>
       <input type="file" id="tpc-pack-file" accept=".zip,application/zip" hidden>
@@ -173,14 +173,14 @@ icon: "&#127959;"
   </section>
 
   <!-- PREVIEW -->
-  <section class="panel" id="tab-preview">
+  <section class="panel" id="panel-preview">
     <div class="tpc-preview-grid" id="tpc-preview-grid">
       <p class="tpc-empty">Add textures to see a live preview here.</p>
     </div>
   </section>
 
   <!-- EXPORT -->
-  <section class="panel" id="tab-export">
+  <section class="panel" id="panel-export">
     <div class="tpc-export">
       <div class="tpc-export-col">
         <h3>Resource pack</h3>
