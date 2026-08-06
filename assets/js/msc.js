@@ -218,6 +218,7 @@
   function el(tag, attrs, children) {
     var e = document.createElement(tag);
     if (attrs) Object.keys(attrs).forEach(function (k) {
+      if (attrs[k] === undefined || attrs[k] === null) return;
       if (k === 'className') e.className = attrs[k];
       else if (k.indexOf('on') === 0) e.addEventListener(k.slice(2).toLowerCase(), attrs[k]);
       else e.setAttribute(k, attrs[k]);
