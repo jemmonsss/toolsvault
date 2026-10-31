@@ -31,3 +31,5 @@
 .forge-workbench .print-panel{height:100%}
 .forge-workbench .print-msg{font-weight:600}
 @media(min-width:980px){.forge-layout{grid-template-columns:minmax(290px,.9fr) minmax(390px,1.1fr)}}
+
+.forge-instructions{margin:.1rem 0;padding:1rem;max-width:100%;overflow-wrap:anywhere;white-space:pre-wrap;font:500 .84rem/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--text-secondary,#d5d8e2);background:var(--bg-secondary,#151b2b);border:1px solid var(--border-color,#364153);border-radius:10px}
