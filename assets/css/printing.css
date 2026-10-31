@@ -33,3 +33,10 @@
 @media(min-width:980px){.forge-layout{grid-template-columns:minmax(290px,.9fr) minmax(390px,1.1fr)}}
 
 .forge-instructions{margin:.1rem 0;padding:1rem;max-width:100%;overflow-wrap:anywhere;white-space:pre-wrap;font:500 .84rem/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--text-secondary,#d5d8e2);background:var(--bg-secondary,#151b2b);border:1px solid var(--border-color,#364153);border-radius:10px}
+/* 3MF color-separation part list */
+.color-part-list{display:grid;gap:.65rem;max-height:460px;overflow:auto}
+.color-part{background:var(--bg-primary,#141722);border:1px solid var(--border-color,#3c4a5e);border-radius:10px;padding:.75rem}
+.color-part.is-active{border-color:#9775fa}
+.color-part-select{display:flex;align-items:center;text-align:left;gap:.6rem;background:none;color:inherit;border:0;padding:0;font:inherit;font-weight:700;cursor:pointer}
+.color-swatch{display:inline-block;flex:none;width:24px;height:24px;border-radius:7px;border:2px solid #aaa}
+.color-part .btn{font-size:.82rem;padding:.45rem .7rem}

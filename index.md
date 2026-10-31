@@ -46,7 +46,7 @@ description: "A curated vault of developer tools and resources"
             </a>
             <a href="/printing/" class="tool-card" data-category="3d-printing">
                 <div class="tool-header"><h3>&#128424; 3D Printing Tools</h3></div>
-                <div class="tool-description">Free custom STL makers: lithophanes, cookie cutters, organizers, threaded nuts &amp; bolts, and name tags. No paywalls.</div>
+                <div class="tool-description">Free STL tools: modular cable protectors, uploaded-model print-in-place flexi conversion, brackets, SVG extrusion, color separation, dividers and more. No paywalls.</div>
                 <div class="tool-footer"><div class="tool-tags"><span class="tag">Custom STLs</span><span class="tag">Lithophanes</span><span class="tag">Organizers</span></div></div>
                 <span class="btn-link">Open 3D printing tools &rarr;</span>
             </a>

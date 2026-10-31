@@ -1,27 +1,29 @@
 ---
-title: "Flexi Toy & Jointed Snake Builder"
+title: "Upload STL → Print-in-Place Flexi Converter"
 link: "/tools/forge-flexi/"
-description: "Generate configurable articulated toy parts as STLs: head, tail, middle links, and hinge pins."
+description: "Upload an elongated STL and convert its projected shape to a segmented, captive-hinge, flat-printable flexi relief."
+category: "3D Printing"
 tags:
   - "3D Printing"
-  - "STL generator"
-  - "Articulated toy builder"
-category: "3D Printing"
+  - "Free STL maker"
+  - "flexi upload"
 icon: "&#128424;"
 ---
 <link rel="stylesheet" href="{{ '/assets/css/printing.css' | relative_url }}">
-<div class="print-tool forge-workbench" data-forge="flexi">
- <p>Print the individual components, then assemble an articulated snake or chain. <strong>100% free STL exports, no subscription, and files stay in your browser.</strong></p>
+<div class="print-tool forge-workbench" data-new-maker="flexi-upload">
+ <p>Upload an elongated STL and convert its projected shape to a segmented, captive-hinge, flat-printable flexi relief. <strong>Free local STL export, no login, no subscription, no uploads to our servers.</strong></p>
  <div class="print-cols forge-layout">
- <section class="print-panel"><h2>Customize</h2><div class="print-fields forge-fields"><label>Total snake segments<input id="forge-segments" type="number" value="8" min="3" max="40" step="1"></label><label>Body width (mm)<input id="forge-size" type="number" value="14" min="12" max="30" step="0.5"></label><label>Joint center spacing (mm)<input id="forge-spacing" type="number" value="22" min="14" max="36" step="0.5"></label><label>Hinge hole (mm)<input id="forge-hole" type="number" value="3.6" min="3" max="5" step="0.1"></label><label>Each segment thickness (mm)<input id="forge-thickness" type="number" value="3.2" min="2.8" max="6" step="0.2"></label><label>Preview / export part<select id="forge-part"><option value="link">Middle segment</option><option value="head">Head segment</option><option value="tail">Tail segment</option><option value="pin">Loose hinge pin</option></select></label></div></section>
- <section class="print-panel"><h2>Interactive 3D preview</h2><div class="print-viewport forge-viewport"><canvas id="forge-render" aria-label="Rotate the generated 3D preview"></canvas><div class="print-viewport-label">Drag to rotate · Scroll to zoom</div></div><p class="print-small" id="forge-preview-note">Preview is rendered locally; exports contain full-resolution geometry.</p></section>
+ <section class="print-panel"><h2>Imported flexi model</h2><div class="print-fields forge-fields"><label>STL model file<input type="file" id="forge-upload" accept=".stl,model/stl"></label><label>Printed model length (mm)<input data-param="length" type="number" value="115" min="70" max="170" step="1"></label><label>Articulated sections<input data-param="segments" type="number" value="5" min="3" max="10" step="1"></label><label>Separation / joint clearance (mm)<input data-param="clearance" type="number" value=".7" min=".45" max="1.2" step=".05"></label><label>Mesh resolution (mm)<input data-param="resolution" type="number" value=".75" min=".6" max="1.25" step=".05"></label></div></section>
+ <section class="print-panel"><h2>Generated geometry preview</h2><div class="print-viewport forge-viewport"><canvas id="forge-render" aria-label="Drag to rotate the actual STL triangles"></canvas><div class="print-viewport-label">Drag to rotate · Scroll to zoom</div></div><p class="print-small">Preview shows a triangle sample. The download contains every generated triangle.</p></section>
  </div>
- <p class="print-msg" id="forge-status" role="status" aria-live="polite">Building your design…</p>
- <pre id="forge-details" class="forge-instructions" aria-live="polite"></pre>
- <div class="print-action-row"><button type="button" class="btn btn-primary" id="forge-export" disabled>Download current STL</button><button type="button" class="btn btn-secondary" id="forge-kit" disabled>Download complete STL kit (ZIP)</button><a class="btn btn-secondary" href="/printing/">All 3D tools</a></div>
- <p class="print-note">This is a modular assembly kit, not a print-in-place flexi animal. Pins are not captive by themselves: retain them with a suitable fastener, adhesive, or another mechanically tested method. Check clearances and child safety. These are independent ToolsVault tools. STL dimensions are millimeters; test fit, slice, and inspect layers before printing. No cloud processing or paid exports.</p>
+ <p id="forge-status" class="print-msg" role="status" aria-live="polite">Building model…</p>
+ <pre id="forge-details" class="forge-instructions"></pre>
+ <div class="print-action-row"><button id="forge-export" type="button" class="btn btn-primary" disabled>Download real STL</button><button type="button" class="btn btn-secondary" id="forge-demo">Try demo model</button><a href="/printing/" class="btn btn-secondary">All 3D tools</a></div>
+ <p class="print-note"><strong>Before you print:</strong> This first version is a 2.5D print-in-place converter: it preserves the top silhouette and contour but fills undercuts, gaps and underside cavities. Best for elongated models lying along X. It does not guarantee any arbitrary 3D model is printable. Always check model dimensions, sliced layers and physical fit; watertight geometry does not prove mechanical performance.</p>
 </div>
 <script src="{{ '/assets/js/print-forge-core.js' | relative_url }}" defer></script>
-<script src="{{ '/assets/js/print-forge-extra.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/print-pegboard.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/print-new-generators.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/print-flexi-convert.js' | relative_url }}" defer></script>
 <script src="{{ '/assets/js/zip-writer.js' | relative_url }}" defer></script>
-<script src="{{ '/assets/js/print-forge-ui.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/print-new-ui.js' | relative_url }}" defer></script>
