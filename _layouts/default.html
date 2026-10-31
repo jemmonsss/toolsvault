@@ -1,0 +1,318 @@
+---
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#8b5cf6">
+    <link rel="icon" href="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml">
+    <link rel="preload" href="/assets/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/fonts/inter-500.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/fonts/inter-700.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ '/assets/css/main.css' | relative_url }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}"></noscript>
+    <link rel="alternate" type="application/rss+xml" title="{{ site.title | escape }}" href="{{ '/' | absolute_url }}feed.xml">
+    <script>document.documentElement.setAttribute('data-theme','dark');</script>
+    {% seo %}
+</head>
+<body>
+    {% include header.html %}
+
+    <main>
+        {{ content }}
+    </main>
+
+    {% include footer.html %}
+
+    <button type="button" id="back-to-top" class="back-to-top" aria-label="Back to top" title="Back to top">&#8593;</button>
+
+    <script>
+    // Universal UI (all pages): theme toggle, back-to-top, header favorites count, mobile nav, active indicator
+    document.addEventListener('DOMContentLoaded', function() {
+        var btt = document.getElementById('back-to-top');
+        if (btt) {
+            window.addEventListener('scroll', function() {
+                btt.classList.toggle('show', window.scrollY > 400);
+            }, { passive: true });
+            btt.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+        }
+
+        var themeToggle = document.getElementById('theme-toggle');
+        function updateThemeIcon() {
+            if (!themeToggle) return;
+            themeToggle.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? '☀' : '☾';
+        }
+        if (themeToggle) {
+            updateThemeIcon();
+            themeToggle.addEventListener('click', function() {
+                var cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+                var next = cur === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', next);
+                try { localStorage.setItem('toolsvault_theme', next); } catch(e){}
+                updateThemeIcon();
+            });
+        }
+
+        try {
+            var fc = document.getElementById('fav-count-header');
+            if (fc) fc.textContent = (JSON.parse(localStorage.getItem('toolsvault_favorites')) || []).length;
+        } catch(e){}
+
+        // Mobile nav toggle
+        var menuToggle = document.getElementById('menu-toggle');
+        var mainNav = document.getElementById('main-nav');
+        var navOverlay = document.getElementById('nav-overlay');
+        function openMenu() {
+            if (!mainNav || !menuToggle || !navOverlay) return;
+            mainNav.classList.add('active');
+            navOverlay.classList.add('active');
+            menuToggle.classList.add('active');
+            menuToggle.setAttribute('aria-expanded', 'true');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeMenu() {
+            if (!mainNav || !menuToggle || !navOverlay) return;
+            mainNav.classList.remove('active');
+            navOverlay.classList.remove('active');
+            menuToggle.classList.remove('active');
+            menuToggle.setAttribute('aria-expanded', 'false');
+            document.body.style.overflow = '';
+        }
+        if (menuToggle) {
+            menuToggle.addEventListener('click', function() {
+                if (mainNav && mainNav.classList.contains('active')) {
+                    closeMenu();
+                } else {
+                    openMenu();
+                }
+            });
+        }
+        if (navOverlay) {
+            navOverlay.addEventListener('click', closeMenu);
+        }
+        if (mainNav) {
+            mainNav.querySelectorAll('.nav-link').forEach(function(link) {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) closeMenu();
+                });
+            });
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && mainNav && mainNav.classList.contains('active')) {
+                closeMenu();
+            }
+        });
+
+        // Active nav indicator updater
+        function updateActiveNav() {
+            var path = window.location.pathname;
+            var hash = window.location.hash;
+            var navLinks = document.querySelectorAll('.main-nav .nav-link[data-nav]');
+            navLinks.forEach(function(link) { link.classList.remove('active'); });
+            if (path === '/' || path === '/index.html') {
+                var homeLink = document.querySelector('.nav-link[data-nav="home"]');
+                if (homeLink) homeLink.classList.add('active');
+            } else if (path === '/tools/' || path === '/tools/index.html' || path.indexOf('/tools/') === 0) {
+                var toolsLink = document.querySelector('.nav-link[data-nav="tools"]');
+                if (toolsLink) toolsLink.classList.add('active');
+            } else if (path === '/about/') {
+                var aboutLink = document.querySelector('.nav-link[data-nav="about"]');
+                if (aboutLink) aboutLink.classList.add('active');
+            } else if (path.indexOf('/blog/') === 0) {
+                var blogLink = document.querySelector('.nav-link[data-nav="blog"]');
+                if (blogLink) blogLink.classList.add('active');
+            } else if (path.indexOf('/games/') === 0) {
+                var gamesLink = document.querySelector('.nav-link[data-nav="games"]');
+                if (gamesLink) gamesLink.classList.add('active');
+            }
+            var favLink = document.getElementById('nav-favorites');
+            if (favLink && hash === '#favorites') {
+                favLink.classList.add('active');
+            } else if (favLink) {
+                favLink.classList.remove('active');
+            }
+        }
+        updateActiveNav();
+    });(function(){try{var t=localStorage.getItem('toolsvault_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+    </script>
+
+    {% if page.url == '/' or page.url == '/tools/' or page.url == '/tools/index.html' %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('tool-search');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const toolCards = Array.from(document.querySelectorAll('.category-section:not(#favorites-view) .tool-card'));
+        const categorySections = document.querySelectorAll('.category-section:not(#favorites-view)');
+        const noResults = document.getElementById('no-results');
+        const favCountEl = document.getElementById('fav-count');
+        const favCountHeader = document.getElementById('fav-count-header');
+        const favoritesView = document.getElementById('favorites-view');
+        const favoritesGrid = document.getElementById('favorites-grid');
+        const favTotalEl = document.getElementById('fav-total');
+        let activeCategory = 'all';
+        const initialQuery = new URLSearchParams(window.location.search).get('q');
+        if (searchInput && initialQuery) searchInput.value = initialQuery;
+
+        const FAV_KEY = 'toolsvault_favorites';
+        function getFavorites() {
+            try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; }
+            catch (e) { return []; }
+        }
+        function isFavorite(id) {
+            return getFavorites().includes(id);
+        }
+        function setFavorite(id, fav) {
+            let favs = getFavorites();
+            if (fav && !favs.includes(id)) favs.push(id);
+            if (!fav) favs = favs.filter(x => x !== id);
+            try { localStorage.setItem(FAV_KEY, JSON.stringify(favs)); } catch (e) {}
+            updateFavButtons();
+            updateFavCount();
+            if (activeCategory === 'favorites') renderFavorites();
+        }
+        function updateFavButtons() {
+            document.querySelectorAll('.fav-btn').forEach(btn => {
+                const fav = isFavorite(btn.dataset.fav);
+                btn.classList.toggle('active', fav);
+                btn.textContent = fav ? '\u2665' : '\u2661';
+                btn.setAttribute('aria-label', fav ? 'Remove favorite' : 'Add favorite');
+            });
+        }
+        function updateFavCount() {
+            const n = getFavorites().length;
+            if (favCountEl) favCountEl.textContent = n;
+            if (favTotalEl) favTotalEl.textContent = n;
+            if (favCountHeader) favCountHeader.textContent = n;
+        }
+        function renderFavorites() {
+            favoritesGrid.innerHTML = '';
+            const favs = getFavorites();
+            const cards = toolCards.filter(c => favs.includes(c.dataset.fav));
+            if (cards.length === 0) {
+                favoritesGrid.innerHTML = '<p class="fav-empty">No favorites yet. Tap the heart on a tool to save it.</p>';
+            } else {
+                cards.forEach(c => favoritesGrid.appendChild(c.cloneNode(true)));
+            }
+            favoritesView.style.display = 'block';
+        }
+
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.fav-btn');
+            if (!btn) return;
+            e.preventDefault();
+            e.stopPropagation();
+            setFavorite(btn.dataset.fav, !isFavorite(btn.dataset.fav));
+        });
+
+        const clearBtn = document.getElementById('clear-favorites');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                try { localStorage.removeItem(FAV_KEY); } catch (e) {}
+                updateFavButtons();
+                updateFavCount();
+                if (activeCategory === 'favorites') renderFavorites();
+            });
+        }
+
+        function filterTools() {
+            const query = searchInput.value.toLowerCase().trim();
+            let visible = 0;
+            toolCards.forEach(card => {
+                const title = (card.dataset.title || '').toLowerCase();
+                const description = (card.dataset.description || '').toLowerCase();
+                const tags = (card.dataset.tags || '').toLowerCase();
+                const cardCategory = (card.dataset.category || '').toLowerCase();
+                const matchesSearch = title.includes(query) || description.includes(query) || tags.includes(query);
+                const matchesCategory = activeCategory === 'all' || cardCategory.includes(activeCategory);
+                if (matchesSearch && matchesCategory) {
+                    card.style.display = 'flex';
+                    visible++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            categorySections.forEach(section => {
+                const sectionCategory = (section.dataset.category || '').toLowerCase();
+                const hasVisible = !!section.querySelector('.tool-card:not([style*="display: none"])');
+                const matchesCategory = activeCategory === 'all' || sectionCategory.includes(activeCategory);
+                section.style.display = (matchesCategory && hasVisible) ? 'block' : 'none';
+            });
+            favoritesView.style.display = 'none';
+            noResults.style.display = (visible === 0) ? 'block' : 'none';
+        }
+
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeCategory = btn.dataset.category;
+                if (activeCategory === 'favorites') {
+                    categorySections.forEach(s => s.style.display = 'none');
+                    noResults.style.display = 'none';
+                    renderFavorites();
+                    if (location.hash !== '#favorites') location.hash = '#favorites';
+                } else {
+                    filterTools();
+                    if (location.hash) location.hash = '';
+                }
+            });
+        });
+
+        searchInput.addEventListener('input', function() {
+            if (activeCategory === 'favorites') return;
+            filterTools();
+            const url = new URL(window.location.href);
+            const query = searchInput.value.trim();
+            if (query) url.searchParams.set('q', query); else url.searchParams.delete('q');
+            history.replaceState(null, '', url.pathname + url.search + url.hash);
+        });
+
+        const randomBtn = document.getElementById('random-tool');
+        if (randomBtn) {
+            randomBtn.addEventListener('click', function() {
+                const hrefs = toolCards.map(c => c.getAttribute('href')).filter(Boolean);
+                if (hrefs.length) window.location.href = hrefs[Math.floor(Math.random() * hrefs.length)];
+            });
+        }
+
+        document.addEventListener('keydown', function(e) {
+            const tag = (e.target.tagName || '').toLowerCase();
+            const typing = tag === 'input' || tag === 'textarea' || e.target.isContentEditable;
+            if (e.key === '/' && !typing) {
+                e.preventDefault();
+                searchInput.focus();
+            } else if (e.key === 'Escape' && document.activeElement === searchInput) {
+                searchInput.value = '';
+                filterTools();
+                searchInput.blur();
+            }
+        });
+
+        function handleFavoritesHash() {
+            if (location.hash === '#favorites') {
+                const fb = document.querySelector('.filter-btn[data-category="favorites"]');
+                if (fb && activeCategory !== 'favorites') fb.click();
+                window.scrollTo({ top: 0 });
+            }
+        }
+
+        if (location.hash === '#favorites') {
+            handleFavoritesHash();
+        }
+
+        window.addEventListener('hashchange', handleFavoritesHash);
+
+        updateFavButtons();
+        updateFavCount();
+        if (initialQuery) filterTools();
+    });
+    </script>
+    {% endif %}
+    <div class="nav-overlay" id="nav-overlay"></div>
+    {% if site.analytics_id and site.analytics_id != "" %}
+    <script data-goatcounter="https://{{ site.analytics_id }}.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+    {% endif %}
+</body>
+</html>

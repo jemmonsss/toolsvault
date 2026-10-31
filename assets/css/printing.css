@@ -1,0 +1,23 @@
+.print-tool{display:grid;gap:1rem;margin:1rem 0 2rem;max-width:100%}
+.print-tool p{margin:.4rem 0}
+.print-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));gap:1rem}
+.print-panel{min-width:0;background:var(--bg-secondary,#151b2b);border:1px solid var(--border-color,#344054);padding:1.15rem;border-radius:14px}
+.print-panel h2{font-size:1.12rem;margin:0 0 .95rem}
+.print-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:.8rem}
+.print-fields label{display:flex;flex-direction:column;font-size:.86rem;font-weight:600;gap:.3rem}
+.print-fields input,.print-fields select{min-width:0;width:100%;font:inherit;color:var(--text-primary,#fff);background:var(--bg-primary,#10121c);border:1px solid var(--border-color,#3e4552);border-radius:8px;padding:.6rem}
+.print-upload{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;background:var(--bg-secondary,#151b2b);border:1px dashed #8b5cf6;border-radius:12px;padding:1rem;font-weight:600;cursor:pointer}
+.print-upload input{min-width:0;max-width:100%;font-size:.85rem}
+.print-msg{font-size:.9rem;color:var(--text-secondary,#bcbdd2)}
+.print-viewport{position:relative;width:100%;height:clamp(260px,52vh,530px);border:1px solid var(--border-color,#303b4d);border-radius:12px;background:radial-gradient(circle at 50% 25%,#2e3754,#0f1729 78%);overflow:hidden}
+.print-viewport canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+.print-viewport canvas:active{cursor:grabbing}
+.print-viewport-label{position:absolute;right:.75rem;bottom:.65rem;background:#090d18c9;color:#e4e8fd;padding:.3rem .55rem;border-radius:6px;font-size:.72rem;pointer-events:none}
+.print-action-row{display:flex;gap:.6rem;flex-wrap:wrap}
+.print-action-row button{max-width:100%}
+.print-stats{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:.7rem;margin:0;align-items:start}
+.print-stats dt{font-size:.88rem;opacity:.8}
+.print-stats dd{font-weight:650;text-align:right;margin:0;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.print-small{font-size:.82rem;line-height:1.55;opacity:.78;margin-top:1rem!important}
+.print-note{font-size:.9rem;background:var(--bg-secondary,#151b2b);padding:1rem;border-radius:10px;border-left:3px solid #8b5cf6;line-height:1.65}
+@media(max-width:600px){.print-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.print-viewport{height:340px}}

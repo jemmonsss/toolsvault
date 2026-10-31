@@ -1,0 +1,208 @@
+---
+title: "Minecraft Texture Pack Creator"
+link: "/tools/minecraft-texture-pack-creator/"
+description: "Design, edit, preview, and export Minecraft resource-pack textures directly in your browser."
+tags:
+  - minecraft
+  - texture
+  - resource-pack
+  - editor
+  - zip
+category: "Minecraft"
+games_only: true
+icon: "&#127959;"
+---
+
+<link rel="stylesheet" href="{{ '/assets/css/tpc.css' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M' }}">
+
+<div class="tui tpc">
+    <h1>Minecraft Texture Pack Creator</h1>
+    <p class="sub">Design, edit, preview, and export a valid Minecraft resource pack — entirely in your browser.</p>
+
+    <div class="tpc-savebar">
+      <button class="btn btn-secondary tpc-sm" id="tpc-save" type="button" title="Save this project in your browser">Save</button>
+      <button class="btn btn-secondary tpc-sm" id="tpc-load" type="button" title="Load the last saved project">Load saved</button>
+      <button class="btn btn-secondary tpc-sm" id="tpc-export-project" type="button" title="Download a project file to share or back up">Export file</button>
+      <button class="btn btn-secondary tpc-sm" id="tpc-import" type="button" title="Import a saved project file">Import</button>
+      <input type="file" id="tpc-import-file" accept="application/json,.json" hidden>
+      <button class="btn btn-secondary tpc-sm" id="tpc-clear-project" type="button" title="Remove the saved project from this browser">Delete save</button>
+      <span class="tpc-saved" id="tpc-saved-label" hidden></span>
+    </div>
+
+  <div class="tpc-bar">
+    <div class="tpc-field">
+      <label for="tpc-name">Pack name</label>
+      <input type="text" id="tpc-name" value="My Texture Pack" maxlength="48">
+    </div>
+    <div class="tpc-field">
+      <label for="tpc-format">Minecraft / resource format</label>
+      <select id="tpc-format">
+        <option value="88.0" selected>88.0 — Java 26.2</option>
+        <option value="84.0">84.0 — Java 26.1</option>
+        <option value="75.0">75.0 — Java 1.21.11</option>
+        <option value="69.0">69.0 — Java 1.21.9</option>
+        <option value="63.0">63.0 — Java 1.21.6</option>
+        <option value="55.0">55.0 — Java 1.21.5</option>
+        <option value="46.0">46.0 — Java 1.21.4</option>
+        <option value="34.0">34.0 — Java 1.21</option>
+        <option value="32.0">32.0 — Java 1.20.5–1.20.6</option>
+        <option value="22.0">22.0 — Java 1.20.2–1.20.3</option>
+        <option value="15.0">15.0 — Java 1.19.3</option>
+        <option value="9.0">9.0 — Java 1.18.2</option>
+        <option value="6.0">6.0 — Java 1.16.2–1.16.5</option>
+      </select>
+    </div>
+    <div class="tpc-field tpc-field-grow">
+      <label for="tpc-desc">Description (supports <span style="color:var(--accent)">§</span> codes)</label>
+      <input type="text" id="tpc-desc" value="§6My custom textures">
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-tab="editor" role="tab" aria-selected="true" aria-controls="panel-editor">Editor</button>
+    <button class="tab" data-tab="files" role="tab" aria-selected="false" aria-controls="panel-files">Files</button>
+    <button class="tab" data-tab="preview" role="tab" aria-selected="false" aria-controls="panel-preview">Preview</button>
+    <button class="tab" data-tab="export" role="tab" aria-selected="false" aria-controls="panel-export">Export</button>
+  </div>
+
+  <!-- Global status toast (visible on every tab) -->
+  <div class="tpc-status" id="tpc-status" role="status" aria-live="polite" hidden></div>
+
+  <!-- EDITOR -->
+  <section class="panel active" id="panel-editor">
+    <div class="tpc-layout">
+      <aside class="tpc-tree" id="tpc-tree">
+        <div class="tpc-tree-head">
+          <input type="text" id="tpc-tree-search" placeholder="Search textures…">
+        </div>
+        <div class="tpc-tree-body" id="tpc-tree-body"></div>
+      </aside>
+
+      <div class="tpc-main">
+        <div class="tpc-toolbar">
+          <div class="tpc-tools">
+            <button class="tpc-tool active" data-tool="pencil" title="Pencil (B)" aria-label="Pencil">{%- include tpc/pencil.svg -%}</button>
+            <button class="tpc-tool" data-tool="eraser" title="Eraser (E)" aria-label="Eraser">{%- include tpc/eraser.svg -%}</button>
+            <button class="tpc-tool" data-tool="fill" title="Fill (G)" aria-label="Fill">{%- include tpc/fill.svg -%}</button>
+            <button class="tpc-tool" data-tool="picker" title="Eyedropper (I)" aria-label="Eyedropper">{%- include tpc/picker.svg -%}</button>
+            <button class="tpc-tool" data-tool="line" title="Line" aria-label="Line">{%- include tpc/line.svg -%}</button>
+            <button class="tpc-tool" data-tool="rect" title="Rectangle" aria-label="Rectangle">{%- include tpc/rect.svg -%}</button>
+          </div>
+          <div class="tpc-tool-opts">
+            <label class="tpc-inline">Size
+              <select id="tpc-brush"><option selected>1</option><option>2</option><option>3</option><option>4</option><option>6</option><option>8</option></select>
+            </label>
+<label class="tpc-inline">Size (px)
+<select id="tpc-res">
+<option value="16" selected>16</option>
+<option value="32">32</option>
+<option value="64">64</option>
+<option value="128">128</option>
+<option value="256">256</option>
+<option value="512">512</option>
+</select>
+</label>
+<label class="tpc-inline">Zoom
+<input type="range" id="tpc-zoom" min="4" max="32" value="16">
+</label>
+<label class="tpc-inline"><input type="checkbox" id="tpc-grid" checked> Grid</label>
+<button class="btn btn-secondary tpc-sm" id="tpc-upscale" type="button" title="Upscale 2x (rule-based, edge-preserving)">{%- include tpc/upscale.svg -%} Upscale 2×</button><span class="tpc-info-wrap"><button type="button" class="tpc-info" id="tpc-info" aria-label="About upscaling" aria-expanded="false" aria-describedby="tpc-info-pop">{%- include tpc/info.svg -%}</button><span class="tpc-info-pop" id="tpc-info-pop" role="tooltip" hidden>100% rule-based — no AI. Uses classic pixel-art algorithms (EPX/Scale2x) to enlarge textures while keeping edges sharp.</span></span>
+<label class="tpc-inline"><input type="checkbox" id="tpc-smooth" checked> Smooth</label>
+            <button class="btn btn-secondary tpc-sm" id="tpc-undo" title="Undo (Ctrl+Z)">{%- include tpc/undo.svg -%}</button>
+            <button class="btn btn-secondary tpc-sm" id="tpc-redo" title="Redo (Ctrl+Y)">{%- include tpc/redo.svg -%}</button>
+            <button class="btn btn-secondary tpc-sm" id="tpc-flip-h" type="button">Flip H</button>
+            <button class="btn btn-secondary tpc-sm" id="tpc-flip-v" type="button">Flip V</button>
+            <button class="btn btn-secondary tpc-sm" id="tpc-rotate" type="button">Rotate 90°</button>
+            <button class="btn btn-secondary tpc-sm" id="tpc-clear">Clear</button>
+          </div>
+        </div>
+
+        <div class="tpc-canvas-wrap">
+          <div class="tpc-canvas-box">
+            <div class="tpc-canvas-stage" id="tpc-stage">
+              <canvas id="tpc-canvas" width="16" height="16"></canvas>
+              <div class="tpc-grid-overlay" id="tpc-grid-overlay"></div>
+            </div>
+          </div>
+          <div class="tpc-colorbar">
+            <label class="tpc-inline">Color
+              <input type="color" id="tpc-color" value="#8b5cf6">
+            </label>
+            <div class="tpc-swatches" id="tpc-swatches"></div>
+            <div class="tpc-vanilla" id="tpc-vanilla" hidden>
+              <span class="tpc-vanilla-label">Vanilla reference</span>
+              <img id="tpc-vanilla-img" alt="Vanilla texture reference" crossorigin="anonymous">
+              <button class="btn btn-secondary tpc-sm" id="tpc-load-vanilla" type="button">Edit this texture</button>
+            </div>
+            <p class="tpc-hint" id="tpc-slot-hint">Select a texture on the left to begin.</p>
+          </div>
+        </div>
+
+        <div class="tpc-animation-card">
+          <div><strong>Animated texture</strong><span>Export a matching <code>.png.mcmeta</code> for vertical frame strips.</span></div>
+          <label class="tpc-inline"><input type="checkbox" id="tpc-animate"> Enable</label>
+          <label class="tpc-inline">Frame time <input type="number" id="tpc-frametime" min="1" max="1200" value="2"></label>
+          <label class="tpc-inline"><input type="checkbox" id="tpc-interpolate"> Interpolate</label>
+          <label class="tpc-inline">Frames <input type="text" id="tpc-frames" placeholder="Auto, or 0,1,2,1"></label>
+        </div>
+
+        <div class="tpc-dropzone" id="tpc-drop">
+          <p>Drop a <strong>.png</strong> here, or
+            <button class="btn btn-secondary tpc-sm" id="tpc-upload-btn">Upload to selected slot</button>
+            <input type="file" id="tpc-upload" accept="image/png,image/*" hidden>
+          </p>
+          <p class="tpc-hint" style="margin-top:.5rem">Vanilla textures are loaded live from a public CDN and are <strong>not</strong> hosted on this site.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILES -->
+  <section class="panel" id="panel-files">
+    <div class="tpc-filebar">
+      <button class="btn btn-secondary" id="tpc-import-pack">Import resource-pack ZIP…</button>
+      <input type="file" id="tpc-pack-file" accept=".zip,application/zip" hidden>
+      <button class="btn btn-secondary" id="tpc-import-folder">Import folder…</button>
+      <input type="file" id="tpc-folder" webkitdirectory directory multiple hidden>
+      <button class="btn btn-secondary" id="tpc-new-blank">+ New blank texture</button>
+      <span class="tpc-count" id="tpc-file-count">0 textures</span>
+    </div>
+    <div class="tpc-filelist" id="tpc-filelist">
+      <p class="tpc-empty">No textures yet. Pick a slot in the Editor and upload or draw one.</p>
+    </div>
+  </section>
+
+  <!-- PREVIEW -->
+  <section class="panel" id="panel-preview">
+    <div class="tpc-preview-grid" id="tpc-preview-grid">
+      <p class="tpc-empty">Add textures to see a live preview here.</p>
+    </div>
+  </section>
+
+  <!-- EXPORT -->
+  <section class="panel" id="panel-export">
+    <div class="tpc-export">
+      <div class="tpc-export-col">
+        <h3>Resource pack</h3>
+        <p class="tpc-muted">Packages <code>pack.mcmeta</code>, an optional <code>pack.png</code> icon,
+          and every texture under <code>assets/minecraft/…</code> into a downloadable <code>.zip</code>.</p>
+        <div class="tpc-field">
+          <label for="tpc-icon">Pack icon (from slot)</label>
+          <select id="tpc-icon"><option value="">None</option></select>
+        </div>
+        <button class="btn btn-primary" id="tpc-export-zip">{%- include tpc/download.svg -%} Download .zip</button>
+        <button class="btn btn-secondary" id="tpc-export-meta">Download pack.mcmeta only</button>
+        <button class="btn btn-secondary" id="tpc-export-report">Download validation report</button>
+      </div>
+      <div class="tpc-export-col">
+        <h3>Pack diagnostics</h3>
+        <div id="tpc-diagnostics"></div>
+        <h3>pack.mcmeta preview</h3>
+        <pre class="tpc-json" id="tpc-meta-preview"></pre>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="{{ '/assets/js/zip-writer.js' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M' }}" defer></script>
+<script src="{{ '/assets/js/minecraft-pack-utils.js' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M' }}" defer></script>
+<script src="{{ '/assets/js/tpc.js' | relative_url }}?v={{ site.time | date: '%Y%m%d%H%M' }}" defer></script>

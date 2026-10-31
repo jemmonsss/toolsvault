@@ -1,0 +1,84 @@
+title: "ToolsVault"
+description: "A curated vault of developer tools and resources"
+baseurl: ""
+url: "https://www.toolsvault.org"
+
+# Privacy-friendly analytics (GoatCounter). Leave empty to disable.
+# Set to your GoatCounter site code, e.g. "toolsvault".
+analytics_id: ""
+
+# Canonical GitHub repository (used in footer, about page, SEO).
+github: "https://github.com/jemmonsss/toolsvault"
+
+social:
+  name: "ToolsVault"
+  links:
+    - "https://github.com/jemmonsss/toolsvault"
+
+theme: null
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
+  - jekyll-paginate-v2
+  - jekyll-archives
+  - jekyll-include-cache
+  - jekyll-last-modified-at
+  - jekyll-toc
+
+markdown: kramdown
+
+collections:
+  tools:
+    output: true
+    permalink: /tools/:name/
+  blog:
+    output: true
+    permalink: /blog/:name/
+
+defaults:
+  - scope:
+      path: ""
+      type: "tools"
+    values:
+      layout: "tool"
+      featured: false
+  - scope:
+      type: "blog"
+    values:
+      layout: "post"
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "default"
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - node_modules
+  - _sass
+
+# Pagination (jekyll-paginate-v2)
+pagination:
+  enabled: true
+  per_page: 6
+  permalink: "/blog/page/:num/"
+  title: ":title - page :num"
+  limit_page: 0
+  sort_field: "date"
+  sort_reverse: true
+
+# Archives (jekyll-archives)
+jekyll-archives:
+  enabled:
+    - tags
+    - categories
+  layouts:
+    tag: blog-tag
+    category: blog-category
+  permalinks:
+    tag: "/blog/tags/:name/"
+    category: "/blog/categories/:name/"

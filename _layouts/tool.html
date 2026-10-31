@@ -1,0 +1,253 @@
+---
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#8b5cf6">
+    <link rel="icon" href="{{ '/assets/favicon.svg' | relative_url }}" type="image/svg+xml">
+    <link rel="preload" href="/assets/fonts/inter-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/fonts/inter-500.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/fonts/inter-600.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/fonts/inter-700.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ '/assets/css/main.css' | relative_url }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}"></noscript>
+    <link rel="alternate" type="application/rss+xml" title="{{ site.title | escape }}" href="{{ '/' | absolute_url }}feed.xml">
+    <script>document.documentElement.setAttribute('data-theme','dark');</script>
+    <script src="{{ '/assets/js/tools.js' | relative_url }}"></script>
+    {% seo %}
+</head>
+<body>
+    {% include header.html %}
+
+    <main>
+        <div class="tool-page">
+            <div class="container">
+                <div class="tool-header">
+                    <h1>{{ page.title }}</h1>
+                    <div class="tool-meta">
+                        {% if page.icon %}<span class="tool-icon">{{ page.icon }}</span>{% endif %}
+                        <span class="tool-category">{{ page.category | default: 'Tool' }}</span>
+                    </div>
+                </div>
+                <div class="tool-content">
+                    <div class="tool-main">
+                        <div class="tool-description">
+                            {{ content }}
+                        </div>
+                        <div class="tool-actions">
+                            {% if page.link and page.link != page.url %}<a href="{{ page.link }}" target="_blank" rel="noopener" class="btn btn-primary">Visit Tool</a>{% endif %}
+                            <button type="button" id="share-tool" class="btn btn-secondary">Copy link</button>
+                        </div>
+                    </div>
+                    <aside class="tool-sidebar">
+                        <div class="tool-tags">
+                            <h3>Tags</h3>
+                            <div class="tag-list">
+                                {% for tag in page.tags %}
+                                <span class="tag">{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% assign related_tools = site.tools | where: 'category', page.category %}
+                        {% if related_tools.size > 1 %}
+                        <div class="tool-tags" style="margin-top:1.5rem">
+                            <h3>Related tools</h3>
+                            <div style="display:flex;flex-direction:column;gap:.55rem">
+                                {% assign related_count = 0 %}
+                                {% for tool in related_tools %}
+                                    {% if tool.url != page.url and related_count < 5 %}
+                                    <a href="{{ tool.url | relative_url }}" class="text-btn" style="justify-content:flex-start">{{ tool.title }}</a>
+                                    {% assign related_count = related_count | plus: 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="tool-tags" id="recent-tools-section" style="display:none;margin-top:1.5rem">
+                            <h3>Recently used</h3>
+                            <div id="recent-tools" style="display:flex;flex-direction:column;gap:.55rem"></div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    {% include footer.html %}
+
+    <button type="button" id="back-to-top" class="back-to-top" aria-label="Back to top" title="Back to top">&#8593;</button>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var shareBtn = document.getElementById('share-tool');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', function() {
+                var url = window.location.href;
+                if (navigator.share) {
+                    navigator.share({ title: document.title, url: url }).catch(function(e) {
+                        if (e && e.name !== 'AbortError') copyLink(url, shareBtn);
+                    });
+                } else { copyLink(url, shareBtn); }
+            });
+        }
+        function flash(btn, msg) {
+            if (!btn) return;
+            var prev = btn.textContent;
+            btn.textContent = msg;
+            setTimeout(function(){ btn.textContent = prev; }, 1500);
+        }
+        function copyLink(url, btn) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url)
+                    .then(function(){ flash(btn, 'Copied!'); })
+                    .catch(function(){ fallbackCopy(url, btn); });
+            } else { fallbackCopy(url, btn); }
+        }
+        function fallbackCopy(text, btn) {
+            var ta = document.createElement('textarea');
+            ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select();
+            try { document.execCommand('copy'); flash(btn, 'Copied!'); } catch(e){}
+            document.body.removeChild(ta);
+        }
+
+        // Keep a small, private recent-tools list in this browser.
+        try {
+            var recentKey = 'toolsvault_recent_tools';
+            var recent = JSON.parse(localStorage.getItem(recentKey) || '[]');
+            if (!Array.isArray(recent)) recent = [];
+            var current = { title: {{ page.title | jsonify }}, url: {{ page.url | relative_url | jsonify }} };
+            recent = recent.filter(function(item) { return item && item.url !== current.url; });
+            recent.unshift(current);
+            recent = recent.slice(0, 6);
+            localStorage.setItem(recentKey, JSON.stringify(recent));
+            var recentBox = document.getElementById('recent-tools');
+            var recentSection = document.getElementById('recent-tools-section');
+            var previous = recent.filter(function(item) { return item.url !== current.url; }).slice(0, 5);
+            if (recentBox && recentSection && previous.length) {
+                previous.forEach(function(item) {
+                    var link = document.createElement('a');
+                    link.href = item.url;
+                    link.className = 'text-btn';
+                    link.style.justifyContent = 'flex-start';
+                    link.textContent = item.title;
+                    recentBox.appendChild(link);
+                });
+                recentSection.style.display = 'block';
+            }
+        } catch(e) {}
+
+        var btt = document.getElementById('back-to-top');
+        if (btt) {
+            window.addEventListener('scroll', function() {
+                btt.classList.toggle('show', window.scrollY > 400);
+            }, { passive: true });
+            btt.addEventListener('click', function() { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+        }
+
+        var themeToggle = document.getElementById('theme-toggle');
+        function updateThemeIcon() {
+            if (!themeToggle) return;
+            themeToggle.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? '☀' : '☾';
+        }
+        if (themeToggle) {
+            updateThemeIcon();
+            themeToggle.addEventListener('click', function() {
+                var cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+                var next = cur === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', next);
+                try { localStorage.setItem('toolsvault_theme', next); } catch(e){}
+                updateThemeIcon();
+            });
+        }
+
+        try {
+            var fc = document.getElementById('fav-count-header');
+            if (fc) fc.textContent = (JSON.parse(localStorage.getItem('toolsvault_favorites')) || []).length;
+        } catch(e){}
+
+        // Mobile nav toggle
+        var menuToggle = document.getElementById('menu-toggle');
+        var mainNav = document.getElementById('main-nav');
+        var navOverlay = document.getElementById('nav-overlay');
+        function openMenu() {
+            if (!mainNav || !menuToggle || !navOverlay) return;
+            mainNav.classList.add('active');
+            navOverlay.classList.add('active');
+            menuToggle.classList.add('active');
+            menuToggle.setAttribute('aria-expanded', 'true');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeMenu() {
+            if (!mainNav || !menuToggle || !navOverlay) return;
+            mainNav.classList.remove('active');
+            navOverlay.classList.remove('active');
+            menuToggle.classList.remove('active');
+            menuToggle.setAttribute('aria-expanded', 'false');
+            document.body.style.overflow = '';
+        }
+        if (menuToggle) {
+            menuToggle.addEventListener('click', function() {
+                if (mainNav && mainNav.classList.contains('active')) {
+                    closeMenu();
+                } else {
+                    openMenu();
+                }
+            });
+        }
+        if (navOverlay) {
+            navOverlay.addEventListener('click', closeMenu);
+        }
+        if (mainNav) {
+            mainNav.querySelectorAll('.nav-link').forEach(function(link) {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) closeMenu();
+                });
+            });
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && mainNav && mainNav.classList.contains('active')) {
+                closeMenu();
+            }
+        });
+
+        // Active nav indicator updater
+        function updateActiveNav() {
+            var path = window.location.pathname;
+            var hash = window.location.hash;
+            var navLinks = document.querySelectorAll('.main-nav .nav-link[data-nav]');
+            navLinks.forEach(function(link) { link.classList.remove('active'); });
+            if (path === '/' || path === '/index.html') {
+                var homeLink = document.querySelector('.nav-link[data-nav="home"]');
+                if (homeLink) homeLink.classList.add('active');
+            } else if (path === '/tools/' || path === '/tools/index.html' || path.indexOf('/tools/') === 0) {
+                var toolsLink = document.querySelector('.nav-link[data-nav="tools"]');
+                if (toolsLink) toolsLink.classList.add('active');
+            } else if (path === '/about/') {
+                var aboutLink = document.querySelector('.nav-link[data-nav="about"]');
+                if (aboutLink) aboutLink.classList.add('active');
+            } else if (path.indexOf('/blog/') === 0) {
+                var blogLink = document.querySelector('.nav-link[data-nav="blog"]');
+                if (blogLink) blogLink.classList.add('active');
+            } else if (path.indexOf('/games/') === 0) {
+                var gamesLink = document.querySelector('.nav-link[data-nav="games"]');
+                if (gamesLink) gamesLink.classList.add('active');
+            }
+            var favLink = document.getElementById('nav-favorites');
+            if (favLink && hash === '#favorites') {
+                favLink.classList.add('active');
+            } else if (favLink) {
+                favLink.classList.remove('active');
+            }
+        }
+        updateActiveNav();
+    });(function(){try{var t=localStorage.getItem('toolsvault_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+    </script>
+    <div class="nav-overlay" id="nav-overlay"></div>
+    {% if site.analytics_id and site.analytics_id != "" %}
+    <script data-goatcounter="https://{{ site.analytics_id }}.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+    {% endif %}
+</body>
+</html>
