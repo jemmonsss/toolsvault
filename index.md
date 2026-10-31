@@ -46,8 +46,8 @@ description: "A curated vault of developer tools and resources"
             </a>
             <a href="/printing/" class="tool-card" data-category="3d-printing">
                 <div class="tool-header"><h3>&#128424; 3D Printing Tools</h3></div>
-                <div class="tool-description">Free browser-based STL/OBJ viewing, model transformations, filament estimates, and G-code analysis. No paywalls.</div>
-                <div class="tool-footer"><div class="tool-tags"><span class="tag">Model Studio</span><span class="tag">Filament</span><span class="tag">G-code</span></div></div>
+                <div class="tool-description">Free custom STL makers: lithophanes, cookie cutters, organizers, threaded nuts &amp; bolts, and name tags. No paywalls.</div>
+                <div class="tool-footer"><div class="tool-tags"><span class="tag">Custom STLs</span><span class="tag">Lithophanes</span><span class="tag">Organizers</span></div></div>
                 <span class="btn-link">Open 3D printing tools &rarr;</span>
             </a>
             <a href="/games/" class="tool-card" data-category="games">

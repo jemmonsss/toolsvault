@@ -21,3 +21,13 @@
 .print-small{font-size:.82rem;line-height:1.55;opacity:.78;margin-top:1rem!important}
 .print-note{font-size:.9rem;background:var(--bg-secondary,#151b2b);padding:1rem;border-radius:10px;border-left:3px solid #8b5cf6;line-height:1.65}
 @media(max-width:600px){.print-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.print-viewport{height:340px}}
+/* Print Forge generators */
+.forge-layout{align-items:start}
+.forge-fields{grid-template-columns:repeat(auto-fit,minmax(min(100%,154px),1fr));}
+.forge-fields .forge-check{display:flex;flex-direction:row;align-items:center;gap:.5rem;grid-column:1/-1}
+.forge-check input{width:auto;min-width:0;accent-color:#8b5cf6}
+.forge-viewport{height:310px}
+.forge-source{display:block;max-width:100%;height:auto;max-height:270px;object-fit:contain;border:1px solid var(--border-color,#303b4d);border-radius:10px;background:white}
+.forge-workbench .print-panel{height:100%}
+.forge-workbench .print-msg{font-weight:600}
+@media(min-width:980px){.forge-layout{grid-template-columns:minmax(290px,.9fr) minmax(390px,1.1fr)}}
